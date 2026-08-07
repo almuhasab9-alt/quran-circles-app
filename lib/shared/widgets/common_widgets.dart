@@ -67,19 +67,17 @@ class StatCard extends StatelessWidget {
   const StatCard({super.key, required this.title, required this.value, required this.icon, required this.color, this.onTap});
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Card(
-        child: InkWell(
-          onTap: onTap, borderRadius: BorderRadius.circular(14),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(children: [
-              Icon(icon, color: color, size: 26),
-              const SizedBox(height: 6),
-              Text(value, style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: color)),
-              Text(title, style: const TextStyle(fontSize: 11, color: Colors.black54), textAlign: TextAlign.center),
-            ]),
-          ),
+    return Card(
+      child: InkWell(
+        onTap: onTap, borderRadius: BorderRadius.circular(14),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Icon(icon, color: color, size: 26),
+            const SizedBox(height: 6),
+            Text(value, style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: color)),
+            Text(title, style: const TextStyle(fontSize: 11, color: Colors.black54), textAlign: TextAlign.center),
+          ]),
         ),
       ),
     );

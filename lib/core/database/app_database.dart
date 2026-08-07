@@ -163,7 +163,13 @@ class StudentTransfers extends Table {
   FollowUpPlans, Alerts, ContactLogs, StudentTransfers,
 ])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(driftDatabase(name: 'quran_center_db'));
+  AppDatabase() : super(driftDatabase(
+    name: 'quran_center_db',
+    web: DriftWebOptions(
+      sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+      driftWorker: Uri.parse('drift_worker.js'),
+    ),
+  ));
   AppDatabase.forTesting(super.executor);
 
   @override

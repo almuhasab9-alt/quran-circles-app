@@ -107,16 +107,16 @@ class DashboardScreen extends ConsumerWidget {
     return ListView(padding: const EdgeInsets.all(12), children: [
       // بطاقات إحصائية
       Row(children: [
-        StatCard(title: 'الطلاب النشطون', value: '${students.length}', icon: Icons.people, color: AppColors.primary,
-            onTap: () => context.go('/home/students')),
-        StatCard(title: 'حضور اليوم', value: '$todayPresent', icon: Icons.check_circle, color: AppColors.success),
-        StatCard(title: 'غياب اليوم', value: '$todayAbsent', icon: Icons.cancel, color: AppColors.danger),
+        Expanded(child: StatCard(title: 'الطلاب النشطون', value: '${students.length}', icon: Icons.people, color: AppColors.primary,
+            onTap: () => context.go('/home/students'))),
+        Expanded(child: StatCard(title: 'حضور اليوم', value: '$todayPresent', icon: Icons.check_circle, color: AppColors.success)),
+        Expanded(child: StatCard(title: 'غياب اليوم', value: '$todayAbsent', icon: Icons.cancel, color: AppColors.danger)),
       ]),
       Row(children: [
-        StatCard(title: 'متوسط التسميع', value: avgScore.toStringAsFixed(1), icon: Icons.menu_book, color: AppColors.gold),
-        StatCard(title: 'حالات متابعة', value: '$followUpCount', icon: Icons.flag, color: AppColors.warning,
-            onTap: () => context.go('/home/alerts')),
-        StatCard(title: 'حلقات بلا بيانات اليوم', value: '$halaqasNoData', icon: Icons.warning_amber, color: Colors.blueGrey),
+        Expanded(child: StatCard(title: 'متوسط التسميع', value: avgScore.toStringAsFixed(1), icon: Icons.menu_book, color: AppColors.gold)),
+        Expanded(child: StatCard(title: 'حالات متابعة', value: '$followUpCount', icon: Icons.flag, color: AppColors.warning,
+            onTap: () => context.go('/home/alerts'))),
+        Expanded(child: StatCard(title: 'حلقات بلا بيانات اليوم', value: '$halaqasNoData', icon: Icons.warning_amber, color: Colors.blueGrey)),
       ]),
       const SizedBox(height: 8),
       Card(

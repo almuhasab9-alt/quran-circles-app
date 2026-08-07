@@ -29,6 +29,11 @@ class AppTheme {
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
       ),
+      tabBarTheme: const TabBarThemeData(
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.white70,
+        indicatorColor: AppColors.gold,
+      ),
       cardTheme: CardThemeData(
         elevation: 1.5,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -57,6 +62,11 @@ class AppTheme {
         centerTitle: true, elevation: 0,
         backgroundColor: scheme.surfaceContainerHighest,
         foregroundColor: Colors.white,
+      ),
+      tabBarTheme: const TabBarThemeData(
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.white70,
+        indicatorColor: AppColors.gold,
       ),
       cardTheme: CardThemeData(
         elevation: 1.5,
