@@ -1,16 +1,86 @@
-# quran_center
+# متابعة حلقات مركز السنة للعلوم الشرعية وتأهيل الدعاة
 
-A new Flutter project.
+نظام محلي لإدارة ومتابعة حلقات القرآن الكريم — **نسخة تجريبية محلية بالكامل** (بدون خادم خلفي، بدون تسجيل دخول حقيقي، بدون مزامنة سحابية).
 
-## Getting Started
+> ⚠️ **تنبيه**: هذه نسخة اختبارية للعرض فقط. تسجيل الدخول الآمن لم يتم تفعيله بعد. لا تُدخل أي بيانات حقيقية للطلاب. جميع البيانات مولّدة آلياً (seed=2026) وتُخزَّن محلياً على الجهاز فقط.
 
-This project is a starting point for a Flutter application.
+---
 
-A few resources to get you started if this is your first Flutter project:
+## المستفيدون
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- **المدير**: لوحة تحكم شاملة، إدارة الحلقات/الطلاب/الموظفين، اعتماد التنبيهات وخطط المتابعة، التقارير، إعدادات التقييم وقواعد التنبيه.
+- **المشرف**: متابعة حلقاته، الطلاب المتعثرون، التنبيهات المعلقة، التقارير.
+- **المعلم**: تسجيل الحضور السريع، تسجيل التسميع اليومي مع التقييم المباشر.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## المزايا الرئيسية
+
+- 📊 لوحة تحكم مع رسوم بيانية (fl_chart): حضور أسبوعي مكدّس، توزيع المستويات (Pie)، متوسط الأداء (Line)، مقارنة الحلقات.
+- ✅ حضور سريع: تعيين الجميع حاضراً بضغطة، 4 حالات (حاضر/متأخر/بعذر/بلا عذر)، حفظ جماعي بمعاملة واحدة، منع التكرار اليومي (طالب + يوم = سجل واحد).
+- 🎙️ تسجيل التسميع: نطاق السور والآيات (114 سورة)، المراجعة المخططة/المنجزة، عدّادات الأخطاء (خفيفة/متوسطة/كبيرة/تصحيح ذاتي)، درجة ومستوى مباشر أثناء الإدخال، تعديل يدوي للدرجة **مع سبب إلزامي** مع الاحتفاظ بالدرجة الآلية.
+- 🔔 محرك تنبيهات محلي: غياب متكرر بلا عذر (3 خلال 14 يوم)، متوسط منخفض (<60 في آخر 5 جلسات)، تراجع ≥20 نقطة أسبوعياً، أخطاء كبيرة متكررة، تميز متواصل (تنبيه إيجابي). بدون تكرار تنبيه مفتوح من نفس النوع.
+- 👨‍👩‍👦 التواصل مع ولي الأمر: اتصال / واتساب (wa.me) / نسخ الرقم / نسخ رسالة جاهزة / تسجيل نتيجة التواصل — بدون صلاحيات وبدون إرسال تلقائي.
+- 📈 تقارير أسبوعية/شهرية (طالب/حلقة/مركز) مع تصدير CSV.
+- ⚙️ إعدادات: أوزان التقييم، خصومات الأخطاء، تفعيل/تعطيل قواعد التنبيه وعتباتها، الوضع الداكن، إعادة ضبط البيانات التجريبية.
+- 🌙 دعم كامل للعربية RTL والوضع الداكن، خط Cairo.
+
+## نظام التقييم (من 100)
+
+| المكوّن | الوزن |
+|---|---|
+| التسميع (يبدأ 100: خفيف −1، متوسط −3، كبير −6، تصحيح ذاتي 0) | 45% |
+| المراجعة (المنجز/المخطط) | 30% |
+| الحضور (حاضر 100، متأخر 80، بعذر 50، بلا عذر 0) | 15% |
+| الواجب (مكتمل 100، جزئي 50، غير مكتمل 0) | 10% |
+
+**المستويات**: 90+ متقن • 80+ جيد جداً • 70+ جيد • 60+ يحتاج تحسيناً • أقل من 60 يحتاج متابعة.
+
+## البيانات التجريبية (seed=2026)
+
+مدير واحد، 3 مشرفين، 12 معلماً، 10 حلقات، ~200 طالب (أسماء من جزأين)، ولي أمر لكل طالب («أبو + اسم الطالب»)، 12 أسبوعاً من سجلات الحضور/التسميع، تنبيهات وخطط متابعة وسجلات تواصل.
+
+**الدخول التجريبي**: اختر الدور (مدير/مشرف/معلم) ← اختر مستخدماً من القائمة ← «دخول تجريبي».
+
+## البنية التقنية
+
+```
+lib/
+├── main.dart, app.dart
+├── core/
+│   ├── constants/   (enums, app_constants)
+│   ├── database/    (Drift + SQLite: 9 جداول، قيد فريد للسجل اليومي)
+│   ├── router/      (go_router)
+│   ├── theme/       (Material 3، أخضر داكن #0B5E48، خط Cairo)
+│   ├── utils/       (تواريخ)
+│   └── services/    (EvaluationService, AlertEngine, DemoSeedService,
+│                     ReportService, LocalRepositories, DemoAuthRepository, AppSettings)
+├── shared/  (واجهات Repository، providers، ودجات مشتركة)
+└── features/ (splash, demo_auth, dashboard, halaqas, students, staff,
+               attendance, recitation, follow_up, contacts, reports, settings)
+```
+
+**الطبقات**: UI → Providers/Controllers → Repository (واجهات) → قاعدة بيانات محلية. الواجهات تسمح بإضافة RemoteRepository لاحقاً دون إعادة بناء الواجهة أو المنطق.
+
+## الحزم
+
+flutter_riverpod • go_router • drift + sqlite3 • fl_chart • google_fonts (Cairo) • intl • uuid • url_launcher • share_plus • csv • shared_preferences • flutter_launcher_icons • flutter_native_splash
+
+## التشغيل
+
+```bash
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs   # توليد كود Drift
+flutter run                                                 # تشغيل
+dart run flutter_launcher_icons                             # توليد أيقونات التطبيق
+dart run flutter_native_splash:create                       # توليد شاشة البداية الأصلية
+flutter test                                                # الاختبارات
+```
+
+## خطة ربط الخادم الخلفي لاحقاً
+
+1. تنفيذ `RemoteAuthRepository` بدلاً من `DemoAuthRepository` (نفس الواجهة `IAuthRepository`، الدوال موجودة وترمي UnimplementedError).
+2. تنفيذ Remote*Repository لكل واجهة في `shared/models/repositories.dart`.
+3. استبدال مزودات Riverpod في `shared/providers/providers.dart` فقط — لا تغيير في الواجهات.
+
+## ⚠️ تحذير
+
+لا تُدخل بيانات حقيقية في هذه النسخة. البيانات المحلية تُمسح بإعادة تثبيت التطبيق أو من «إعادة ضبط البيانات التجريبية» في الإعدادات.

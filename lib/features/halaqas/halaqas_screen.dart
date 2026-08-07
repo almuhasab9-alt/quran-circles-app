@@ -1,0 +1,146 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:drift/drift.dart' show Value;
+import 'package:uuid/uuid.dart';
+import '../../core/constants/app_constants.dart';
+import '../../core/database/app_database.dart';
+import '../../core/theme/app_theme.dart';
+import '../../shared/providers/providers.dart';
+import '../../shared/widgets/common_widgets.dart';
+
+class HalaqasScreen extends ConsumerWidget {
+  const HalaqasScreen({super.key});
+
+  Future<void> _halaqaDialog(BuildContext context, WidgetRef ref, {Halaqa? existing}) async {
+    final users = await ref.read(userRepoProvider).all();
+    final teachers = users.where((u) => u.role == 'teacher' && u.active).toList();
+    final supervisors = users.where((u) => u.role == 'supervisor' && u.active).toList();
+    final nameCtrl = TextEditingController(text: existing?.name ?? '');
+    final schedCtrl = TextEditingController(text: existing?.scheduleDescription ?? 'السبت والاثنين والأربعاء - بعد العصر');
+    final capCtrl = TextEditingController(text: existing?.capacity.toString() ?? '25');
+    String level = existing?.level ?? AppConstants.levels.first;
+    String? teacherId = existing != null && existing.teacherIds.isNotEmpty ? existing.teacherIds.split(',').first : (teachers.isNotEmpty ? teachers.first.id : null);
+    String? supervisorId = existing != null && existing.supervisorId.isNotEmpty ? existing.supervisorId : (supervisors.isNotEmpty ? supervisors.first.id : null);
+    if (!context.mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(builder: (ctx, setD) {
+        return AlertDialog(
+          title: Text(existing == null ? 'إضافة حلقة' : 'تعديل حلقة'),
+          content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, children: [
+            TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'اسم الحلقة')),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              initialValue: level, decoration: const InputDecoration(labelText: 'المستوى'),
+              items: AppConstants.levels.map((l) => DropdownMenuItem(value: l, child: Text(l))).toList(),
+              onChanged: (v) => setD(() => level = v!),
+            ),
+            DropdownButtonFormField<String>(
+              initialValue: teacherId, decoration: const InputDecoration(labelText: 'المعلم'),
+              items: teachers.map((t) => DropdownMenuItem(value: t.id, child: Text(t.fullName))).toList(),
+              onChanged: (v) => setD(() => teacherId = v),
+            ),
+            DropdownButtonFormField<String>(
+              initialValue: supervisorId, decoration: const InputDecoration(labelText: 'المشرف'),
+              items: supervisors.map((s) => DropdownMenuItem(value: s.id, child: Text(s.fullName))).toList(),
+              onChanged: (v) => setD(() => supervisorId = v),
+            ),
+            TextField(controller: schedCtrl, decoration: const InputDecoration(labelText: 'المواعيد')),
+            TextField(controller: capCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'السعة')),
+          ])),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء')),
+            FilledButton(
+              onPressed: () async {
+                if (nameCtrl.text.trim().isEmpty) return;
+                final repo = ref.read(halaqaRepoProvider);
+                final c = HalaqasCompanion(
+                  id: Value(existing?.id ?? const Uuid().v4()),
+                  name: Value(nameCtrl.text.trim()),
+                  level: Value(level),
+                  teacherIds: Value(teacherId ?? ''),
+                  supervisorId: Value(supervisorId ?? ''),
+                  capacity: Value(int.tryParse(capCtrl.text) ?? 25),
+                  scheduleDescription: Value(schedCtrl.text.trim()),
+                );
+                if (existing == null) { await repo.insert(c); } else { await repo.update(c); }
+                ref.read(dataVersionProvider.notifier).state++;
+                if (ctx.mounted) Navigator.pop(ctx);
+              },
+              child: const Text('حفظ'),
+            ),
+          ],
+        );
+      }),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final session = ref.watch(sessionProvider);
+    final halaqasAsync = ref.watch(halaqasProvider);
+    final studentsAsync = ref.watch(studentsProvider);
+    final recordsAsync = ref.watch(allRecordsProvider);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('إدارة الحلقات')),
+      floatingActionButton: session?.role == 'teacher' ? null : FloatingActionButton(
+        onPressed: () => _halaqaDialog(context, ref),
+        backgroundColor: AppColors.primary,
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
+      body: halaqasAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => ErrorState(message: '$e'),
+        data: (halaqas) {
+          // المعلم يرى حلقاته فقط
+          var list = halaqas;
+          if (session?.role == 'teacher') {
+            list = halaqas.where((h) => h.teacherIds.contains(session!.userId)).toList();
+          } else if (session?.role == 'supervisor') {
+            list = halaqas.where((h) => h.supervisorId == session!.userId).toList();
+          }
+          if (list.isEmpty) return const EmptyState(icon: Icons.groups, message: 'لا توجد حلقات');
+          final students = studentsAsync.value ?? [];
+          final records = recordsAsync.value ?? [];
+          return ListView.builder(
+            padding: const EdgeInsets.all(12),
+            itemCount: list.length,
+            itemBuilder: (ctx, i) {
+              final h = list[i];
+              final count = students.where((s) => s.halaqaId == h.id).length;
+              final hRecs = records.where((r) => r.halaqaId == h.id).toList();
+              final hp = hRecs.where((r) => r.attendance == 'present' || r.attendance == 'late').length;
+              final attRate = hRecs.isEmpty ? 0.0 : hp / hRecs.length * 100;
+              final avg = hRecs.isEmpty ? 0.0 : hRecs.map((r) => r.finalScore).reduce((a, b) => a + b) / hRecs.length;
+              return Card(child: ListTile(
+                leading: CircleAvatar(backgroundColor: AppColors.primary, child: Text('${i + 1}', style: const TextStyle(color: Colors.white))),
+                title: Text(h.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text('${h.level} • $count طالب\nحضور ${attRate.toStringAsFixed(0)}% • تقييم ${avg.toStringAsFixed(1)}'),
+                isThreeLine: true,
+                trailing: session?.role == 'teacher'
+                    ? const Icon(Icons.arrow_forward_ios, size: 16)
+                    : PopupMenuButton<String>(
+                        onSelected: (v) async {
+                          if (v == 'edit') _halaqaDialog(context, ref, existing: h);
+                          if (v == 'disable') {
+                            await ref.read(halaqaRepoProvider).deactivate(h.id);
+                            ref.read(dataVersionProvider.notifier).state++;
+                          }
+                        },
+                        itemBuilder: (_) => [
+                          const PopupMenuItem(value: 'edit', child: Text('تعديل')),
+                          const PopupMenuItem(value: 'disable', child: Text('تعطيل')),
+                        ],
+                      ),
+                onTap: () => ctx.push('/halaqa/${h.id}'),
+              ));
+            },
+          );
+        },
+      ),
+    );
+  }
+}
