@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import '../database/app_database.dart';
 import '../../shared/models/repositories.dart';
 

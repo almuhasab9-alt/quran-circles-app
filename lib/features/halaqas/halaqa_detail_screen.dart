@@ -15,7 +15,6 @@ class HalaqaDetailScreen extends ConsumerWidget {
     final studentsAsync = ref.watch(studentsProvider);
     final recordsAsync = ref.watch(allRecordsProvider);
     final usersAsync = ref.watch(usersProvider);
-    final session = ref.watch(sessionProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('تفاصيل الحلقة')),
