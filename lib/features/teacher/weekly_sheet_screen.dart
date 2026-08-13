@@ -3,15 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/enums.dart';
 import '../../core/database/app_database.dart';
+import '../../core/services/pdf_report_service.dart';
 import '../../core/services/quran_meta.dart';
 import '../../core/services/report_service.dart';
 import '../../core/services/session_service.dart';
+import '../../core/services/backup_ui_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/date_utils.dart' as du;
 import '../../shared/providers/providers.dart';
 import '../../shared/widgets/common_widgets.dart';
 
-/// كشف «متابعة ربط الأخ القرآني» — جدول أسبوعي لطالب واحد يطابق الكشف الورقي.
+/// كشف «متابعة الحفظ والمراجعة» — جدول أسبوعي لطالب واحد يطابق الكشف الورقي.
 /// الأعمدة (RTL): اليوم والتاريخ | الجديد (من، إلى) | التقدير | التكرار |
 /// حديث العهد (من، إلى) | الصغرى (من، إلى) | الكبرى (من، إلى) | الملاحظات
 class WeeklySheetScreen extends ConsumerStatefulWidget {
@@ -64,6 +66,54 @@ class _WeeklySheetScreenState extends ConsumerState<WeeklySheetScreen> {
     _load();
   }
 
+  bool _exportingPdf = false;
+
+  /// تصدير كشف المتابعة الأسبوعي كملف PDF عربي منسّق.
+  Future<void> _exportPdf() async {
+    final st = _student;
+    final report = _report;
+    if (st == null || report == null) return;
+    setState(() => _exportingPdf = true);
+    try {
+      final halaqa = await ref.read(halaqaRepoProvider).getById(widget.halaqaId);
+      final session = ref.read(sessionProvider);
+      User? teacher;
+      if (session != null) {
+        teacher = await ref.read(userRepoProvider).getById(session.userId);
+      }
+      teacher ??= (await ref.read(userRepoProvider).all()).firstOrNull;
+      if (halaqa == null || teacher == null) {
+        throw StateError('تعذر العثور على بيانات الحلقة أو المعلم');
+      }
+      final bytes = await PdfReportService.buildWeeklySheetPdf(
+        student: st,
+        halaqa: halaqa,
+        teacher: teacher,
+        weekRef: _weekRef,
+        records: _records,
+        report: report,
+      );
+      final name = 'كشف_متابعة_${st.studentCode}_${du.formatDate(SessionService.weekStartOf(_weekRef))}.pdf';
+      final ok = await BackupUiService(ref.read(backupServiceProvider))
+          .deliverPublic(name, bytes, 'application/pdf');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(ok ? 'تم إنشاء ملف PDF: $name' : 'تعذر تسليم ملف PDF'),
+          backgroundColor: ok ? AppColors.success : AppColors.danger,
+        ));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('فشل إنشاء PDF: $e'),
+          backgroundColor: AppColors.danger,
+        ));
+      }
+    } finally {
+      if (mounted) setState(() => _exportingPdf = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final weekDays = SessionService.weekDaysOf(_weekRef);
@@ -72,8 +122,14 @@ class _WeeklySheetScreenState extends ConsumerState<WeeklySheetScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('كشف متابعة ربط الأخ القرآني'),
+        title: const Text('كشف متابعة الحفظ والمراجعة'),
         actions: [
+          if (_student != null)
+            IconButton(
+              icon: const Icon(Icons.picture_as_pdf),
+              tooltip: 'تصدير PDF',
+              onPressed: _exportingPdf ? null : _exportPdf,
+            ),
           if (_student != null)
             IconButton(
               icon: const Icon(Icons.edit_note),

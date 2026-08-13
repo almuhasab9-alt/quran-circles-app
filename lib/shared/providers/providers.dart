@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/database/app_database.dart';
+import '../../core/services/backup_service.dart';
+import '../../core/services/backup_ui_service.dart';
 import '../../core/services/demo_seed_service.dart';
 import '../../core/services/local_repositories.dart';
 import '../../core/services/report_service.dart';
@@ -15,6 +17,8 @@ final seedServiceProvider = Provider<DemoSeedService>((ref) => DemoSeedService(r
 final sessionServiceProvider = Provider<SessionService>((ref) => SessionService(ref.watch(dbProvider)));
 final reportServiceProvider = Provider<ReportService>((ref) => ReportService(ref.watch(dbProvider)));
 final transferServiceProvider = Provider<TransferService>((ref) => TransferService(ref.watch(dbProvider)));
+final backupServiceProvider = Provider<BackupService>((ref) => BackupService(ref.watch(dbProvider)));
+final backupUiServiceProvider = Provider<BackupUiService>((ref) => BackupUiService(ref.watch(backupServiceProvider)));
 
 final halaqaRepoProvider = Provider<IHalaqaRepository>((ref) => LocalHalaqaRepository(ref.watch(dbProvider)));
 final studentRepoProvider = Provider<IStudentRepository>((ref) => LocalStudentRepository(ref.watch(dbProvider)));
@@ -54,6 +58,40 @@ class DarkModeNotifier extends StateNotifier<bool> {
 }
 
 final darkModeProvider = StateNotifierProvider<DarkModeNotifier, bool>((ref) => DarkModeNotifier());
+
+// ---------- إعدادات النسخ الاحتياطي ----------
+
+/// إعدادات النسخ الاحتياطي (تذكير يومي/أسبوعي + نسخ آلي + آخر وقت نسخ).
+class BackupSettingsNotifier extends StateNotifier<BackupSettings> {
+  final BackupService service;
+  BackupSettingsNotifier(this.service) : super(const BackupSettings()) {
+    service.loadSettings().then((s) => state = s);
+  }
+
+  Future<void> setReminder(BackupReminder r) async {
+    state = state.copyWith(reminder: r);
+    await service.saveReminder(r);
+  }
+
+  Future<void> setAutoBackup(bool v) async {
+    state = state.copyWith(autoBackup: v);
+    await service.saveAutoBackupEnabled(v);
+  }
+
+  Future<void> markDone() async {
+    final now = DateTime.now();
+    state = state.copyWith(lastBackupAt: now);
+    await service.markBackupDone(now);
+  }
+
+  Future<void> reload() async {
+    state = await service.loadSettings();
+  }
+}
+
+final backupSettingsProvider =
+    StateNotifierProvider<BackupSettingsNotifier, BackupSettings>(
+        (ref) => BackupSettingsNotifier(ref.watch(backupServiceProvider)));
 
 // مزودات البيانات
 final halaqasProvider = FutureProvider<List<Halaqa>>((ref) async {

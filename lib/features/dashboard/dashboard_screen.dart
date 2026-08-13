@@ -114,7 +114,7 @@ class DashboardScreen extends ConsumerWidget {
         Card(child: ListTile(
           leading: const Icon(Icons.table_chart, color: AppColors.primary),
           title: const Text('كشف التسميع الأسبوعي'),
-          subtitle: const Text('عرض كشف متابعة ربط الأخ القرآني'),
+          subtitle: const Text('عرض كشف متابعة الحفظ والمراجعة'),
           trailing: const Icon(Icons.arrow_forward_ios, size: 14),
           onTap: () {
             if (myHalaqas.isNotEmpty) context.push('/halaqa/${myHalaqas.first.id}/sheet');

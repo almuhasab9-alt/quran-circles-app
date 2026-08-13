@@ -120,13 +120,14 @@ class DemoSeedService {
     }
 
     // مواضع حفظ متدرجة لكل طالب (يبدأ كل طالب من موضع مختلف قليلاً)
+    // ثلاثة أشهر تتطلب التقدم في السور — نبدأ من المطففين (83) للأقدم
+    // حتى لا يتجاوز أي طالب نهاية المصحف (الناس 114).
     final progress = <String, (int surah, int ayah)>{};
     for (int i = 0; i < studentIds.length; i++) {
-      // يبدأ من جزء عمود: النبأ (78) وتقدّم — سور قصيرة
-      progress[studentIds[i]] = (78 + (i % 10), 1);
+      progress[studentIds[i]] = (83 + (i % 8), 1);
     }
 
-    // أسبوعان كاملان من السجلات (السبت..الجمعة) لكل طالب
+    // ثلاثة أشهر (12 أسبوعاً) كاملة من السجلات (السبت..الجمعة) لكل طالب
     final today = DateTime(now.year, now.month, now.day);
     final thisWeekStart = SessionService.weekStartOf(today);
     final grades = [
@@ -139,8 +140,8 @@ class DemoSeedService {
     final batch = <DailyRecordsCompanion>[];
     final plans = <WeeklyPlansCompanion>[];
 
-    for (int w = 0; w < 2; w++) {
-      final weekStart = thisWeekStart.subtract(Duration(days: 7 * (1 - w)));
+    for (int w = 0; w < 12; w++) {
+      final weekStart = thisWeekStart.subtract(Duration(days: 7 * (11 - w)));
       final weekKey = du.dateKeyOf(weekStart);
       for (final sid in studentIds) {
         final hid = studentHalaqa[sid]!;

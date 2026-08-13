@@ -8,7 +8,7 @@ import '../../core/utils/date_utils.dart' as du;
 import '../../shared/providers/providers.dart';
 import '../../shared/widgets/common_widgets.dart';
 
-/// نموذج التسجيل اليومي للمعلم — يطابق أعمدة كشف «متابعة ربط الأخ القرآني».
+/// نموذج التسجيل اليومي للمعلم — يطابق أعمدة كشف «متابعة الحفظ والمراجعة».
 class DailyEntryScreen extends ConsumerStatefulWidget {
   final String halaqaId;
   final String? studentId;

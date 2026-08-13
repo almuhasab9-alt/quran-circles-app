@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/enums.dart';
 import '../../core/database/app_database.dart';
+import '../../core/services/backup_ui_service.dart';
+import '../../core/services/pdf_report_service.dart';
 import '../../core/services/report_service.dart';
 import '../../core/services/session_service.dart';
 import '../../core/theme/app_theme.dart';
@@ -47,6 +49,50 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       }
     } finally {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  bool _exportingPdf = false;
+
+  String get _periodLabel => _period == 'week'
+      ? 'أسبوع ${du.formatDate(SessionService.weekStartOf(_weekRef))}'
+      : '${_monthsAr[_month - 1]} $_year';
+
+  /// تصدير التقرير الحالي (أسبوعي/شهري) كملف PDF عربي منسّق.
+  Future<void> _exportPdf() async {
+    final st = _student;
+    final report = _report;
+    if (st == null || report == null) return;
+    setState(() => _exportingPdf = true);
+    try {
+      final halaqa = await ref.read(halaqaRepoProvider).getById(st.halaqaId);
+      if (halaqa == null) throw StateError('تعذر العثور على بيانات الحلقة');
+      final title = _period == 'week' ? 'التقرير الأسبوعي' : 'التقرير الشهري';
+      final bytes = await PdfReportService.buildPeriodReportPdf(
+        title: title,
+        periodLabel: _periodLabel,
+        student: st,
+        halaqa: halaqa,
+        report: report,
+      );
+      final name = 'تقرير_${_period == 'week' ? 'أسبوعي' : 'شهري'}_${st.studentCode}.pdf';
+      final ok = await BackupUiService(ref.read(backupServiceProvider))
+          .deliverPublic(name, bytes, 'application/pdf');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(ok ? 'تم إنشاء ملف PDF: $name' : 'تعذر تسليم ملف PDF'),
+          backgroundColor: ok ? AppColors.success : AppColors.danger,
+        ));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('فشل إنشاء PDF: $e'),
+          backgroundColor: AppColors.danger,
+        ));
+      }
+    } finally {
+      if (mounted) setState(() => _exportingPdf = false);
     }
   }
 
@@ -113,6 +159,17 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
           label: Text(_loading ? 'جارٍ الإنشاء...' : 'إنشاء التقرير'),
           style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
         ),
+        if (_report != null && _student != null) ...[
+          const SizedBox(height: 10),
+          OutlinedButton.icon(
+            onPressed: _exportingPdf ? null : _exportPdf,
+            icon: _exportingPdf
+                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(Icons.picture_as_pdf),
+            label: const Text('تصدير التقرير PDF'),
+            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(44)),
+          ),
+        ],
         const SizedBox(height: 16),
 
         if (_loading) const Center(child: CircularProgressIndicator()),

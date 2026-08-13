@@ -27,6 +27,10 @@ dependencies:
   share_plus: ^10.0.2
   csv: ^6.0.0
   shared_preferences: ^2.3.2
+  pdf: ^3.12.0
+  archive: ^4.0.9
+  universal_io: ^2.3.1
+  universal_html: ^2.3.0
 
 dev_dependencies:
   flutter_test:
@@ -58,3 +62,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/fonts/

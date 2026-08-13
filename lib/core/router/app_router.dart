@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/services/backup_service.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/demo_auth/demo_login_screen.dart';
 import '../../features/halaqas/halaqa_detail_screen.dart';
@@ -54,6 +55,112 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
+/// شريط تنبيه تلقائي: يظهر أعلى الشاشة إذا مرّ وقت النسخ الاحتياطي
+/// دون أن يقوم المعلم/المشرف بالنسخ، ويشغّل النسخ الآلي عند الحاجة.
+class _BackupReminderBanner extends ConsumerStatefulWidget {
+  const _BackupReminderBanner();
+
+  @override
+  ConsumerState<_BackupReminderBanner> createState() =>
+      _BackupReminderBannerState();
+}
+
+class _BackupReminderBannerState extends ConsumerState<_BackupReminderBanner> {
+  bool _dismissed = false;
+  bool _autoRan = false;
+  bool _exporting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // النسخ الاحتياطي الآلي عند حلول وقته (مرة واحدة لكل جلسة)
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeAutoBackup());
+  }
+
+  Future<void> _maybeAutoBackup() async {
+    if (_autoRan) return;
+    _autoRan = true;
+    final session = ref.read(sessionProvider);
+    final teacherId = session != null && session.isTeacher ? session.userId : null;
+    try {
+      final msg = await ref
+          .read(backupUiServiceProvider)
+          .runAutoBackupIfDue(teacherId: teacherId);
+      await ref.read(backupSettingsProvider.notifier).reload();
+      if (msg != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg), backgroundColor: const Color(0xFF0B5E48)),
+        );
+      }
+    } catch (_) {/* تجاهل — لا نعطل التطبيق */}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = ref.watch(backupSettingsProvider);
+    if (_dismissed || !settings.isOverdue) return const SizedBox.shrink();
+
+    final periodText = settings.reminder == BackupReminder.daily ? 'يومي' : 'أسبوعي';
+    final lastText = settings.lastBackupAt == null
+        ? 'لم يتم إنشاء أي نسخة بعد'
+        : 'آخر نسخة: ${settings.lastBackupAt!.toIso8601String().substring(0, 10)}';
+
+    return Material(
+      color: const Color(0xFFFFF3E0),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: Color(0xFFE65100), width: 1)),
+        ),
+        child: Row(children: [
+          const Icon(Icons.backup_outlined, color: Color(0xFFE65100), size: 22),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'حان وقت النسخ الاحتياطي ($periodText) — $lastText',
+              style: const TextStyle(fontSize: 12, color: Color(0xFF6D4C00)),
+            ),
+          ),
+          TextButton.icon(
+            onPressed: _exporting
+                ? null
+                : () async {
+                    setState(() => _exporting = true);
+                    final messenger = ScaffoldMessenger.of(context);
+                    final session = ref.read(sessionProvider);
+                    final teacherId =
+                        session != null && session.isTeacher ? session.userId : null;
+                    final name = await ref
+                        .read(backupUiServiceProvider)
+                        .exportAndDeliver(teacherId: teacherId);
+                    await ref.read(backupSettingsProvider.notifier).reload();
+                    if (!mounted) return;
+                    setState(() => _exporting = false);
+                    if (name != null) {
+                      messenger.showSnackBar(
+                        SnackBar(content: Text('تم إنشاء النسخة الاحتياطية: $name')),
+                      );
+                    }
+                  },
+            icon: _exporting
+                ? const SizedBox(
+                    width: 14, height: 14,
+                    child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(Icons.download, size: 18),
+            label: const Text('نسخ الآن', style: TextStyle(fontSize: 12)),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, size: 18),
+            tooltip: 'إخفاء',
+            onPressed: () => setState(() => _dismissed = true),
+          ),
+        ]),
+      ),
+    );
+  }
+}
+
 class HomeShell extends ConsumerWidget {
   final Widget child;
   const HomeShell({super.key, required this.child});
@@ -78,6 +185,7 @@ class HomeShell extends ConsumerWidget {
     return Scaffold(
       body: Column(children: [
         const SafeArea(bottom: false, child: DemoBadge()),
+        const _BackupReminderBanner(),
         Expanded(child: child),
       ]),
       bottomNavigationBar: NavigationBar(
