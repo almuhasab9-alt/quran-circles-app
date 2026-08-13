@@ -63,9 +63,9 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
         createdAt: drift.Value(now), updatedAt: drift.Value(now),
       ));
     } else {
-      await repo.updateEntity(s.copyWith(fullName: nameCtrl.text.trim(), halaqaId: halaqaId!, level: level, updatedAt: now));
+      await repo.update(s.copyWith(fullName: nameCtrl.text.trim(), halaqaId: halaqaId!, level: level, updatedAt: now).toCompanion(true));
     }
-    ref.read(dataVersionProvider.notifier).state++;
+    bumpDataVersion(ref);
   }
 
   Future<void> _transfer(Student s) async {
@@ -74,19 +74,31 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
     String? target;
     final ok = await showDialog<bool>(context: context, builder: (ctx) => StatefulBuilder(builder: (ctx, setD) => AlertDialog(
       title: Text('نقل ${s.fullName}'),
-      content: DropdownButtonFormField<String>(
-        decoration: const InputDecoration(labelText: 'إلى الحلقة'), initialValue: target, isExpanded: true,
-        items: halaqas.map((h) => DropdownMenuItem(value: h.id, child: Text(h.name, overflow: TextOverflow.ellipsis))).toList(),
-        onChanged: (v) => setD(() => target = v),
-      ),
+      content: Column(mainAxisSize: MainAxisSize.min, children: [
+        const Text('ستنتقل كل بيانات الطالب (سجلاته وخططه) إلى الحلقة الجديدة.', style: TextStyle(fontSize: 12, color: Colors.black54)),
+        const SizedBox(height: 12),
+        DropdownButtonFormField<String>(
+          decoration: const InputDecoration(labelText: 'إلى الحلقة'), initialValue: target, isExpanded: true,
+          items: halaqas.map((h) => DropdownMenuItem(value: h.id, child: Text(h.name, overflow: TextOverflow.ellipsis))).toList(),
+          onChanged: (v) => setD(() => target = v),
+        ),
+      ]),
       actions: [
         TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('إلغاء')),
         FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('نقل')),
       ],
     )));
     if (ok == true && target != null) {
-      await ref.read(studentRepoProvider).transfer(s.id, target!, ref.read(sessionProvider)?.userId ?? 'demo');
-      ref.read(dataVersionProvider.notifier).state++;
+      final res = await ref.read(transferServiceProvider).transferStudent(
+        studentId: s.id, toHalaqaId: target!,
+        byUserId: ref.read(sessionProvider)?.userId ?? 'demo',
+      );
+      if (!mounted) return;
+      bumpDataVersion(ref);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(res.ok ? 'تم نقل ${s.fullName} بنجاح مع كل بياناته' : res.error ?? 'فشل النقل'),
+        backgroundColor: res.ok ? AppColors.success : AppColors.danger,
+      ));
     }
   }
 
@@ -94,10 +106,10 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
   Widget build(BuildContext context) {
     final studentsAsync = ref.watch(studentsProvider);
     final halaqasAsync = ref.watch(halaqasProvider);
-    final isAdmin = ref.watch(sessionProvider)?.role != 'teacher';
+    final isSupervisor = ref.watch(sessionProvider)?.isSupervisor ?? false;
     return Scaffold(
       appBar: AppBar(title: const Text('إدارة الطلاب')),
-      floatingActionButton: isAdmin ? FloatingActionButton.extended(
+      floatingActionButton: isSupervisor ? FloatingActionButton.extended(
         onPressed: () => _showStudentDialog(), icon: const Icon(Icons.person_add), label: const Text('طالب')) : null,
       body: Column(children: [
         Padding(padding: const EdgeInsets.all(12), child: Column(children: [
@@ -142,12 +154,12 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
                     title: Text(s.fullName, overflow: TextOverflow.ellipsis),
                     subtitle: Text('${s.studentCode} • $hName • ${s.level}', overflow: TextOverflow.ellipsis),
                     onTap: () => context.push('/student/${s.id}'),
-                    trailing: isAdmin ? PopupMenuButton<String>(onSelected: (v) async {
+                    trailing: isSupervisor ? PopupMenuButton<String>(onSelected: (v) async {
                       if (v == 'edit') await _showStudentDialog(s);
                       if (v == 'transfer') await _transfer(s);
                       if (v == 'disable') {
                         await ref.read(studentRepoProvider).deactivate(s.id);
-                        ref.read(dataVersionProvider.notifier).state++;
+                        bumpDataVersion(ref);
                       }
                     }, itemBuilder: (_) => const [
                       PopupMenuItem(value: 'edit', child: Text('تعديل')),

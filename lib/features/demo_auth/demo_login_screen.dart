@@ -15,7 +15,7 @@ class DemoLoginScreen extends ConsumerStatefulWidget {
 }
 
 class _DemoLoginScreenState extends ConsumerState<DemoLoginScreen> {
-  UserRole role = UserRole.admin;
+  UserRole role = UserRole.teacher;
   User? selectedUser;
   List<User> users = [];
   final nameCtrl = TextEditingController();
@@ -76,9 +76,8 @@ class _DemoLoginScreenState extends ConsumerState<DemoLoginScreen> {
                     const SizedBox(height: 20),
                     SegmentedButton<UserRole>(
                       segments: const [
-                        ButtonSegment(value: UserRole.admin, label: Text('مدير'), icon: Icon(Icons.manage_accounts)),
-                        ButtonSegment(value: UserRole.supervisor, label: Text('مشرف'), icon: Icon(Icons.supervisor_account)),
                         ButtonSegment(value: UserRole.teacher, label: Text('معلم'), icon: Icon(Icons.school)),
+                        ButtonSegment(value: UserRole.supervisor, label: Text('مشرف'), icon: Icon(Icons.supervisor_account)),
                       ],
                       selected: {role},
                       onSelectionChanged: (s) {

@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart';
 import '../database/app_database.dart';
 import '../../shared/models/repositories.dart';
 
@@ -10,7 +9,6 @@ class DemoAuthRepository implements IAuthRepository {
 
   Future<List<User>> demoUsersByRole(String role) =>
       (db.select(db.users)..where((u) => u.role.equals(role) & u.active.equals(true))).get();
-
 
   // دخول تجريبي: يختار المستخدم حساباً جاهزاً، لا توجد كلمة مرور
   Future<User?> demoSignIn(String userId) async {
@@ -24,20 +22,7 @@ class DemoAuthRepository implements IAuthRepository {
   @override
   Future<void> signOut() async => _current = null;
 
-  // الواجهات المستقبلية — غير مفعلة حالياً
   @override
   Future<User?> signIn({required String username, required String password}) =>
       throw UnimplementedError('تسجيل الدخول الآمن لم يتم تفعيله بعد');
-
-  @override
-  Future<void> resetPassword(String username) =>
-      throw UnimplementedError('غير مفعل في الوضع التجريبي');
-
-  @override
-  Future<void> changePassword(String oldPassword, String newPassword) =>
-      throw UnimplementedError('غير مفعل في الوضع التجريبي');
-
-  @override
-  Future<User?> createUserByAdmin({required String fullName, required String username, required String role}) =>
-      throw UnimplementedError('غير مفعل في الوضع التجريبي');
 }

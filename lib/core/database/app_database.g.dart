@@ -433,445 +433,6 @@ class UsersCompanion extends UpdateCompanion<User> {
   }
 }
 
-class $GuardiansTable extends Guardians
-    with TableInfo<$GuardiansTable, Guardian> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $GuardiansTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
-      'id', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _fullNameMeta =
-      const VerificationMeta('fullName');
-  @override
-  late final GeneratedColumn<String> fullName = GeneratedColumn<String>(
-      'full_name', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _relationMeta =
-      const VerificationMeta('relation');
-  @override
-  late final GeneratedColumn<String> relation = GeneratedColumn<String>(
-      'relation', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant('والد'));
-  static const VerificationMeta _primaryPhoneMeta =
-      const VerificationMeta('primaryPhone');
-  @override
-  late final GeneratedColumn<String> primaryPhone = GeneratedColumn<String>(
-      'primary_phone', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _whatsappPhoneMeta =
-      const VerificationMeta('whatsappPhone');
-  @override
-  late final GeneratedColumn<String> whatsappPhone = GeneratedColumn<String>(
-      'whatsapp_phone', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(''));
-  static const VerificationMeta _secondaryPhoneMeta =
-      const VerificationMeta('secondaryPhone');
-  @override
-  late final GeneratedColumn<String> secondaryPhone = GeneratedColumn<String>(
-      'secondary_phone', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(''));
-  static const VerificationMeta _preferredContactMeta =
-      const VerificationMeta('preferredContact');
-  @override
-  late final GeneratedColumn<String> preferredContact = GeneratedColumn<String>(
-      'preferred_contact', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant('whatsapp'));
-  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
-  @override
-  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
-      'notes', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(''));
-  @override
-  List<GeneratedColumn> get $columns => [
-        id,
-        fullName,
-        relation,
-        primaryPhone,
-        whatsappPhone,
-        secondaryPhone,
-        preferredContact,
-        notes
-      ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'guardians';
-  @override
-  VerificationContext validateIntegrity(Insertable<Guardian> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
-    }
-    if (data.containsKey('full_name')) {
-      context.handle(_fullNameMeta,
-          fullName.isAcceptableOrUnknown(data['full_name']!, _fullNameMeta));
-    } else if (isInserting) {
-      context.missing(_fullNameMeta);
-    }
-    if (data.containsKey('relation')) {
-      context.handle(_relationMeta,
-          relation.isAcceptableOrUnknown(data['relation']!, _relationMeta));
-    }
-    if (data.containsKey('primary_phone')) {
-      context.handle(
-          _primaryPhoneMeta,
-          primaryPhone.isAcceptableOrUnknown(
-              data['primary_phone']!, _primaryPhoneMeta));
-    } else if (isInserting) {
-      context.missing(_primaryPhoneMeta);
-    }
-    if (data.containsKey('whatsapp_phone')) {
-      context.handle(
-          _whatsappPhoneMeta,
-          whatsappPhone.isAcceptableOrUnknown(
-              data['whatsapp_phone']!, _whatsappPhoneMeta));
-    }
-    if (data.containsKey('secondary_phone')) {
-      context.handle(
-          _secondaryPhoneMeta,
-          secondaryPhone.isAcceptableOrUnknown(
-              data['secondary_phone']!, _secondaryPhoneMeta));
-    }
-    if (data.containsKey('preferred_contact')) {
-      context.handle(
-          _preferredContactMeta,
-          preferredContact.isAcceptableOrUnknown(
-              data['preferred_contact']!, _preferredContactMeta));
-    }
-    if (data.containsKey('notes')) {
-      context.handle(
-          _notesMeta, notes.isAcceptableOrUnknown(data['notes']!, _notesMeta));
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  Guardian map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Guardian(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
-      fullName: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}full_name'])!,
-      relation: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}relation'])!,
-      primaryPhone: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}primary_phone'])!,
-      whatsappPhone: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}whatsapp_phone'])!,
-      secondaryPhone: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}secondary_phone'])!,
-      preferredContact: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}preferred_contact'])!,
-      notes: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}notes'])!,
-    );
-  }
-
-  @override
-  $GuardiansTable createAlias(String alias) {
-    return $GuardiansTable(attachedDatabase, alias);
-  }
-}
-
-class Guardian extends DataClass implements Insertable<Guardian> {
-  final String id;
-  final String fullName;
-  final String relation;
-  final String primaryPhone;
-  final String whatsappPhone;
-  final String secondaryPhone;
-  final String preferredContact;
-  final String notes;
-  const Guardian(
-      {required this.id,
-      required this.fullName,
-      required this.relation,
-      required this.primaryPhone,
-      required this.whatsappPhone,
-      required this.secondaryPhone,
-      required this.preferredContact,
-      required this.notes});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
-    map['full_name'] = Variable<String>(fullName);
-    map['relation'] = Variable<String>(relation);
-    map['primary_phone'] = Variable<String>(primaryPhone);
-    map['whatsapp_phone'] = Variable<String>(whatsappPhone);
-    map['secondary_phone'] = Variable<String>(secondaryPhone);
-    map['preferred_contact'] = Variable<String>(preferredContact);
-    map['notes'] = Variable<String>(notes);
-    return map;
-  }
-
-  GuardiansCompanion toCompanion(bool nullToAbsent) {
-    return GuardiansCompanion(
-      id: Value(id),
-      fullName: Value(fullName),
-      relation: Value(relation),
-      primaryPhone: Value(primaryPhone),
-      whatsappPhone: Value(whatsappPhone),
-      secondaryPhone: Value(secondaryPhone),
-      preferredContact: Value(preferredContact),
-      notes: Value(notes),
-    );
-  }
-
-  factory Guardian.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Guardian(
-      id: serializer.fromJson<String>(json['id']),
-      fullName: serializer.fromJson<String>(json['fullName']),
-      relation: serializer.fromJson<String>(json['relation']),
-      primaryPhone: serializer.fromJson<String>(json['primaryPhone']),
-      whatsappPhone: serializer.fromJson<String>(json['whatsappPhone']),
-      secondaryPhone: serializer.fromJson<String>(json['secondaryPhone']),
-      preferredContact: serializer.fromJson<String>(json['preferredContact']),
-      notes: serializer.fromJson<String>(json['notes']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
-      'fullName': serializer.toJson<String>(fullName),
-      'relation': serializer.toJson<String>(relation),
-      'primaryPhone': serializer.toJson<String>(primaryPhone),
-      'whatsappPhone': serializer.toJson<String>(whatsappPhone),
-      'secondaryPhone': serializer.toJson<String>(secondaryPhone),
-      'preferredContact': serializer.toJson<String>(preferredContact),
-      'notes': serializer.toJson<String>(notes),
-    };
-  }
-
-  Guardian copyWith(
-          {String? id,
-          String? fullName,
-          String? relation,
-          String? primaryPhone,
-          String? whatsappPhone,
-          String? secondaryPhone,
-          String? preferredContact,
-          String? notes}) =>
-      Guardian(
-        id: id ?? this.id,
-        fullName: fullName ?? this.fullName,
-        relation: relation ?? this.relation,
-        primaryPhone: primaryPhone ?? this.primaryPhone,
-        whatsappPhone: whatsappPhone ?? this.whatsappPhone,
-        secondaryPhone: secondaryPhone ?? this.secondaryPhone,
-        preferredContact: preferredContact ?? this.preferredContact,
-        notes: notes ?? this.notes,
-      );
-  Guardian copyWithCompanion(GuardiansCompanion data) {
-    return Guardian(
-      id: data.id.present ? data.id.value : this.id,
-      fullName: data.fullName.present ? data.fullName.value : this.fullName,
-      relation: data.relation.present ? data.relation.value : this.relation,
-      primaryPhone: data.primaryPhone.present
-          ? data.primaryPhone.value
-          : this.primaryPhone,
-      whatsappPhone: data.whatsappPhone.present
-          ? data.whatsappPhone.value
-          : this.whatsappPhone,
-      secondaryPhone: data.secondaryPhone.present
-          ? data.secondaryPhone.value
-          : this.secondaryPhone,
-      preferredContact: data.preferredContact.present
-          ? data.preferredContact.value
-          : this.preferredContact,
-      notes: data.notes.present ? data.notes.value : this.notes,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('Guardian(')
-          ..write('id: $id, ')
-          ..write('fullName: $fullName, ')
-          ..write('relation: $relation, ')
-          ..write('primaryPhone: $primaryPhone, ')
-          ..write('whatsappPhone: $whatsappPhone, ')
-          ..write('secondaryPhone: $secondaryPhone, ')
-          ..write('preferredContact: $preferredContact, ')
-          ..write('notes: $notes')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(id, fullName, relation, primaryPhone,
-      whatsappPhone, secondaryPhone, preferredContact, notes);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is Guardian &&
-          other.id == this.id &&
-          other.fullName == this.fullName &&
-          other.relation == this.relation &&
-          other.primaryPhone == this.primaryPhone &&
-          other.whatsappPhone == this.whatsappPhone &&
-          other.secondaryPhone == this.secondaryPhone &&
-          other.preferredContact == this.preferredContact &&
-          other.notes == this.notes);
-}
-
-class GuardiansCompanion extends UpdateCompanion<Guardian> {
-  final Value<String> id;
-  final Value<String> fullName;
-  final Value<String> relation;
-  final Value<String> primaryPhone;
-  final Value<String> whatsappPhone;
-  final Value<String> secondaryPhone;
-  final Value<String> preferredContact;
-  final Value<String> notes;
-  final Value<int> rowid;
-  const GuardiansCompanion({
-    this.id = const Value.absent(),
-    this.fullName = const Value.absent(),
-    this.relation = const Value.absent(),
-    this.primaryPhone = const Value.absent(),
-    this.whatsappPhone = const Value.absent(),
-    this.secondaryPhone = const Value.absent(),
-    this.preferredContact = const Value.absent(),
-    this.notes = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  GuardiansCompanion.insert({
-    required String id,
-    required String fullName,
-    this.relation = const Value.absent(),
-    required String primaryPhone,
-    this.whatsappPhone = const Value.absent(),
-    this.secondaryPhone = const Value.absent(),
-    this.preferredContact = const Value.absent(),
-    this.notes = const Value.absent(),
-    this.rowid = const Value.absent(),
-  })  : id = Value(id),
-        fullName = Value(fullName),
-        primaryPhone = Value(primaryPhone);
-  static Insertable<Guardian> custom({
-    Expression<String>? id,
-    Expression<String>? fullName,
-    Expression<String>? relation,
-    Expression<String>? primaryPhone,
-    Expression<String>? whatsappPhone,
-    Expression<String>? secondaryPhone,
-    Expression<String>? preferredContact,
-    Expression<String>? notes,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (fullName != null) 'full_name': fullName,
-      if (relation != null) 'relation': relation,
-      if (primaryPhone != null) 'primary_phone': primaryPhone,
-      if (whatsappPhone != null) 'whatsapp_phone': whatsappPhone,
-      if (secondaryPhone != null) 'secondary_phone': secondaryPhone,
-      if (preferredContact != null) 'preferred_contact': preferredContact,
-      if (notes != null) 'notes': notes,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  GuardiansCompanion copyWith(
-      {Value<String>? id,
-      Value<String>? fullName,
-      Value<String>? relation,
-      Value<String>? primaryPhone,
-      Value<String>? whatsappPhone,
-      Value<String>? secondaryPhone,
-      Value<String>? preferredContact,
-      Value<String>? notes,
-      Value<int>? rowid}) {
-    return GuardiansCompanion(
-      id: id ?? this.id,
-      fullName: fullName ?? this.fullName,
-      relation: relation ?? this.relation,
-      primaryPhone: primaryPhone ?? this.primaryPhone,
-      whatsappPhone: whatsappPhone ?? this.whatsappPhone,
-      secondaryPhone: secondaryPhone ?? this.secondaryPhone,
-      preferredContact: preferredContact ?? this.preferredContact,
-      notes: notes ?? this.notes,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<String>(id.value);
-    }
-    if (fullName.present) {
-      map['full_name'] = Variable<String>(fullName.value);
-    }
-    if (relation.present) {
-      map['relation'] = Variable<String>(relation.value);
-    }
-    if (primaryPhone.present) {
-      map['primary_phone'] = Variable<String>(primaryPhone.value);
-    }
-    if (whatsappPhone.present) {
-      map['whatsapp_phone'] = Variable<String>(whatsappPhone.value);
-    }
-    if (secondaryPhone.present) {
-      map['secondary_phone'] = Variable<String>(secondaryPhone.value);
-    }
-    if (preferredContact.present) {
-      map['preferred_contact'] = Variable<String>(preferredContact.value);
-    }
-    if (notes.present) {
-      map['notes'] = Variable<String>(notes.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('GuardiansCompanion(')
-          ..write('id: $id, ')
-          ..write('fullName: $fullName, ')
-          ..write('relation: $relation, ')
-          ..write('primaryPhone: $primaryPhone, ')
-          ..write('whatsappPhone: $whatsappPhone, ')
-          ..write('secondaryPhone: $secondaryPhone, ')
-          ..write('preferredContact: $preferredContact, ')
-          ..write('notes: $notes, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class $HalaqasTable extends Halaqas with TableInfo<$HalaqasTable, Halaqa> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -891,7 +452,9 @@ class $HalaqasTable extends Halaqas with TableInfo<$HalaqasTable, Halaqa> {
   @override
   late final GeneratedColumn<String> level = GeneratedColumn<String>(
       'level', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(''));
   static const VerificationMeta _teacherIdsMeta =
       const VerificationMeta('teacherIds');
   @override
@@ -968,8 +531,6 @@ class $HalaqasTable extends Halaqas with TableInfo<$HalaqasTable, Halaqa> {
     if (data.containsKey('level')) {
       context.handle(
           _levelMeta, level.isAcceptableOrUnknown(data['level']!, _levelMeta));
-    } else if (isInserting) {
-      context.missing(_levelMeta);
     }
     if (data.containsKey('teacher_ids')) {
       context.handle(
@@ -1199,7 +760,7 @@ class HalaqasCompanion extends UpdateCompanion<Halaqa> {
   HalaqasCompanion.insert({
     required String id,
     required String name,
-    required String level,
+    this.level = const Value.absent(),
     this.teacherIds = const Value.absent(),
     this.supervisorId = const Value.absent(),
     this.capacity = const Value.absent(),
@@ -1207,8 +768,7 @@ class HalaqasCompanion extends UpdateCompanion<Halaqa> {
     this.active = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
-        name = Value(name),
-        level = Value(level);
+        name = Value(name);
   static Insertable<Halaqa> custom({
     Expression<String>? id,
     Expression<String>? name,
@@ -1357,14 +917,6 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
   late final GeneratedColumn<DateTime> joinDate = GeneratedColumn<DateTime>(
       'join_date', aliasedName, false,
       type: DriftSqlType.dateTime, requiredDuringInsert: true);
-  static const VerificationMeta _guardianIdsMeta =
-      const VerificationMeta('guardianIds');
-  @override
-  late final GeneratedColumn<String> guardianIds = GeneratedColumn<String>(
-      'guardian_ids', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(''));
   static const VerificationMeta _internalNotesMeta =
       const VerificationMeta('internalNotes');
   @override
@@ -1394,7 +946,6 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
         level,
         active,
         joinDate,
-        guardianIds,
         internalNotes,
         createdAt,
         updatedAt
@@ -1448,12 +999,6 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
     } else if (isInserting) {
       context.missing(_joinDateMeta);
     }
-    if (data.containsKey('guardian_ids')) {
-      context.handle(
-          _guardianIdsMeta,
-          guardianIds.isAcceptableOrUnknown(
-              data['guardian_ids']!, _guardianIdsMeta));
-    }
     if (data.containsKey('internal_notes')) {
       context.handle(
           _internalNotesMeta,
@@ -1495,8 +1040,6 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
           .read(DriftSqlType.bool, data['${effectivePrefix}active'])!,
       joinDate: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}join_date'])!,
-      guardianIds: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}guardian_ids'])!,
       internalNotes: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}internal_notes'])!,
       createdAt: attachedDatabase.typeMapping
@@ -1520,7 +1063,6 @@ class Student extends DataClass implements Insertable<Student> {
   final String level;
   final bool active;
   final DateTime joinDate;
-  final String guardianIds;
   final String internalNotes;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -1532,7 +1074,6 @@ class Student extends DataClass implements Insertable<Student> {
       required this.level,
       required this.active,
       required this.joinDate,
-      required this.guardianIds,
       required this.internalNotes,
       required this.createdAt,
       required this.updatedAt});
@@ -1546,7 +1087,6 @@ class Student extends DataClass implements Insertable<Student> {
     map['level'] = Variable<String>(level);
     map['active'] = Variable<bool>(active);
     map['join_date'] = Variable<DateTime>(joinDate);
-    map['guardian_ids'] = Variable<String>(guardianIds);
     map['internal_notes'] = Variable<String>(internalNotes);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -1562,7 +1102,6 @@ class Student extends DataClass implements Insertable<Student> {
       level: Value(level),
       active: Value(active),
       joinDate: Value(joinDate),
-      guardianIds: Value(guardianIds),
       internalNotes: Value(internalNotes),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -1580,7 +1119,6 @@ class Student extends DataClass implements Insertable<Student> {
       level: serializer.fromJson<String>(json['level']),
       active: serializer.fromJson<bool>(json['active']),
       joinDate: serializer.fromJson<DateTime>(json['joinDate']),
-      guardianIds: serializer.fromJson<String>(json['guardianIds']),
       internalNotes: serializer.fromJson<String>(json['internalNotes']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -1597,7 +1135,6 @@ class Student extends DataClass implements Insertable<Student> {
       'level': serializer.toJson<String>(level),
       'active': serializer.toJson<bool>(active),
       'joinDate': serializer.toJson<DateTime>(joinDate),
-      'guardianIds': serializer.toJson<String>(guardianIds),
       'internalNotes': serializer.toJson<String>(internalNotes),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -1612,7 +1149,6 @@ class Student extends DataClass implements Insertable<Student> {
           String? level,
           bool? active,
           DateTime? joinDate,
-          String? guardianIds,
           String? internalNotes,
           DateTime? createdAt,
           DateTime? updatedAt}) =>
@@ -1624,7 +1160,6 @@ class Student extends DataClass implements Insertable<Student> {
         level: level ?? this.level,
         active: active ?? this.active,
         joinDate: joinDate ?? this.joinDate,
-        guardianIds: guardianIds ?? this.guardianIds,
         internalNotes: internalNotes ?? this.internalNotes,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
@@ -1639,8 +1174,6 @@ class Student extends DataClass implements Insertable<Student> {
       level: data.level.present ? data.level.value : this.level,
       active: data.active.present ? data.active.value : this.active,
       joinDate: data.joinDate.present ? data.joinDate.value : this.joinDate,
-      guardianIds:
-          data.guardianIds.present ? data.guardianIds.value : this.guardianIds,
       internalNotes: data.internalNotes.present
           ? data.internalNotes.value
           : this.internalNotes,
@@ -1659,7 +1192,6 @@ class Student extends DataClass implements Insertable<Student> {
           ..write('level: $level, ')
           ..write('active: $active, ')
           ..write('joinDate: $joinDate, ')
-          ..write('guardianIds: $guardianIds, ')
           ..write('internalNotes: $internalNotes, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -1669,7 +1201,7 @@ class Student extends DataClass implements Insertable<Student> {
 
   @override
   int get hashCode => Object.hash(id, studentCode, fullName, halaqaId, level,
-      active, joinDate, guardianIds, internalNotes, createdAt, updatedAt);
+      active, joinDate, internalNotes, createdAt, updatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1681,7 +1213,6 @@ class Student extends DataClass implements Insertable<Student> {
           other.level == this.level &&
           other.active == this.active &&
           other.joinDate == this.joinDate &&
-          other.guardianIds == this.guardianIds &&
           other.internalNotes == this.internalNotes &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
@@ -1695,7 +1226,6 @@ class StudentsCompanion extends UpdateCompanion<Student> {
   final Value<String> level;
   final Value<bool> active;
   final Value<DateTime> joinDate;
-  final Value<String> guardianIds;
   final Value<String> internalNotes;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -1708,7 +1238,6 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     this.level = const Value.absent(),
     this.active = const Value.absent(),
     this.joinDate = const Value.absent(),
-    this.guardianIds = const Value.absent(),
     this.internalNotes = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -1722,7 +1251,6 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     this.level = const Value.absent(),
     this.active = const Value.absent(),
     required DateTime joinDate,
-    this.guardianIds = const Value.absent(),
     this.internalNotes = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
@@ -1742,7 +1270,6 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     Expression<String>? level,
     Expression<bool>? active,
     Expression<DateTime>? joinDate,
-    Expression<String>? guardianIds,
     Expression<String>? internalNotes,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -1756,7 +1283,6 @@ class StudentsCompanion extends UpdateCompanion<Student> {
       if (level != null) 'level': level,
       if (active != null) 'active': active,
       if (joinDate != null) 'join_date': joinDate,
-      if (guardianIds != null) 'guardian_ids': guardianIds,
       if (internalNotes != null) 'internal_notes': internalNotes,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -1772,7 +1298,6 @@ class StudentsCompanion extends UpdateCompanion<Student> {
       Value<String>? level,
       Value<bool>? active,
       Value<DateTime>? joinDate,
-      Value<String>? guardianIds,
       Value<String>? internalNotes,
       Value<DateTime>? createdAt,
       Value<DateTime>? updatedAt,
@@ -1785,7 +1310,6 @@ class StudentsCompanion extends UpdateCompanion<Student> {
       level: level ?? this.level,
       active: active ?? this.active,
       joinDate: joinDate ?? this.joinDate,
-      guardianIds: guardianIds ?? this.guardianIds,
       internalNotes: internalNotes ?? this.internalNotes,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -1817,9 +1341,6 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     if (joinDate.present) {
       map['join_date'] = Variable<DateTime>(joinDate.value);
     }
-    if (guardianIds.present) {
-      map['guardian_ids'] = Variable<String>(guardianIds.value);
-    }
     if (internalNotes.present) {
       map['internal_notes'] = Variable<String>(internalNotes.value);
     }
@@ -1845,7 +1366,6 @@ class StudentsCompanion extends UpdateCompanion<Student> {
           ..write('level: $level, ')
           ..write('active: $active, ')
           ..write('joinDate: $joinDate, ')
-          ..write('guardianIds: $guardianIds, ')
           ..write('internalNotes: $internalNotes, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -1897,178 +1417,132 @@ class $DailyRecordsTable extends DailyRecords
   late final GeneratedColumn<String> dateKey = GeneratedColumn<String>(
       'date_key', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _attendanceMeta =
-      const VerificationMeta('attendance');
+  static const VerificationMeta _weekdayMeta =
+      const VerificationMeta('weekday');
   @override
-  late final GeneratedColumn<String> attendance = GeneratedColumn<String>(
-      'attendance', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant('present'));
-  static const VerificationMeta _fromSurahMeta =
-      const VerificationMeta('fromSurah');
+  late final GeneratedColumn<int> weekday = GeneratedColumn<int>(
+      'weekday', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _isFridayMeta =
+      const VerificationMeta('isFriday');
   @override
-  late final GeneratedColumn<String> fromSurah = GeneratedColumn<String>(
-      'from_surah', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(''));
-  static const VerificationMeta _fromAyahMeta =
-      const VerificationMeta('fromAyah');
-  @override
-  late final GeneratedColumn<int> fromAyah = GeneratedColumn<int>(
-      'from_ayah', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
-  static const VerificationMeta _toSurahMeta =
-      const VerificationMeta('toSurah');
-  @override
-  late final GeneratedColumn<String> toSurah = GeneratedColumn<String>(
-      'to_surah', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(''));
-  static const VerificationMeta _toAyahMeta = const VerificationMeta('toAyah');
-  @override
-  late final GeneratedColumn<int> toAyah = GeneratedColumn<int>(
-      'to_ayah', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
-  static const VerificationMeta _estimatedPagesMeta =
-      const VerificationMeta('estimatedPages');
-  @override
-  late final GeneratedColumn<double> estimatedPages = GeneratedColumn<double>(
-      'estimated_pages', aliasedName, false,
-      type: DriftSqlType.double,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
-  static const VerificationMeta _revisionPlannedPagesMeta =
-      const VerificationMeta('revisionPlannedPages');
-  @override
-  late final GeneratedColumn<double> revisionPlannedPages =
-      GeneratedColumn<double>('revision_planned_pages', aliasedName, false,
-          type: DriftSqlType.double,
-          requiredDuringInsert: false,
-          defaultValue: const Constant(0));
-  static const VerificationMeta _revisionCompletedPagesMeta =
-      const VerificationMeta('revisionCompletedPages');
-  @override
-  late final GeneratedColumn<double> revisionCompletedPages =
-      GeneratedColumn<double>('revision_completed_pages', aliasedName, false,
-          type: DriftSqlType.double,
-          requiredDuringInsert: false,
-          defaultValue: const Constant(0));
-  static const VerificationMeta _revisionScoreMeta =
-      const VerificationMeta('revisionScore');
-  @override
-  late final GeneratedColumn<double> revisionScore = GeneratedColumn<double>(
-      'revision_score', aliasedName, false,
-      type: DriftSqlType.double,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
-  static const VerificationMeta _minorErrorsMeta =
-      const VerificationMeta('minorErrors');
-  @override
-  late final GeneratedColumn<int> minorErrors = GeneratedColumn<int>(
-      'minor_errors', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
-  static const VerificationMeta _mediumErrorsMeta =
-      const VerificationMeta('mediumErrors');
-  @override
-  late final GeneratedColumn<int> mediumErrors = GeneratedColumn<int>(
-      'medium_errors', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
-  static const VerificationMeta _majorErrorsMeta =
-      const VerificationMeta('majorErrors');
-  @override
-  late final GeneratedColumn<int> majorErrors = GeneratedColumn<int>(
-      'major_errors', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
-  static const VerificationMeta _selfCorrectionsMeta =
-      const VerificationMeta('selfCorrections');
-  @override
-  late final GeneratedColumn<int> selfCorrections = GeneratedColumn<int>(
-      'self_corrections', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
-  static const VerificationMeta _automaticScoreMeta =
-      const VerificationMeta('automaticScore');
-  @override
-  late final GeneratedColumn<double> automaticScore = GeneratedColumn<double>(
-      'automatic_score', aliasedName, false,
-      type: DriftSqlType.double,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
-  static const VerificationMeta _overrideScoreMeta =
-      const VerificationMeta('overrideScore');
-  @override
-  late final GeneratedColumn<double> overrideScore = GeneratedColumn<double>(
-      'override_score', aliasedName, true,
-      type: DriftSqlType.double, requiredDuringInsert: false);
-  static const VerificationMeta _overrideReasonMeta =
-      const VerificationMeta('overrideReason');
-  @override
-  late final GeneratedColumn<String> overrideReason = GeneratedColumn<String>(
-      'override_reason', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _homeworkStatusMeta =
-      const VerificationMeta('homeworkStatus');
-  @override
-  late final GeneratedColumn<String> homeworkStatus = GeneratedColumn<String>(
-      'homework_status', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant('completed'));
-  static const VerificationMeta _homeworkScoreMeta =
-      const VerificationMeta('homeworkScore');
-  @override
-  late final GeneratedColumn<double> homeworkScore = GeneratedColumn<double>(
-      'homework_score', aliasedName, false,
-      type: DriftSqlType.double,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
-  static const VerificationMeta _finalScoreMeta =
-      const VerificationMeta('finalScore');
-  @override
-  late final GeneratedColumn<double> finalScore = GeneratedColumn<double>(
-      'final_score', aliasedName, false,
-      type: DriftSqlType.double,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
-  static const VerificationMeta _levelMeta = const VerificationMeta('level');
-  @override
-  late final GeneratedColumn<String> level = GeneratedColumn<String>(
-      'level', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant('good'));
-  static const VerificationMeta _internalNoteMeta =
-      const VerificationMeta('internalNote');
-  @override
-  late final GeneratedColumn<String> internalNote = GeneratedColumn<String>(
-      'internal_note', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(''));
-  static const VerificationMeta _needsFollowUpMeta =
-      const VerificationMeta('needsFollowUp');
-  @override
-  late final GeneratedColumn<bool> needsFollowUp = GeneratedColumn<bool>(
-      'needs_follow_up', aliasedName, false,
+  late final GeneratedColumn<bool> isFriday = GeneratedColumn<bool>(
+      'is_friday', aliasedName, false,
       type: DriftSqlType.bool,
       requiredDuringInsert: false,
-      defaultConstraints: GeneratedColumn.constraintIsAlways(
-          'CHECK ("needs_follow_up" IN (0, 1))'),
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_friday" IN (0, 1))'),
       defaultValue: const Constant(false));
+  static const VerificationMeta _newFromSurahMeta =
+      const VerificationMeta('newFromSurah');
+  @override
+  late final GeneratedColumn<int> newFromSurah = GeneratedColumn<int>(
+      'new_from_surah', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _newFromAyahMeta =
+      const VerificationMeta('newFromAyah');
+  @override
+  late final GeneratedColumn<int> newFromAyah = GeneratedColumn<int>(
+      'new_from_ayah', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _newToSurahMeta =
+      const VerificationMeta('newToSurah');
+  @override
+  late final GeneratedColumn<int> newToSurah = GeneratedColumn<int>(
+      'new_to_surah', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _newToAyahMeta =
+      const VerificationMeta('newToAyah');
+  @override
+  late final GeneratedColumn<int> newToAyah = GeneratedColumn<int>(
+      'new_to_ayah', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _newPagesMeta =
+      const VerificationMeta('newPages');
+  @override
+  late final GeneratedColumn<double> newPages = GeneratedColumn<double>(
+      'new_pages', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _gradeMeta = const VerificationMeta('grade');
+  @override
+  late final GeneratedColumn<String> grade = GeneratedColumn<String>(
+      'grade', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(''));
+  static const VerificationMeta _repetitionMeta =
+      const VerificationMeta('repetition');
+  @override
+  late final GeneratedColumn<int> repetition = GeneratedColumn<int>(
+      'repetition', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _recentFromPageMeta =
+      const VerificationMeta('recentFromPage');
+  @override
+  late final GeneratedColumn<int> recentFromPage = GeneratedColumn<int>(
+      'recent_from_page', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _recentToPageMeta =
+      const VerificationMeta('recentToPage');
+  @override
+  late final GeneratedColumn<int> recentToPage = GeneratedColumn<int>(
+      'recent_to_page', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _minorFromPageMeta =
+      const VerificationMeta('minorFromPage');
+  @override
+  late final GeneratedColumn<int> minorFromPage = GeneratedColumn<int>(
+      'minor_from_page', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _minorToPageMeta =
+      const VerificationMeta('minorToPage');
+  @override
+  late final GeneratedColumn<int> minorToPage = GeneratedColumn<int>(
+      'minor_to_page', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _majorFromPageMeta =
+      const VerificationMeta('majorFromPage');
+  @override
+  late final GeneratedColumn<int> majorFromPage = GeneratedColumn<int>(
+      'major_from_page', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _majorToPageMeta =
+      const VerificationMeta('majorToPage');
+  @override
+  late final GeneratedColumn<int> majorToPage = GeneratedColumn<int>(
+      'major_to_page', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+      'notes', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(''));
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
@@ -2089,28 +1563,22 @@ class $DailyRecordsTable extends DailyRecords
         teacherId,
         date,
         dateKey,
-        attendance,
-        fromSurah,
-        fromAyah,
-        toSurah,
-        toAyah,
-        estimatedPages,
-        revisionPlannedPages,
-        revisionCompletedPages,
-        revisionScore,
-        minorErrors,
-        mediumErrors,
-        majorErrors,
-        selfCorrections,
-        automaticScore,
-        overrideScore,
-        overrideReason,
-        homeworkStatus,
-        homeworkScore,
-        finalScore,
-        level,
-        internalNote,
-        needsFollowUp,
+        weekday,
+        isFriday,
+        newFromSurah,
+        newFromAyah,
+        newToSurah,
+        newToAyah,
+        newPages,
+        grade,
+        repetition,
+        recentFromPage,
+        recentToPage,
+        minorFromPage,
+        minorToPage,
+        majorFromPage,
+        majorToPage,
+        notes,
         createdAt,
         updatedAt
       ];
@@ -2157,127 +1625,93 @@ class $DailyRecordsTable extends DailyRecords
     } else if (isInserting) {
       context.missing(_dateKeyMeta);
     }
-    if (data.containsKey('attendance')) {
+    if (data.containsKey('weekday')) {
+      context.handle(_weekdayMeta,
+          weekday.isAcceptableOrUnknown(data['weekday']!, _weekdayMeta));
+    } else if (isInserting) {
+      context.missing(_weekdayMeta);
+    }
+    if (data.containsKey('is_friday')) {
+      context.handle(_isFridayMeta,
+          isFriday.isAcceptableOrUnknown(data['is_friday']!, _isFridayMeta));
+    }
+    if (data.containsKey('new_from_surah')) {
       context.handle(
-          _attendanceMeta,
-          attendance.isAcceptableOrUnknown(
-              data['attendance']!, _attendanceMeta));
+          _newFromSurahMeta,
+          newFromSurah.isAcceptableOrUnknown(
+              data['new_from_surah']!, _newFromSurahMeta));
     }
-    if (data.containsKey('from_surah')) {
-      context.handle(_fromSurahMeta,
-          fromSurah.isAcceptableOrUnknown(data['from_surah']!, _fromSurahMeta));
-    }
-    if (data.containsKey('from_ayah')) {
-      context.handle(_fromAyahMeta,
-          fromAyah.isAcceptableOrUnknown(data['from_ayah']!, _fromAyahMeta));
-    }
-    if (data.containsKey('to_surah')) {
-      context.handle(_toSurahMeta,
-          toSurah.isAcceptableOrUnknown(data['to_surah']!, _toSurahMeta));
-    }
-    if (data.containsKey('to_ayah')) {
-      context.handle(_toAyahMeta,
-          toAyah.isAcceptableOrUnknown(data['to_ayah']!, _toAyahMeta));
-    }
-    if (data.containsKey('estimated_pages')) {
+    if (data.containsKey('new_from_ayah')) {
       context.handle(
-          _estimatedPagesMeta,
-          estimatedPages.isAcceptableOrUnknown(
-              data['estimated_pages']!, _estimatedPagesMeta));
+          _newFromAyahMeta,
+          newFromAyah.isAcceptableOrUnknown(
+              data['new_from_ayah']!, _newFromAyahMeta));
     }
-    if (data.containsKey('revision_planned_pages')) {
+    if (data.containsKey('new_to_surah')) {
       context.handle(
-          _revisionPlannedPagesMeta,
-          revisionPlannedPages.isAcceptableOrUnknown(
-              data['revision_planned_pages']!, _revisionPlannedPagesMeta));
+          _newToSurahMeta,
+          newToSurah.isAcceptableOrUnknown(
+              data['new_to_surah']!, _newToSurahMeta));
     }
-    if (data.containsKey('revision_completed_pages')) {
+    if (data.containsKey('new_to_ayah')) {
       context.handle(
-          _revisionCompletedPagesMeta,
-          revisionCompletedPages.isAcceptableOrUnknown(
-              data['revision_completed_pages']!, _revisionCompletedPagesMeta));
+          _newToAyahMeta,
+          newToAyah.isAcceptableOrUnknown(
+              data['new_to_ayah']!, _newToAyahMeta));
     }
-    if (data.containsKey('revision_score')) {
-      context.handle(
-          _revisionScoreMeta,
-          revisionScore.isAcceptableOrUnknown(
-              data['revision_score']!, _revisionScoreMeta));
+    if (data.containsKey('new_pages')) {
+      context.handle(_newPagesMeta,
+          newPages.isAcceptableOrUnknown(data['new_pages']!, _newPagesMeta));
     }
-    if (data.containsKey('minor_errors')) {
+    if (data.containsKey('grade')) {
       context.handle(
-          _minorErrorsMeta,
-          minorErrors.isAcceptableOrUnknown(
-              data['minor_errors']!, _minorErrorsMeta));
+          _gradeMeta, grade.isAcceptableOrUnknown(data['grade']!, _gradeMeta));
     }
-    if (data.containsKey('medium_errors')) {
+    if (data.containsKey('repetition')) {
       context.handle(
-          _mediumErrorsMeta,
-          mediumErrors.isAcceptableOrUnknown(
-              data['medium_errors']!, _mediumErrorsMeta));
+          _repetitionMeta,
+          repetition.isAcceptableOrUnknown(
+              data['repetition']!, _repetitionMeta));
     }
-    if (data.containsKey('major_errors')) {
+    if (data.containsKey('recent_from_page')) {
       context.handle(
-          _majorErrorsMeta,
-          majorErrors.isAcceptableOrUnknown(
-              data['major_errors']!, _majorErrorsMeta));
+          _recentFromPageMeta,
+          recentFromPage.isAcceptableOrUnknown(
+              data['recent_from_page']!, _recentFromPageMeta));
     }
-    if (data.containsKey('self_corrections')) {
+    if (data.containsKey('recent_to_page')) {
       context.handle(
-          _selfCorrectionsMeta,
-          selfCorrections.isAcceptableOrUnknown(
-              data['self_corrections']!, _selfCorrectionsMeta));
+          _recentToPageMeta,
+          recentToPage.isAcceptableOrUnknown(
+              data['recent_to_page']!, _recentToPageMeta));
     }
-    if (data.containsKey('automatic_score')) {
+    if (data.containsKey('minor_from_page')) {
       context.handle(
-          _automaticScoreMeta,
-          automaticScore.isAcceptableOrUnknown(
-              data['automatic_score']!, _automaticScoreMeta));
+          _minorFromPageMeta,
+          minorFromPage.isAcceptableOrUnknown(
+              data['minor_from_page']!, _minorFromPageMeta));
     }
-    if (data.containsKey('override_score')) {
+    if (data.containsKey('minor_to_page')) {
       context.handle(
-          _overrideScoreMeta,
-          overrideScore.isAcceptableOrUnknown(
-              data['override_score']!, _overrideScoreMeta));
+          _minorToPageMeta,
+          minorToPage.isAcceptableOrUnknown(
+              data['minor_to_page']!, _minorToPageMeta));
     }
-    if (data.containsKey('override_reason')) {
+    if (data.containsKey('major_from_page')) {
       context.handle(
-          _overrideReasonMeta,
-          overrideReason.isAcceptableOrUnknown(
-              data['override_reason']!, _overrideReasonMeta));
+          _majorFromPageMeta,
+          majorFromPage.isAcceptableOrUnknown(
+              data['major_from_page']!, _majorFromPageMeta));
     }
-    if (data.containsKey('homework_status')) {
+    if (data.containsKey('major_to_page')) {
       context.handle(
-          _homeworkStatusMeta,
-          homeworkStatus.isAcceptableOrUnknown(
-              data['homework_status']!, _homeworkStatusMeta));
+          _majorToPageMeta,
+          majorToPage.isAcceptableOrUnknown(
+              data['major_to_page']!, _majorToPageMeta));
     }
-    if (data.containsKey('homework_score')) {
+    if (data.containsKey('notes')) {
       context.handle(
-          _homeworkScoreMeta,
-          homeworkScore.isAcceptableOrUnknown(
-              data['homework_score']!, _homeworkScoreMeta));
-    }
-    if (data.containsKey('final_score')) {
-      context.handle(
-          _finalScoreMeta,
-          finalScore.isAcceptableOrUnknown(
-              data['final_score']!, _finalScoreMeta));
-    }
-    if (data.containsKey('level')) {
-      context.handle(
-          _levelMeta, level.isAcceptableOrUnknown(data['level']!, _levelMeta));
-    }
-    if (data.containsKey('internal_note')) {
-      context.handle(
-          _internalNoteMeta,
-          internalNote.isAcceptableOrUnknown(
-              data['internal_note']!, _internalNoteMeta));
-    }
-    if (data.containsKey('needs_follow_up')) {
-      context.handle(
-          _needsFollowUpMeta,
-          needsFollowUp.isAcceptableOrUnknown(
-              data['needs_follow_up']!, _needsFollowUpMeta));
+          _notesMeta, notes.isAcceptableOrUnknown(data['notes']!, _notesMeta));
     }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
@@ -2316,52 +1750,38 @@ class $DailyRecordsTable extends DailyRecords
           .read(DriftSqlType.dateTime, data['${effectivePrefix}date'])!,
       dateKey: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}date_key'])!,
-      attendance: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}attendance'])!,
-      fromSurah: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}from_surah'])!,
-      fromAyah: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}from_ayah'])!,
-      toSurah: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}to_surah'])!,
-      toAyah: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}to_ayah'])!,
-      estimatedPages: attachedDatabase.typeMapping.read(
-          DriftSqlType.double, data['${effectivePrefix}estimated_pages'])!,
-      revisionPlannedPages: attachedDatabase.typeMapping.read(
-          DriftSqlType.double,
-          data['${effectivePrefix}revision_planned_pages'])!,
-      revisionCompletedPages: attachedDatabase.typeMapping.read(
-          DriftSqlType.double,
-          data['${effectivePrefix}revision_completed_pages'])!,
-      revisionScore: attachedDatabase.typeMapping
-          .read(DriftSqlType.double, data['${effectivePrefix}revision_score'])!,
-      minorErrors: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}minor_errors'])!,
-      mediumErrors: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}medium_errors'])!,
-      majorErrors: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}major_errors'])!,
-      selfCorrections: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}self_corrections'])!,
-      automaticScore: attachedDatabase.typeMapping.read(
-          DriftSqlType.double, data['${effectivePrefix}automatic_score'])!,
-      overrideScore: attachedDatabase.typeMapping
-          .read(DriftSqlType.double, data['${effectivePrefix}override_score']),
-      overrideReason: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}override_reason']),
-      homeworkStatus: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}homework_status'])!,
-      homeworkScore: attachedDatabase.typeMapping
-          .read(DriftSqlType.double, data['${effectivePrefix}homework_score'])!,
-      finalScore: attachedDatabase.typeMapping
-          .read(DriftSqlType.double, data['${effectivePrefix}final_score'])!,
-      level: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}level'])!,
-      internalNote: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}internal_note'])!,
-      needsFollowUp: attachedDatabase.typeMapping
-          .read(DriftSqlType.bool, data['${effectivePrefix}needs_follow_up'])!,
+      weekday: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}weekday'])!,
+      isFriday: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_friday'])!,
+      newFromSurah: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}new_from_surah'])!,
+      newFromAyah: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}new_from_ayah'])!,
+      newToSurah: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}new_to_surah'])!,
+      newToAyah: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}new_to_ayah'])!,
+      newPages: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}new_pages'])!,
+      grade: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}grade'])!,
+      repetition: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}repetition'])!,
+      recentFromPage: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}recent_from_page'])!,
+      recentToPage: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}recent_to_page'])!,
+      minorFromPage: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}minor_from_page'])!,
+      minorToPage: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}minor_to_page'])!,
+      majorFromPage: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}major_from_page'])!,
+      majorToPage: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}major_to_page'])!,
+      notes: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}notes'])!,
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
@@ -2382,28 +1802,22 @@ class DailyRecord extends DataClass implements Insertable<DailyRecord> {
   final String teacherId;
   final DateTime date;
   final String dateKey;
-  final String attendance;
-  final String fromSurah;
-  final int fromAyah;
-  final String toSurah;
-  final int toAyah;
-  final double estimatedPages;
-  final double revisionPlannedPages;
-  final double revisionCompletedPages;
-  final double revisionScore;
-  final int minorErrors;
-  final int mediumErrors;
-  final int majorErrors;
-  final int selfCorrections;
-  final double automaticScore;
-  final double? overrideScore;
-  final String? overrideReason;
-  final String homeworkStatus;
-  final double homeworkScore;
-  final double finalScore;
-  final String level;
-  final String internalNote;
-  final bool needsFollowUp;
+  final int weekday;
+  final bool isFriday;
+  final int newFromSurah;
+  final int newFromAyah;
+  final int newToSurah;
+  final int newToAyah;
+  final double newPages;
+  final String grade;
+  final int repetition;
+  final int recentFromPage;
+  final int recentToPage;
+  final int minorFromPage;
+  final int minorToPage;
+  final int majorFromPage;
+  final int majorToPage;
+  final String notes;
   final DateTime createdAt;
   final DateTime updatedAt;
   const DailyRecord(
@@ -2413,28 +1827,22 @@ class DailyRecord extends DataClass implements Insertable<DailyRecord> {
       required this.teacherId,
       required this.date,
       required this.dateKey,
-      required this.attendance,
-      required this.fromSurah,
-      required this.fromAyah,
-      required this.toSurah,
-      required this.toAyah,
-      required this.estimatedPages,
-      required this.revisionPlannedPages,
-      required this.revisionCompletedPages,
-      required this.revisionScore,
-      required this.minorErrors,
-      required this.mediumErrors,
-      required this.majorErrors,
-      required this.selfCorrections,
-      required this.automaticScore,
-      this.overrideScore,
-      this.overrideReason,
-      required this.homeworkStatus,
-      required this.homeworkScore,
-      required this.finalScore,
-      required this.level,
-      required this.internalNote,
-      required this.needsFollowUp,
+      required this.weekday,
+      required this.isFriday,
+      required this.newFromSurah,
+      required this.newFromAyah,
+      required this.newToSurah,
+      required this.newToAyah,
+      required this.newPages,
+      required this.grade,
+      required this.repetition,
+      required this.recentFromPage,
+      required this.recentToPage,
+      required this.minorFromPage,
+      required this.minorToPage,
+      required this.majorFromPage,
+      required this.majorToPage,
+      required this.notes,
       required this.createdAt,
       required this.updatedAt});
   @override
@@ -2446,32 +1854,22 @@ class DailyRecord extends DataClass implements Insertable<DailyRecord> {
     map['teacher_id'] = Variable<String>(teacherId);
     map['date'] = Variable<DateTime>(date);
     map['date_key'] = Variable<String>(dateKey);
-    map['attendance'] = Variable<String>(attendance);
-    map['from_surah'] = Variable<String>(fromSurah);
-    map['from_ayah'] = Variable<int>(fromAyah);
-    map['to_surah'] = Variable<String>(toSurah);
-    map['to_ayah'] = Variable<int>(toAyah);
-    map['estimated_pages'] = Variable<double>(estimatedPages);
-    map['revision_planned_pages'] = Variable<double>(revisionPlannedPages);
-    map['revision_completed_pages'] = Variable<double>(revisionCompletedPages);
-    map['revision_score'] = Variable<double>(revisionScore);
-    map['minor_errors'] = Variable<int>(minorErrors);
-    map['medium_errors'] = Variable<int>(mediumErrors);
-    map['major_errors'] = Variable<int>(majorErrors);
-    map['self_corrections'] = Variable<int>(selfCorrections);
-    map['automatic_score'] = Variable<double>(automaticScore);
-    if (!nullToAbsent || overrideScore != null) {
-      map['override_score'] = Variable<double>(overrideScore);
-    }
-    if (!nullToAbsent || overrideReason != null) {
-      map['override_reason'] = Variable<String>(overrideReason);
-    }
-    map['homework_status'] = Variable<String>(homeworkStatus);
-    map['homework_score'] = Variable<double>(homeworkScore);
-    map['final_score'] = Variable<double>(finalScore);
-    map['level'] = Variable<String>(level);
-    map['internal_note'] = Variable<String>(internalNote);
-    map['needs_follow_up'] = Variable<bool>(needsFollowUp);
+    map['weekday'] = Variable<int>(weekday);
+    map['is_friday'] = Variable<bool>(isFriday);
+    map['new_from_surah'] = Variable<int>(newFromSurah);
+    map['new_from_ayah'] = Variable<int>(newFromAyah);
+    map['new_to_surah'] = Variable<int>(newToSurah);
+    map['new_to_ayah'] = Variable<int>(newToAyah);
+    map['new_pages'] = Variable<double>(newPages);
+    map['grade'] = Variable<String>(grade);
+    map['repetition'] = Variable<int>(repetition);
+    map['recent_from_page'] = Variable<int>(recentFromPage);
+    map['recent_to_page'] = Variable<int>(recentToPage);
+    map['minor_from_page'] = Variable<int>(minorFromPage);
+    map['minor_to_page'] = Variable<int>(minorToPage);
+    map['major_from_page'] = Variable<int>(majorFromPage);
+    map['major_to_page'] = Variable<int>(majorToPage);
+    map['notes'] = Variable<String>(notes);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -2485,32 +1883,22 @@ class DailyRecord extends DataClass implements Insertable<DailyRecord> {
       teacherId: Value(teacherId),
       date: Value(date),
       dateKey: Value(dateKey),
-      attendance: Value(attendance),
-      fromSurah: Value(fromSurah),
-      fromAyah: Value(fromAyah),
-      toSurah: Value(toSurah),
-      toAyah: Value(toAyah),
-      estimatedPages: Value(estimatedPages),
-      revisionPlannedPages: Value(revisionPlannedPages),
-      revisionCompletedPages: Value(revisionCompletedPages),
-      revisionScore: Value(revisionScore),
-      minorErrors: Value(minorErrors),
-      mediumErrors: Value(mediumErrors),
-      majorErrors: Value(majorErrors),
-      selfCorrections: Value(selfCorrections),
-      automaticScore: Value(automaticScore),
-      overrideScore: overrideScore == null && nullToAbsent
-          ? const Value.absent()
-          : Value(overrideScore),
-      overrideReason: overrideReason == null && nullToAbsent
-          ? const Value.absent()
-          : Value(overrideReason),
-      homeworkStatus: Value(homeworkStatus),
-      homeworkScore: Value(homeworkScore),
-      finalScore: Value(finalScore),
-      level: Value(level),
-      internalNote: Value(internalNote),
-      needsFollowUp: Value(needsFollowUp),
+      weekday: Value(weekday),
+      isFriday: Value(isFriday),
+      newFromSurah: Value(newFromSurah),
+      newFromAyah: Value(newFromAyah),
+      newToSurah: Value(newToSurah),
+      newToAyah: Value(newToAyah),
+      newPages: Value(newPages),
+      grade: Value(grade),
+      repetition: Value(repetition),
+      recentFromPage: Value(recentFromPage),
+      recentToPage: Value(recentToPage),
+      minorFromPage: Value(minorFromPage),
+      minorToPage: Value(minorToPage),
+      majorFromPage: Value(majorFromPage),
+      majorToPage: Value(majorToPage),
+      notes: Value(notes),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -2526,30 +1914,22 @@ class DailyRecord extends DataClass implements Insertable<DailyRecord> {
       teacherId: serializer.fromJson<String>(json['teacherId']),
       date: serializer.fromJson<DateTime>(json['date']),
       dateKey: serializer.fromJson<String>(json['dateKey']),
-      attendance: serializer.fromJson<String>(json['attendance']),
-      fromSurah: serializer.fromJson<String>(json['fromSurah']),
-      fromAyah: serializer.fromJson<int>(json['fromAyah']),
-      toSurah: serializer.fromJson<String>(json['toSurah']),
-      toAyah: serializer.fromJson<int>(json['toAyah']),
-      estimatedPages: serializer.fromJson<double>(json['estimatedPages']),
-      revisionPlannedPages:
-          serializer.fromJson<double>(json['revisionPlannedPages']),
-      revisionCompletedPages:
-          serializer.fromJson<double>(json['revisionCompletedPages']),
-      revisionScore: serializer.fromJson<double>(json['revisionScore']),
-      minorErrors: serializer.fromJson<int>(json['minorErrors']),
-      mediumErrors: serializer.fromJson<int>(json['mediumErrors']),
-      majorErrors: serializer.fromJson<int>(json['majorErrors']),
-      selfCorrections: serializer.fromJson<int>(json['selfCorrections']),
-      automaticScore: serializer.fromJson<double>(json['automaticScore']),
-      overrideScore: serializer.fromJson<double?>(json['overrideScore']),
-      overrideReason: serializer.fromJson<String?>(json['overrideReason']),
-      homeworkStatus: serializer.fromJson<String>(json['homeworkStatus']),
-      homeworkScore: serializer.fromJson<double>(json['homeworkScore']),
-      finalScore: serializer.fromJson<double>(json['finalScore']),
-      level: serializer.fromJson<String>(json['level']),
-      internalNote: serializer.fromJson<String>(json['internalNote']),
-      needsFollowUp: serializer.fromJson<bool>(json['needsFollowUp']),
+      weekday: serializer.fromJson<int>(json['weekday']),
+      isFriday: serializer.fromJson<bool>(json['isFriday']),
+      newFromSurah: serializer.fromJson<int>(json['newFromSurah']),
+      newFromAyah: serializer.fromJson<int>(json['newFromAyah']),
+      newToSurah: serializer.fromJson<int>(json['newToSurah']),
+      newToAyah: serializer.fromJson<int>(json['newToAyah']),
+      newPages: serializer.fromJson<double>(json['newPages']),
+      grade: serializer.fromJson<String>(json['grade']),
+      repetition: serializer.fromJson<int>(json['repetition']),
+      recentFromPage: serializer.fromJson<int>(json['recentFromPage']),
+      recentToPage: serializer.fromJson<int>(json['recentToPage']),
+      minorFromPage: serializer.fromJson<int>(json['minorFromPage']),
+      minorToPage: serializer.fromJson<int>(json['minorToPage']),
+      majorFromPage: serializer.fromJson<int>(json['majorFromPage']),
+      majorToPage: serializer.fromJson<int>(json['majorToPage']),
+      notes: serializer.fromJson<String>(json['notes']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -2564,29 +1944,22 @@ class DailyRecord extends DataClass implements Insertable<DailyRecord> {
       'teacherId': serializer.toJson<String>(teacherId),
       'date': serializer.toJson<DateTime>(date),
       'dateKey': serializer.toJson<String>(dateKey),
-      'attendance': serializer.toJson<String>(attendance),
-      'fromSurah': serializer.toJson<String>(fromSurah),
-      'fromAyah': serializer.toJson<int>(fromAyah),
-      'toSurah': serializer.toJson<String>(toSurah),
-      'toAyah': serializer.toJson<int>(toAyah),
-      'estimatedPages': serializer.toJson<double>(estimatedPages),
-      'revisionPlannedPages': serializer.toJson<double>(revisionPlannedPages),
-      'revisionCompletedPages':
-          serializer.toJson<double>(revisionCompletedPages),
-      'revisionScore': serializer.toJson<double>(revisionScore),
-      'minorErrors': serializer.toJson<int>(minorErrors),
-      'mediumErrors': serializer.toJson<int>(mediumErrors),
-      'majorErrors': serializer.toJson<int>(majorErrors),
-      'selfCorrections': serializer.toJson<int>(selfCorrections),
-      'automaticScore': serializer.toJson<double>(automaticScore),
-      'overrideScore': serializer.toJson<double?>(overrideScore),
-      'overrideReason': serializer.toJson<String?>(overrideReason),
-      'homeworkStatus': serializer.toJson<String>(homeworkStatus),
-      'homeworkScore': serializer.toJson<double>(homeworkScore),
-      'finalScore': serializer.toJson<double>(finalScore),
-      'level': serializer.toJson<String>(level),
-      'internalNote': serializer.toJson<String>(internalNote),
-      'needsFollowUp': serializer.toJson<bool>(needsFollowUp),
+      'weekday': serializer.toJson<int>(weekday),
+      'isFriday': serializer.toJson<bool>(isFriday),
+      'newFromSurah': serializer.toJson<int>(newFromSurah),
+      'newFromAyah': serializer.toJson<int>(newFromAyah),
+      'newToSurah': serializer.toJson<int>(newToSurah),
+      'newToAyah': serializer.toJson<int>(newToAyah),
+      'newPages': serializer.toJson<double>(newPages),
+      'grade': serializer.toJson<String>(grade),
+      'repetition': serializer.toJson<int>(repetition),
+      'recentFromPage': serializer.toJson<int>(recentFromPage),
+      'recentToPage': serializer.toJson<int>(recentToPage),
+      'minorFromPage': serializer.toJson<int>(minorFromPage),
+      'minorToPage': serializer.toJson<int>(minorToPage),
+      'majorFromPage': serializer.toJson<int>(majorFromPage),
+      'majorToPage': serializer.toJson<int>(majorToPage),
+      'notes': serializer.toJson<String>(notes),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -2599,28 +1972,22 @@ class DailyRecord extends DataClass implements Insertable<DailyRecord> {
           String? teacherId,
           DateTime? date,
           String? dateKey,
-          String? attendance,
-          String? fromSurah,
-          int? fromAyah,
-          String? toSurah,
-          int? toAyah,
-          double? estimatedPages,
-          double? revisionPlannedPages,
-          double? revisionCompletedPages,
-          double? revisionScore,
-          int? minorErrors,
-          int? mediumErrors,
-          int? majorErrors,
-          int? selfCorrections,
-          double? automaticScore,
-          Value<double?> overrideScore = const Value.absent(),
-          Value<String?> overrideReason = const Value.absent(),
-          String? homeworkStatus,
-          double? homeworkScore,
-          double? finalScore,
-          String? level,
-          String? internalNote,
-          bool? needsFollowUp,
+          int? weekday,
+          bool? isFriday,
+          int? newFromSurah,
+          int? newFromAyah,
+          int? newToSurah,
+          int? newToAyah,
+          double? newPages,
+          String? grade,
+          int? repetition,
+          int? recentFromPage,
+          int? recentToPage,
+          int? minorFromPage,
+          int? minorToPage,
+          int? majorFromPage,
+          int? majorToPage,
+          String? notes,
           DateTime? createdAt,
           DateTime? updatedAt}) =>
       DailyRecord(
@@ -2630,31 +1997,22 @@ class DailyRecord extends DataClass implements Insertable<DailyRecord> {
         teacherId: teacherId ?? this.teacherId,
         date: date ?? this.date,
         dateKey: dateKey ?? this.dateKey,
-        attendance: attendance ?? this.attendance,
-        fromSurah: fromSurah ?? this.fromSurah,
-        fromAyah: fromAyah ?? this.fromAyah,
-        toSurah: toSurah ?? this.toSurah,
-        toAyah: toAyah ?? this.toAyah,
-        estimatedPages: estimatedPages ?? this.estimatedPages,
-        revisionPlannedPages: revisionPlannedPages ?? this.revisionPlannedPages,
-        revisionCompletedPages:
-            revisionCompletedPages ?? this.revisionCompletedPages,
-        revisionScore: revisionScore ?? this.revisionScore,
-        minorErrors: minorErrors ?? this.minorErrors,
-        mediumErrors: mediumErrors ?? this.mediumErrors,
-        majorErrors: majorErrors ?? this.majorErrors,
-        selfCorrections: selfCorrections ?? this.selfCorrections,
-        automaticScore: automaticScore ?? this.automaticScore,
-        overrideScore:
-            overrideScore.present ? overrideScore.value : this.overrideScore,
-        overrideReason:
-            overrideReason.present ? overrideReason.value : this.overrideReason,
-        homeworkStatus: homeworkStatus ?? this.homeworkStatus,
-        homeworkScore: homeworkScore ?? this.homeworkScore,
-        finalScore: finalScore ?? this.finalScore,
-        level: level ?? this.level,
-        internalNote: internalNote ?? this.internalNote,
-        needsFollowUp: needsFollowUp ?? this.needsFollowUp,
+        weekday: weekday ?? this.weekday,
+        isFriday: isFriday ?? this.isFriday,
+        newFromSurah: newFromSurah ?? this.newFromSurah,
+        newFromAyah: newFromAyah ?? this.newFromAyah,
+        newToSurah: newToSurah ?? this.newToSurah,
+        newToAyah: newToAyah ?? this.newToAyah,
+        newPages: newPages ?? this.newPages,
+        grade: grade ?? this.grade,
+        repetition: repetition ?? this.repetition,
+        recentFromPage: recentFromPage ?? this.recentFromPage,
+        recentToPage: recentToPage ?? this.recentToPage,
+        minorFromPage: minorFromPage ?? this.minorFromPage,
+        minorToPage: minorToPage ?? this.minorToPage,
+        majorFromPage: majorFromPage ?? this.majorFromPage,
+        majorToPage: majorToPage ?? this.majorToPage,
+        notes: notes ?? this.notes,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
       );
@@ -2666,58 +2024,37 @@ class DailyRecord extends DataClass implements Insertable<DailyRecord> {
       teacherId: data.teacherId.present ? data.teacherId.value : this.teacherId,
       date: data.date.present ? data.date.value : this.date,
       dateKey: data.dateKey.present ? data.dateKey.value : this.dateKey,
-      attendance:
-          data.attendance.present ? data.attendance.value : this.attendance,
-      fromSurah: data.fromSurah.present ? data.fromSurah.value : this.fromSurah,
-      fromAyah: data.fromAyah.present ? data.fromAyah.value : this.fromAyah,
-      toSurah: data.toSurah.present ? data.toSurah.value : this.toSurah,
-      toAyah: data.toAyah.present ? data.toAyah.value : this.toAyah,
-      estimatedPages: data.estimatedPages.present
-          ? data.estimatedPages.value
-          : this.estimatedPages,
-      revisionPlannedPages: data.revisionPlannedPages.present
-          ? data.revisionPlannedPages.value
-          : this.revisionPlannedPages,
-      revisionCompletedPages: data.revisionCompletedPages.present
-          ? data.revisionCompletedPages.value
-          : this.revisionCompletedPages,
-      revisionScore: data.revisionScore.present
-          ? data.revisionScore.value
-          : this.revisionScore,
-      minorErrors:
-          data.minorErrors.present ? data.minorErrors.value : this.minorErrors,
-      mediumErrors: data.mediumErrors.present
-          ? data.mediumErrors.value
-          : this.mediumErrors,
-      majorErrors:
-          data.majorErrors.present ? data.majorErrors.value : this.majorErrors,
-      selfCorrections: data.selfCorrections.present
-          ? data.selfCorrections.value
-          : this.selfCorrections,
-      automaticScore: data.automaticScore.present
-          ? data.automaticScore.value
-          : this.automaticScore,
-      overrideScore: data.overrideScore.present
-          ? data.overrideScore.value
-          : this.overrideScore,
-      overrideReason: data.overrideReason.present
-          ? data.overrideReason.value
-          : this.overrideReason,
-      homeworkStatus: data.homeworkStatus.present
-          ? data.homeworkStatus.value
-          : this.homeworkStatus,
-      homeworkScore: data.homeworkScore.present
-          ? data.homeworkScore.value
-          : this.homeworkScore,
-      finalScore:
-          data.finalScore.present ? data.finalScore.value : this.finalScore,
-      level: data.level.present ? data.level.value : this.level,
-      internalNote: data.internalNote.present
-          ? data.internalNote.value
-          : this.internalNote,
-      needsFollowUp: data.needsFollowUp.present
-          ? data.needsFollowUp.value
-          : this.needsFollowUp,
+      weekday: data.weekday.present ? data.weekday.value : this.weekday,
+      isFriday: data.isFriday.present ? data.isFriday.value : this.isFriday,
+      newFromSurah: data.newFromSurah.present
+          ? data.newFromSurah.value
+          : this.newFromSurah,
+      newFromAyah:
+          data.newFromAyah.present ? data.newFromAyah.value : this.newFromAyah,
+      newToSurah:
+          data.newToSurah.present ? data.newToSurah.value : this.newToSurah,
+      newToAyah: data.newToAyah.present ? data.newToAyah.value : this.newToAyah,
+      newPages: data.newPages.present ? data.newPages.value : this.newPages,
+      grade: data.grade.present ? data.grade.value : this.grade,
+      repetition:
+          data.repetition.present ? data.repetition.value : this.repetition,
+      recentFromPage: data.recentFromPage.present
+          ? data.recentFromPage.value
+          : this.recentFromPage,
+      recentToPage: data.recentToPage.present
+          ? data.recentToPage.value
+          : this.recentToPage,
+      minorFromPage: data.minorFromPage.present
+          ? data.minorFromPage.value
+          : this.minorFromPage,
+      minorToPage:
+          data.minorToPage.present ? data.minorToPage.value : this.minorToPage,
+      majorFromPage: data.majorFromPage.present
+          ? data.majorFromPage.value
+          : this.majorFromPage,
+      majorToPage:
+          data.majorToPage.present ? data.majorToPage.value : this.majorToPage,
+      notes: data.notes.present ? data.notes.value : this.notes,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -2732,28 +2069,22 @@ class DailyRecord extends DataClass implements Insertable<DailyRecord> {
           ..write('teacherId: $teacherId, ')
           ..write('date: $date, ')
           ..write('dateKey: $dateKey, ')
-          ..write('attendance: $attendance, ')
-          ..write('fromSurah: $fromSurah, ')
-          ..write('fromAyah: $fromAyah, ')
-          ..write('toSurah: $toSurah, ')
-          ..write('toAyah: $toAyah, ')
-          ..write('estimatedPages: $estimatedPages, ')
-          ..write('revisionPlannedPages: $revisionPlannedPages, ')
-          ..write('revisionCompletedPages: $revisionCompletedPages, ')
-          ..write('revisionScore: $revisionScore, ')
-          ..write('minorErrors: $minorErrors, ')
-          ..write('mediumErrors: $mediumErrors, ')
-          ..write('majorErrors: $majorErrors, ')
-          ..write('selfCorrections: $selfCorrections, ')
-          ..write('automaticScore: $automaticScore, ')
-          ..write('overrideScore: $overrideScore, ')
-          ..write('overrideReason: $overrideReason, ')
-          ..write('homeworkStatus: $homeworkStatus, ')
-          ..write('homeworkScore: $homeworkScore, ')
-          ..write('finalScore: $finalScore, ')
-          ..write('level: $level, ')
-          ..write('internalNote: $internalNote, ')
-          ..write('needsFollowUp: $needsFollowUp, ')
+          ..write('weekday: $weekday, ')
+          ..write('isFriday: $isFriday, ')
+          ..write('newFromSurah: $newFromSurah, ')
+          ..write('newFromAyah: $newFromAyah, ')
+          ..write('newToSurah: $newToSurah, ')
+          ..write('newToAyah: $newToAyah, ')
+          ..write('newPages: $newPages, ')
+          ..write('grade: $grade, ')
+          ..write('repetition: $repetition, ')
+          ..write('recentFromPage: $recentFromPage, ')
+          ..write('recentToPage: $recentToPage, ')
+          ..write('minorFromPage: $minorFromPage, ')
+          ..write('minorToPage: $minorToPage, ')
+          ..write('majorFromPage: $majorFromPage, ')
+          ..write('majorToPage: $majorToPage, ')
+          ..write('notes: $notes, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -2768,28 +2099,22 @@ class DailyRecord extends DataClass implements Insertable<DailyRecord> {
         teacherId,
         date,
         dateKey,
-        attendance,
-        fromSurah,
-        fromAyah,
-        toSurah,
-        toAyah,
-        estimatedPages,
-        revisionPlannedPages,
-        revisionCompletedPages,
-        revisionScore,
-        minorErrors,
-        mediumErrors,
-        majorErrors,
-        selfCorrections,
-        automaticScore,
-        overrideScore,
-        overrideReason,
-        homeworkStatus,
-        homeworkScore,
-        finalScore,
-        level,
-        internalNote,
-        needsFollowUp,
+        weekday,
+        isFriday,
+        newFromSurah,
+        newFromAyah,
+        newToSurah,
+        newToAyah,
+        newPages,
+        grade,
+        repetition,
+        recentFromPage,
+        recentToPage,
+        minorFromPage,
+        minorToPage,
+        majorFromPage,
+        majorToPage,
+        notes,
         createdAt,
         updatedAt
       ]);
@@ -2803,28 +2128,22 @@ class DailyRecord extends DataClass implements Insertable<DailyRecord> {
           other.teacherId == this.teacherId &&
           other.date == this.date &&
           other.dateKey == this.dateKey &&
-          other.attendance == this.attendance &&
-          other.fromSurah == this.fromSurah &&
-          other.fromAyah == this.fromAyah &&
-          other.toSurah == this.toSurah &&
-          other.toAyah == this.toAyah &&
-          other.estimatedPages == this.estimatedPages &&
-          other.revisionPlannedPages == this.revisionPlannedPages &&
-          other.revisionCompletedPages == this.revisionCompletedPages &&
-          other.revisionScore == this.revisionScore &&
-          other.minorErrors == this.minorErrors &&
-          other.mediumErrors == this.mediumErrors &&
-          other.majorErrors == this.majorErrors &&
-          other.selfCorrections == this.selfCorrections &&
-          other.automaticScore == this.automaticScore &&
-          other.overrideScore == this.overrideScore &&
-          other.overrideReason == this.overrideReason &&
-          other.homeworkStatus == this.homeworkStatus &&
-          other.homeworkScore == this.homeworkScore &&
-          other.finalScore == this.finalScore &&
-          other.level == this.level &&
-          other.internalNote == this.internalNote &&
-          other.needsFollowUp == this.needsFollowUp &&
+          other.weekday == this.weekday &&
+          other.isFriday == this.isFriday &&
+          other.newFromSurah == this.newFromSurah &&
+          other.newFromAyah == this.newFromAyah &&
+          other.newToSurah == this.newToSurah &&
+          other.newToAyah == this.newToAyah &&
+          other.newPages == this.newPages &&
+          other.grade == this.grade &&
+          other.repetition == this.repetition &&
+          other.recentFromPage == this.recentFromPage &&
+          other.recentToPage == this.recentToPage &&
+          other.minorFromPage == this.minorFromPage &&
+          other.minorToPage == this.minorToPage &&
+          other.majorFromPage == this.majorFromPage &&
+          other.majorToPage == this.majorToPage &&
+          other.notes == this.notes &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -2836,28 +2155,22 @@ class DailyRecordsCompanion extends UpdateCompanion<DailyRecord> {
   final Value<String> teacherId;
   final Value<DateTime> date;
   final Value<String> dateKey;
-  final Value<String> attendance;
-  final Value<String> fromSurah;
-  final Value<int> fromAyah;
-  final Value<String> toSurah;
-  final Value<int> toAyah;
-  final Value<double> estimatedPages;
-  final Value<double> revisionPlannedPages;
-  final Value<double> revisionCompletedPages;
-  final Value<double> revisionScore;
-  final Value<int> minorErrors;
-  final Value<int> mediumErrors;
-  final Value<int> majorErrors;
-  final Value<int> selfCorrections;
-  final Value<double> automaticScore;
-  final Value<double?> overrideScore;
-  final Value<String?> overrideReason;
-  final Value<String> homeworkStatus;
-  final Value<double> homeworkScore;
-  final Value<double> finalScore;
-  final Value<String> level;
-  final Value<String> internalNote;
-  final Value<bool> needsFollowUp;
+  final Value<int> weekday;
+  final Value<bool> isFriday;
+  final Value<int> newFromSurah;
+  final Value<int> newFromAyah;
+  final Value<int> newToSurah;
+  final Value<int> newToAyah;
+  final Value<double> newPages;
+  final Value<String> grade;
+  final Value<int> repetition;
+  final Value<int> recentFromPage;
+  final Value<int> recentToPage;
+  final Value<int> minorFromPage;
+  final Value<int> minorToPage;
+  final Value<int> majorFromPage;
+  final Value<int> majorToPage;
+  final Value<String> notes;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -2868,28 +2181,22 @@ class DailyRecordsCompanion extends UpdateCompanion<DailyRecord> {
     this.teacherId = const Value.absent(),
     this.date = const Value.absent(),
     this.dateKey = const Value.absent(),
-    this.attendance = const Value.absent(),
-    this.fromSurah = const Value.absent(),
-    this.fromAyah = const Value.absent(),
-    this.toSurah = const Value.absent(),
-    this.toAyah = const Value.absent(),
-    this.estimatedPages = const Value.absent(),
-    this.revisionPlannedPages = const Value.absent(),
-    this.revisionCompletedPages = const Value.absent(),
-    this.revisionScore = const Value.absent(),
-    this.minorErrors = const Value.absent(),
-    this.mediumErrors = const Value.absent(),
-    this.majorErrors = const Value.absent(),
-    this.selfCorrections = const Value.absent(),
-    this.automaticScore = const Value.absent(),
-    this.overrideScore = const Value.absent(),
-    this.overrideReason = const Value.absent(),
-    this.homeworkStatus = const Value.absent(),
-    this.homeworkScore = const Value.absent(),
-    this.finalScore = const Value.absent(),
-    this.level = const Value.absent(),
-    this.internalNote = const Value.absent(),
-    this.needsFollowUp = const Value.absent(),
+    this.weekday = const Value.absent(),
+    this.isFriday = const Value.absent(),
+    this.newFromSurah = const Value.absent(),
+    this.newFromAyah = const Value.absent(),
+    this.newToSurah = const Value.absent(),
+    this.newToAyah = const Value.absent(),
+    this.newPages = const Value.absent(),
+    this.grade = const Value.absent(),
+    this.repetition = const Value.absent(),
+    this.recentFromPage = const Value.absent(),
+    this.recentToPage = const Value.absent(),
+    this.minorFromPage = const Value.absent(),
+    this.minorToPage = const Value.absent(),
+    this.majorFromPage = const Value.absent(),
+    this.majorToPage = const Value.absent(),
+    this.notes = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2901,28 +2208,22 @@ class DailyRecordsCompanion extends UpdateCompanion<DailyRecord> {
     this.teacherId = const Value.absent(),
     required DateTime date,
     required String dateKey,
-    this.attendance = const Value.absent(),
-    this.fromSurah = const Value.absent(),
-    this.fromAyah = const Value.absent(),
-    this.toSurah = const Value.absent(),
-    this.toAyah = const Value.absent(),
-    this.estimatedPages = const Value.absent(),
-    this.revisionPlannedPages = const Value.absent(),
-    this.revisionCompletedPages = const Value.absent(),
-    this.revisionScore = const Value.absent(),
-    this.minorErrors = const Value.absent(),
-    this.mediumErrors = const Value.absent(),
-    this.majorErrors = const Value.absent(),
-    this.selfCorrections = const Value.absent(),
-    this.automaticScore = const Value.absent(),
-    this.overrideScore = const Value.absent(),
-    this.overrideReason = const Value.absent(),
-    this.homeworkStatus = const Value.absent(),
-    this.homeworkScore = const Value.absent(),
-    this.finalScore = const Value.absent(),
-    this.level = const Value.absent(),
-    this.internalNote = const Value.absent(),
-    this.needsFollowUp = const Value.absent(),
+    required int weekday,
+    this.isFriday = const Value.absent(),
+    this.newFromSurah = const Value.absent(),
+    this.newFromAyah = const Value.absent(),
+    this.newToSurah = const Value.absent(),
+    this.newToAyah = const Value.absent(),
+    this.newPages = const Value.absent(),
+    this.grade = const Value.absent(),
+    this.repetition = const Value.absent(),
+    this.recentFromPage = const Value.absent(),
+    this.recentToPage = const Value.absent(),
+    this.minorFromPage = const Value.absent(),
+    this.minorToPage = const Value.absent(),
+    this.majorFromPage = const Value.absent(),
+    this.majorToPage = const Value.absent(),
+    this.notes = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
@@ -2931,6 +2232,7 @@ class DailyRecordsCompanion extends UpdateCompanion<DailyRecord> {
         halaqaId = Value(halaqaId),
         date = Value(date),
         dateKey = Value(dateKey),
+        weekday = Value(weekday),
         createdAt = Value(createdAt),
         updatedAt = Value(updatedAt);
   static Insertable<DailyRecord> custom({
@@ -2940,28 +2242,22 @@ class DailyRecordsCompanion extends UpdateCompanion<DailyRecord> {
     Expression<String>? teacherId,
     Expression<DateTime>? date,
     Expression<String>? dateKey,
-    Expression<String>? attendance,
-    Expression<String>? fromSurah,
-    Expression<int>? fromAyah,
-    Expression<String>? toSurah,
-    Expression<int>? toAyah,
-    Expression<double>? estimatedPages,
-    Expression<double>? revisionPlannedPages,
-    Expression<double>? revisionCompletedPages,
-    Expression<double>? revisionScore,
-    Expression<int>? minorErrors,
-    Expression<int>? mediumErrors,
-    Expression<int>? majorErrors,
-    Expression<int>? selfCorrections,
-    Expression<double>? automaticScore,
-    Expression<double>? overrideScore,
-    Expression<String>? overrideReason,
-    Expression<String>? homeworkStatus,
-    Expression<double>? homeworkScore,
-    Expression<double>? finalScore,
-    Expression<String>? level,
-    Expression<String>? internalNote,
-    Expression<bool>? needsFollowUp,
+    Expression<int>? weekday,
+    Expression<bool>? isFriday,
+    Expression<int>? newFromSurah,
+    Expression<int>? newFromAyah,
+    Expression<int>? newToSurah,
+    Expression<int>? newToAyah,
+    Expression<double>? newPages,
+    Expression<String>? grade,
+    Expression<int>? repetition,
+    Expression<int>? recentFromPage,
+    Expression<int>? recentToPage,
+    Expression<int>? minorFromPage,
+    Expression<int>? minorToPage,
+    Expression<int>? majorFromPage,
+    Expression<int>? majorToPage,
+    Expression<String>? notes,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -2973,30 +2269,22 @@ class DailyRecordsCompanion extends UpdateCompanion<DailyRecord> {
       if (teacherId != null) 'teacher_id': teacherId,
       if (date != null) 'date': date,
       if (dateKey != null) 'date_key': dateKey,
-      if (attendance != null) 'attendance': attendance,
-      if (fromSurah != null) 'from_surah': fromSurah,
-      if (fromAyah != null) 'from_ayah': fromAyah,
-      if (toSurah != null) 'to_surah': toSurah,
-      if (toAyah != null) 'to_ayah': toAyah,
-      if (estimatedPages != null) 'estimated_pages': estimatedPages,
-      if (revisionPlannedPages != null)
-        'revision_planned_pages': revisionPlannedPages,
-      if (revisionCompletedPages != null)
-        'revision_completed_pages': revisionCompletedPages,
-      if (revisionScore != null) 'revision_score': revisionScore,
-      if (minorErrors != null) 'minor_errors': minorErrors,
-      if (mediumErrors != null) 'medium_errors': mediumErrors,
-      if (majorErrors != null) 'major_errors': majorErrors,
-      if (selfCorrections != null) 'self_corrections': selfCorrections,
-      if (automaticScore != null) 'automatic_score': automaticScore,
-      if (overrideScore != null) 'override_score': overrideScore,
-      if (overrideReason != null) 'override_reason': overrideReason,
-      if (homeworkStatus != null) 'homework_status': homeworkStatus,
-      if (homeworkScore != null) 'homework_score': homeworkScore,
-      if (finalScore != null) 'final_score': finalScore,
-      if (level != null) 'level': level,
-      if (internalNote != null) 'internal_note': internalNote,
-      if (needsFollowUp != null) 'needs_follow_up': needsFollowUp,
+      if (weekday != null) 'weekday': weekday,
+      if (isFriday != null) 'is_friday': isFriday,
+      if (newFromSurah != null) 'new_from_surah': newFromSurah,
+      if (newFromAyah != null) 'new_from_ayah': newFromAyah,
+      if (newToSurah != null) 'new_to_surah': newToSurah,
+      if (newToAyah != null) 'new_to_ayah': newToAyah,
+      if (newPages != null) 'new_pages': newPages,
+      if (grade != null) 'grade': grade,
+      if (repetition != null) 'repetition': repetition,
+      if (recentFromPage != null) 'recent_from_page': recentFromPage,
+      if (recentToPage != null) 'recent_to_page': recentToPage,
+      if (minorFromPage != null) 'minor_from_page': minorFromPage,
+      if (minorToPage != null) 'minor_to_page': minorToPage,
+      if (majorFromPage != null) 'major_from_page': majorFromPage,
+      if (majorToPage != null) 'major_to_page': majorToPage,
+      if (notes != null) 'notes': notes,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -3010,28 +2298,22 @@ class DailyRecordsCompanion extends UpdateCompanion<DailyRecord> {
       Value<String>? teacherId,
       Value<DateTime>? date,
       Value<String>? dateKey,
-      Value<String>? attendance,
-      Value<String>? fromSurah,
-      Value<int>? fromAyah,
-      Value<String>? toSurah,
-      Value<int>? toAyah,
-      Value<double>? estimatedPages,
-      Value<double>? revisionPlannedPages,
-      Value<double>? revisionCompletedPages,
-      Value<double>? revisionScore,
-      Value<int>? minorErrors,
-      Value<int>? mediumErrors,
-      Value<int>? majorErrors,
-      Value<int>? selfCorrections,
-      Value<double>? automaticScore,
-      Value<double?>? overrideScore,
-      Value<String?>? overrideReason,
-      Value<String>? homeworkStatus,
-      Value<double>? homeworkScore,
-      Value<double>? finalScore,
-      Value<String>? level,
-      Value<String>? internalNote,
-      Value<bool>? needsFollowUp,
+      Value<int>? weekday,
+      Value<bool>? isFriday,
+      Value<int>? newFromSurah,
+      Value<int>? newFromAyah,
+      Value<int>? newToSurah,
+      Value<int>? newToAyah,
+      Value<double>? newPages,
+      Value<String>? grade,
+      Value<int>? repetition,
+      Value<int>? recentFromPage,
+      Value<int>? recentToPage,
+      Value<int>? minorFromPage,
+      Value<int>? minorToPage,
+      Value<int>? majorFromPage,
+      Value<int>? majorToPage,
+      Value<String>? notes,
       Value<DateTime>? createdAt,
       Value<DateTime>? updatedAt,
       Value<int>? rowid}) {
@@ -3042,29 +2324,22 @@ class DailyRecordsCompanion extends UpdateCompanion<DailyRecord> {
       teacherId: teacherId ?? this.teacherId,
       date: date ?? this.date,
       dateKey: dateKey ?? this.dateKey,
-      attendance: attendance ?? this.attendance,
-      fromSurah: fromSurah ?? this.fromSurah,
-      fromAyah: fromAyah ?? this.fromAyah,
-      toSurah: toSurah ?? this.toSurah,
-      toAyah: toAyah ?? this.toAyah,
-      estimatedPages: estimatedPages ?? this.estimatedPages,
-      revisionPlannedPages: revisionPlannedPages ?? this.revisionPlannedPages,
-      revisionCompletedPages:
-          revisionCompletedPages ?? this.revisionCompletedPages,
-      revisionScore: revisionScore ?? this.revisionScore,
-      minorErrors: minorErrors ?? this.minorErrors,
-      mediumErrors: mediumErrors ?? this.mediumErrors,
-      majorErrors: majorErrors ?? this.majorErrors,
-      selfCorrections: selfCorrections ?? this.selfCorrections,
-      automaticScore: automaticScore ?? this.automaticScore,
-      overrideScore: overrideScore ?? this.overrideScore,
-      overrideReason: overrideReason ?? this.overrideReason,
-      homeworkStatus: homeworkStatus ?? this.homeworkStatus,
-      homeworkScore: homeworkScore ?? this.homeworkScore,
-      finalScore: finalScore ?? this.finalScore,
-      level: level ?? this.level,
-      internalNote: internalNote ?? this.internalNote,
-      needsFollowUp: needsFollowUp ?? this.needsFollowUp,
+      weekday: weekday ?? this.weekday,
+      isFriday: isFriday ?? this.isFriday,
+      newFromSurah: newFromSurah ?? this.newFromSurah,
+      newFromAyah: newFromAyah ?? this.newFromAyah,
+      newToSurah: newToSurah ?? this.newToSurah,
+      newToAyah: newToAyah ?? this.newToAyah,
+      newPages: newPages ?? this.newPages,
+      grade: grade ?? this.grade,
+      repetition: repetition ?? this.repetition,
+      recentFromPage: recentFromPage ?? this.recentFromPage,
+      recentToPage: recentToPage ?? this.recentToPage,
+      minorFromPage: minorFromPage ?? this.minorFromPage,
+      minorToPage: minorToPage ?? this.minorToPage,
+      majorFromPage: majorFromPage ?? this.majorFromPage,
+      majorToPage: majorToPage ?? this.majorToPage,
+      notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -3092,73 +2367,53 @@ class DailyRecordsCompanion extends UpdateCompanion<DailyRecord> {
     if (dateKey.present) {
       map['date_key'] = Variable<String>(dateKey.value);
     }
-    if (attendance.present) {
-      map['attendance'] = Variable<String>(attendance.value);
+    if (weekday.present) {
+      map['weekday'] = Variable<int>(weekday.value);
     }
-    if (fromSurah.present) {
-      map['from_surah'] = Variable<String>(fromSurah.value);
+    if (isFriday.present) {
+      map['is_friday'] = Variable<bool>(isFriday.value);
     }
-    if (fromAyah.present) {
-      map['from_ayah'] = Variable<int>(fromAyah.value);
+    if (newFromSurah.present) {
+      map['new_from_surah'] = Variable<int>(newFromSurah.value);
     }
-    if (toSurah.present) {
-      map['to_surah'] = Variable<String>(toSurah.value);
+    if (newFromAyah.present) {
+      map['new_from_ayah'] = Variable<int>(newFromAyah.value);
     }
-    if (toAyah.present) {
-      map['to_ayah'] = Variable<int>(toAyah.value);
+    if (newToSurah.present) {
+      map['new_to_surah'] = Variable<int>(newToSurah.value);
     }
-    if (estimatedPages.present) {
-      map['estimated_pages'] = Variable<double>(estimatedPages.value);
+    if (newToAyah.present) {
+      map['new_to_ayah'] = Variable<int>(newToAyah.value);
     }
-    if (revisionPlannedPages.present) {
-      map['revision_planned_pages'] =
-          Variable<double>(revisionPlannedPages.value);
+    if (newPages.present) {
+      map['new_pages'] = Variable<double>(newPages.value);
     }
-    if (revisionCompletedPages.present) {
-      map['revision_completed_pages'] =
-          Variable<double>(revisionCompletedPages.value);
+    if (grade.present) {
+      map['grade'] = Variable<String>(grade.value);
     }
-    if (revisionScore.present) {
-      map['revision_score'] = Variable<double>(revisionScore.value);
+    if (repetition.present) {
+      map['repetition'] = Variable<int>(repetition.value);
     }
-    if (minorErrors.present) {
-      map['minor_errors'] = Variable<int>(minorErrors.value);
+    if (recentFromPage.present) {
+      map['recent_from_page'] = Variable<int>(recentFromPage.value);
     }
-    if (mediumErrors.present) {
-      map['medium_errors'] = Variable<int>(mediumErrors.value);
+    if (recentToPage.present) {
+      map['recent_to_page'] = Variable<int>(recentToPage.value);
     }
-    if (majorErrors.present) {
-      map['major_errors'] = Variable<int>(majorErrors.value);
+    if (minorFromPage.present) {
+      map['minor_from_page'] = Variable<int>(minorFromPage.value);
     }
-    if (selfCorrections.present) {
-      map['self_corrections'] = Variable<int>(selfCorrections.value);
+    if (minorToPage.present) {
+      map['minor_to_page'] = Variable<int>(minorToPage.value);
     }
-    if (automaticScore.present) {
-      map['automatic_score'] = Variable<double>(automaticScore.value);
+    if (majorFromPage.present) {
+      map['major_from_page'] = Variable<int>(majorFromPage.value);
     }
-    if (overrideScore.present) {
-      map['override_score'] = Variable<double>(overrideScore.value);
+    if (majorToPage.present) {
+      map['major_to_page'] = Variable<int>(majorToPage.value);
     }
-    if (overrideReason.present) {
-      map['override_reason'] = Variable<String>(overrideReason.value);
-    }
-    if (homeworkStatus.present) {
-      map['homework_status'] = Variable<String>(homeworkStatus.value);
-    }
-    if (homeworkScore.present) {
-      map['homework_score'] = Variable<double>(homeworkScore.value);
-    }
-    if (finalScore.present) {
-      map['final_score'] = Variable<double>(finalScore.value);
-    }
-    if (level.present) {
-      map['level'] = Variable<String>(level.value);
-    }
-    if (internalNote.present) {
-      map['internal_note'] = Variable<String>(internalNote.value);
-    }
-    if (needsFollowUp.present) {
-      map['needs_follow_up'] = Variable<bool>(needsFollowUp.value);
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -3181,28 +2436,22 @@ class DailyRecordsCompanion extends UpdateCompanion<DailyRecord> {
           ..write('teacherId: $teacherId, ')
           ..write('date: $date, ')
           ..write('dateKey: $dateKey, ')
-          ..write('attendance: $attendance, ')
-          ..write('fromSurah: $fromSurah, ')
-          ..write('fromAyah: $fromAyah, ')
-          ..write('toSurah: $toSurah, ')
-          ..write('toAyah: $toAyah, ')
-          ..write('estimatedPages: $estimatedPages, ')
-          ..write('revisionPlannedPages: $revisionPlannedPages, ')
-          ..write('revisionCompletedPages: $revisionCompletedPages, ')
-          ..write('revisionScore: $revisionScore, ')
-          ..write('minorErrors: $minorErrors, ')
-          ..write('mediumErrors: $mediumErrors, ')
-          ..write('majorErrors: $majorErrors, ')
-          ..write('selfCorrections: $selfCorrections, ')
-          ..write('automaticScore: $automaticScore, ')
-          ..write('overrideScore: $overrideScore, ')
-          ..write('overrideReason: $overrideReason, ')
-          ..write('homeworkStatus: $homeworkStatus, ')
-          ..write('homeworkScore: $homeworkScore, ')
-          ..write('finalScore: $finalScore, ')
-          ..write('level: $level, ')
-          ..write('internalNote: $internalNote, ')
-          ..write('needsFollowUp: $needsFollowUp, ')
+          ..write('weekday: $weekday, ')
+          ..write('isFriday: $isFriday, ')
+          ..write('newFromSurah: $newFromSurah, ')
+          ..write('newFromAyah: $newFromAyah, ')
+          ..write('newToSurah: $newToSurah, ')
+          ..write('newToAyah: $newToAyah, ')
+          ..write('newPages: $newPages, ')
+          ..write('grade: $grade, ')
+          ..write('repetition: $repetition, ')
+          ..write('recentFromPage: $recentFromPage, ')
+          ..write('recentToPage: $recentToPage, ')
+          ..write('minorFromPage: $minorFromPage, ')
+          ..write('minorToPage: $minorToPage, ')
+          ..write('majorFromPage: $majorFromPage, ')
+          ..write('majorToPage: $majorToPage, ')
+          ..write('notes: $notes, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -3211,472 +2460,12 @@ class DailyRecordsCompanion extends UpdateCompanion<DailyRecord> {
   }
 }
 
-class $FollowUpPlansTable extends FollowUpPlans
-    with TableInfo<$FollowUpPlansTable, FollowUpPlan> {
+class $WeeklyPlansTable extends WeeklyPlans
+    with TableInfo<$WeeklyPlansTable, WeeklyPlan> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $FollowUpPlansTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
-      'id', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _studentIdMeta =
-      const VerificationMeta('studentId');
-  @override
-  late final GeneratedColumn<String> studentId = GeneratedColumn<String>(
-      'student_id', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _createdByMeta =
-      const VerificationMeta('createdBy');
-  @override
-  late final GeneratedColumn<String> createdBy = GeneratedColumn<String>(
-      'created_by', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _startDateMeta =
-      const VerificationMeta('startDate');
-  @override
-  late final GeneratedColumn<DateTime> startDate = GeneratedColumn<DateTime>(
-      'start_date', aliasedName, false,
-      type: DriftSqlType.dateTime, requiredDuringInsert: true);
-  static const VerificationMeta _endDateMeta =
-      const VerificationMeta('endDate');
-  @override
-  late final GeneratedColumn<DateTime> endDate = GeneratedColumn<DateTime>(
-      'end_date', aliasedName, true,
-      type: DriftSqlType.dateTime, requiredDuringInsert: false);
-  static const VerificationMeta _goalsMeta = const VerificationMeta('goals');
-  @override
-  late final GeneratedColumn<String> goals = GeneratedColumn<String>(
-      'goals', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(''));
-  static const VerificationMeta _actionsMeta =
-      const VerificationMeta('actions');
-  @override
-  late final GeneratedColumn<String> actions = GeneratedColumn<String>(
-      'actions', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(''));
-  static const VerificationMeta _statusMeta = const VerificationMeta('status');
-  @override
-  late final GeneratedColumn<String> status = GeneratedColumn<String>(
-      'status', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant('active'));
-  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
-  @override
-  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
-      'notes', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(''));
-  @override
-  List<GeneratedColumn> get $columns => [
-        id,
-        studentId,
-        createdBy,
-        startDate,
-        endDate,
-        goals,
-        actions,
-        status,
-        notes
-      ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'follow_up_plans';
-  @override
-  VerificationContext validateIntegrity(Insertable<FollowUpPlan> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
-    }
-    if (data.containsKey('student_id')) {
-      context.handle(_studentIdMeta,
-          studentId.isAcceptableOrUnknown(data['student_id']!, _studentIdMeta));
-    } else if (isInserting) {
-      context.missing(_studentIdMeta);
-    }
-    if (data.containsKey('created_by')) {
-      context.handle(_createdByMeta,
-          createdBy.isAcceptableOrUnknown(data['created_by']!, _createdByMeta));
-    } else if (isInserting) {
-      context.missing(_createdByMeta);
-    }
-    if (data.containsKey('start_date')) {
-      context.handle(_startDateMeta,
-          startDate.isAcceptableOrUnknown(data['start_date']!, _startDateMeta));
-    } else if (isInserting) {
-      context.missing(_startDateMeta);
-    }
-    if (data.containsKey('end_date')) {
-      context.handle(_endDateMeta,
-          endDate.isAcceptableOrUnknown(data['end_date']!, _endDateMeta));
-    }
-    if (data.containsKey('goals')) {
-      context.handle(
-          _goalsMeta, goals.isAcceptableOrUnknown(data['goals']!, _goalsMeta));
-    }
-    if (data.containsKey('actions')) {
-      context.handle(_actionsMeta,
-          actions.isAcceptableOrUnknown(data['actions']!, _actionsMeta));
-    }
-    if (data.containsKey('status')) {
-      context.handle(_statusMeta,
-          status.isAcceptableOrUnknown(data['status']!, _statusMeta));
-    }
-    if (data.containsKey('notes')) {
-      context.handle(
-          _notesMeta, notes.isAcceptableOrUnknown(data['notes']!, _notesMeta));
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  FollowUpPlan map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return FollowUpPlan(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
-      studentId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}student_id'])!,
-      createdBy: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}created_by'])!,
-      startDate: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}start_date'])!,
-      endDate: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}end_date']),
-      goals: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}goals'])!,
-      actions: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}actions'])!,
-      status: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
-      notes: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}notes'])!,
-    );
-  }
-
-  @override
-  $FollowUpPlansTable createAlias(String alias) {
-    return $FollowUpPlansTable(attachedDatabase, alias);
-  }
-}
-
-class FollowUpPlan extends DataClass implements Insertable<FollowUpPlan> {
-  final String id;
-  final String studentId;
-  final String createdBy;
-  final DateTime startDate;
-  final DateTime? endDate;
-  final String goals;
-  final String actions;
-  final String status;
-  final String notes;
-  const FollowUpPlan(
-      {required this.id,
-      required this.studentId,
-      required this.createdBy,
-      required this.startDate,
-      this.endDate,
-      required this.goals,
-      required this.actions,
-      required this.status,
-      required this.notes});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
-    map['student_id'] = Variable<String>(studentId);
-    map['created_by'] = Variable<String>(createdBy);
-    map['start_date'] = Variable<DateTime>(startDate);
-    if (!nullToAbsent || endDate != null) {
-      map['end_date'] = Variable<DateTime>(endDate);
-    }
-    map['goals'] = Variable<String>(goals);
-    map['actions'] = Variable<String>(actions);
-    map['status'] = Variable<String>(status);
-    map['notes'] = Variable<String>(notes);
-    return map;
-  }
-
-  FollowUpPlansCompanion toCompanion(bool nullToAbsent) {
-    return FollowUpPlansCompanion(
-      id: Value(id),
-      studentId: Value(studentId),
-      createdBy: Value(createdBy),
-      startDate: Value(startDate),
-      endDate: endDate == null && nullToAbsent
-          ? const Value.absent()
-          : Value(endDate),
-      goals: Value(goals),
-      actions: Value(actions),
-      status: Value(status),
-      notes: Value(notes),
-    );
-  }
-
-  factory FollowUpPlan.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return FollowUpPlan(
-      id: serializer.fromJson<String>(json['id']),
-      studentId: serializer.fromJson<String>(json['studentId']),
-      createdBy: serializer.fromJson<String>(json['createdBy']),
-      startDate: serializer.fromJson<DateTime>(json['startDate']),
-      endDate: serializer.fromJson<DateTime?>(json['endDate']),
-      goals: serializer.fromJson<String>(json['goals']),
-      actions: serializer.fromJson<String>(json['actions']),
-      status: serializer.fromJson<String>(json['status']),
-      notes: serializer.fromJson<String>(json['notes']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
-      'studentId': serializer.toJson<String>(studentId),
-      'createdBy': serializer.toJson<String>(createdBy),
-      'startDate': serializer.toJson<DateTime>(startDate),
-      'endDate': serializer.toJson<DateTime?>(endDate),
-      'goals': serializer.toJson<String>(goals),
-      'actions': serializer.toJson<String>(actions),
-      'status': serializer.toJson<String>(status),
-      'notes': serializer.toJson<String>(notes),
-    };
-  }
-
-  FollowUpPlan copyWith(
-          {String? id,
-          String? studentId,
-          String? createdBy,
-          DateTime? startDate,
-          Value<DateTime?> endDate = const Value.absent(),
-          String? goals,
-          String? actions,
-          String? status,
-          String? notes}) =>
-      FollowUpPlan(
-        id: id ?? this.id,
-        studentId: studentId ?? this.studentId,
-        createdBy: createdBy ?? this.createdBy,
-        startDate: startDate ?? this.startDate,
-        endDate: endDate.present ? endDate.value : this.endDate,
-        goals: goals ?? this.goals,
-        actions: actions ?? this.actions,
-        status: status ?? this.status,
-        notes: notes ?? this.notes,
-      );
-  FollowUpPlan copyWithCompanion(FollowUpPlansCompanion data) {
-    return FollowUpPlan(
-      id: data.id.present ? data.id.value : this.id,
-      studentId: data.studentId.present ? data.studentId.value : this.studentId,
-      createdBy: data.createdBy.present ? data.createdBy.value : this.createdBy,
-      startDate: data.startDate.present ? data.startDate.value : this.startDate,
-      endDate: data.endDate.present ? data.endDate.value : this.endDate,
-      goals: data.goals.present ? data.goals.value : this.goals,
-      actions: data.actions.present ? data.actions.value : this.actions,
-      status: data.status.present ? data.status.value : this.status,
-      notes: data.notes.present ? data.notes.value : this.notes,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('FollowUpPlan(')
-          ..write('id: $id, ')
-          ..write('studentId: $studentId, ')
-          ..write('createdBy: $createdBy, ')
-          ..write('startDate: $startDate, ')
-          ..write('endDate: $endDate, ')
-          ..write('goals: $goals, ')
-          ..write('actions: $actions, ')
-          ..write('status: $status, ')
-          ..write('notes: $notes')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(id, studentId, createdBy, startDate, endDate,
-      goals, actions, status, notes);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is FollowUpPlan &&
-          other.id == this.id &&
-          other.studentId == this.studentId &&
-          other.createdBy == this.createdBy &&
-          other.startDate == this.startDate &&
-          other.endDate == this.endDate &&
-          other.goals == this.goals &&
-          other.actions == this.actions &&
-          other.status == this.status &&
-          other.notes == this.notes);
-}
-
-class FollowUpPlansCompanion extends UpdateCompanion<FollowUpPlan> {
-  final Value<String> id;
-  final Value<String> studentId;
-  final Value<String> createdBy;
-  final Value<DateTime> startDate;
-  final Value<DateTime?> endDate;
-  final Value<String> goals;
-  final Value<String> actions;
-  final Value<String> status;
-  final Value<String> notes;
-  final Value<int> rowid;
-  const FollowUpPlansCompanion({
-    this.id = const Value.absent(),
-    this.studentId = const Value.absent(),
-    this.createdBy = const Value.absent(),
-    this.startDate = const Value.absent(),
-    this.endDate = const Value.absent(),
-    this.goals = const Value.absent(),
-    this.actions = const Value.absent(),
-    this.status = const Value.absent(),
-    this.notes = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  FollowUpPlansCompanion.insert({
-    required String id,
-    required String studentId,
-    required String createdBy,
-    required DateTime startDate,
-    this.endDate = const Value.absent(),
-    this.goals = const Value.absent(),
-    this.actions = const Value.absent(),
-    this.status = const Value.absent(),
-    this.notes = const Value.absent(),
-    this.rowid = const Value.absent(),
-  })  : id = Value(id),
-        studentId = Value(studentId),
-        createdBy = Value(createdBy),
-        startDate = Value(startDate);
-  static Insertable<FollowUpPlan> custom({
-    Expression<String>? id,
-    Expression<String>? studentId,
-    Expression<String>? createdBy,
-    Expression<DateTime>? startDate,
-    Expression<DateTime>? endDate,
-    Expression<String>? goals,
-    Expression<String>? actions,
-    Expression<String>? status,
-    Expression<String>? notes,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (studentId != null) 'student_id': studentId,
-      if (createdBy != null) 'created_by': createdBy,
-      if (startDate != null) 'start_date': startDate,
-      if (endDate != null) 'end_date': endDate,
-      if (goals != null) 'goals': goals,
-      if (actions != null) 'actions': actions,
-      if (status != null) 'status': status,
-      if (notes != null) 'notes': notes,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  FollowUpPlansCompanion copyWith(
-      {Value<String>? id,
-      Value<String>? studentId,
-      Value<String>? createdBy,
-      Value<DateTime>? startDate,
-      Value<DateTime?>? endDate,
-      Value<String>? goals,
-      Value<String>? actions,
-      Value<String>? status,
-      Value<String>? notes,
-      Value<int>? rowid}) {
-    return FollowUpPlansCompanion(
-      id: id ?? this.id,
-      studentId: studentId ?? this.studentId,
-      createdBy: createdBy ?? this.createdBy,
-      startDate: startDate ?? this.startDate,
-      endDate: endDate ?? this.endDate,
-      goals: goals ?? this.goals,
-      actions: actions ?? this.actions,
-      status: status ?? this.status,
-      notes: notes ?? this.notes,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<String>(id.value);
-    }
-    if (studentId.present) {
-      map['student_id'] = Variable<String>(studentId.value);
-    }
-    if (createdBy.present) {
-      map['created_by'] = Variable<String>(createdBy.value);
-    }
-    if (startDate.present) {
-      map['start_date'] = Variable<DateTime>(startDate.value);
-    }
-    if (endDate.present) {
-      map['end_date'] = Variable<DateTime>(endDate.value);
-    }
-    if (goals.present) {
-      map['goals'] = Variable<String>(goals.value);
-    }
-    if (actions.present) {
-      map['actions'] = Variable<String>(actions.value);
-    }
-    if (status.present) {
-      map['status'] = Variable<String>(status.value);
-    }
-    if (notes.present) {
-      map['notes'] = Variable<String>(notes.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('FollowUpPlansCompanion(')
-          ..write('id: $id, ')
-          ..write('studentId: $studentId, ')
-          ..write('createdBy: $createdBy, ')
-          ..write('startDate: $startDate, ')
-          ..write('endDate: $endDate, ')
-          ..write('goals: $goals, ')
-          ..write('actions: $actions, ')
-          ..write('status: $status, ')
-          ..write('notes: $notes, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $AlertsTable extends Alerts with TableInfo<$AlertsTable, Alert> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $AlertsTable(this.attachedDatabase, [this._alias]);
+  $WeeklyPlansTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -3693,82 +2482,86 @@ class $AlertsTable extends Alerts with TableInfo<$AlertsTable, Alert> {
   @override
   late final GeneratedColumn<String> halaqaId = GeneratedColumn<String>(
       'halaqa_id', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(''));
-  static const VerificationMeta _typeMeta = const VerificationMeta('type');
-  @override
-  late final GeneratedColumn<String> type = GeneratedColumn<String>(
-      'type', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _severityMeta =
-      const VerificationMeta('severity');
+  static const VerificationMeta _weekStartKeyMeta =
+      const VerificationMeta('weekStartKey');
   @override
-  late final GeneratedColumn<String> severity = GeneratedColumn<String>(
-      'severity', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant('normal'));
-  static const VerificationMeta _messageMeta =
-      const VerificationMeta('message');
-  @override
-  late final GeneratedColumn<String> message = GeneratedColumn<String>(
-      'message', aliasedName, false,
+  late final GeneratedColumn<String> weekStartKey = GeneratedColumn<String>(
+      'week_start_key', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  static const VerificationMeta _requiredNewPagesMeta =
+      const VerificationMeta('requiredNewPages');
   @override
-  late final GeneratedColumn<String> status = GeneratedColumn<String>(
-      'status', aliasedName, false,
-      type: DriftSqlType.string,
+  late final GeneratedColumn<double> requiredNewPages = GeneratedColumn<double>(
+      'required_new_pages', aliasedName, false,
+      type: DriftSqlType.double,
       requiredDuringInsert: false,
-      defaultValue: const Constant('pendingReview'));
-  static const VerificationMeta _createdByMeta =
-      const VerificationMeta('createdBy');
+      defaultValue: const Constant(0));
+  static const VerificationMeta _requiredRecentPagesMeta =
+      const VerificationMeta('requiredRecentPages');
   @override
-  late final GeneratedColumn<String> createdBy = GeneratedColumn<String>(
-      'created_by', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant('system'));
+  late final GeneratedColumn<double> requiredRecentPages =
+      GeneratedColumn<double>('required_recent_pages', aliasedName, false,
+          type: DriftSqlType.double,
+          requiredDuringInsert: false,
+          defaultValue: const Constant(0));
+  static const VerificationMeta _requiredMinorPagesMeta =
+      const VerificationMeta('requiredMinorPages');
+  @override
+  late final GeneratedColumn<double> requiredMinorPages =
+      GeneratedColumn<double>('required_minor_pages', aliasedName, false,
+          type: DriftSqlType.double,
+          requiredDuringInsert: false,
+          defaultValue: const Constant(0));
+  static const VerificationMeta _requiredMajorPagesMeta =
+      const VerificationMeta('requiredMajorPages');
+  @override
+  late final GeneratedColumn<double> requiredMajorPages =
+      GeneratedColumn<double>('required_major_pages', aliasedName, false,
+          type: DriftSqlType.double,
+          requiredDuringInsert: false,
+          defaultValue: const Constant(0));
+  static const VerificationMeta _requiredFridayPagesMeta =
+      const VerificationMeta('requiredFridayPages');
+  @override
+  late final GeneratedColumn<double> requiredFridayPages =
+      GeneratedColumn<double>('required_friday_pages', aliasedName, false,
+          type: DriftSqlType.double,
+          requiredDuringInsert: false,
+          defaultValue: const Constant(0));
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
   late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
       'created_at', aliasedName, false,
       type: DriftSqlType.dateTime, requiredDuringInsert: true);
-  static const VerificationMeta _reviewedByMeta =
-      const VerificationMeta('reviewedBy');
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
   @override
-  late final GeneratedColumn<String> reviewedBy = GeneratedColumn<String>(
-      'reviewed_by', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _reviewNoteMeta =
-      const VerificationMeta('reviewNote');
-  @override
-  late final GeneratedColumn<String> reviewNote = GeneratedColumn<String>(
-      'review_note', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [
         id,
         studentId,
         halaqaId,
-        type,
-        severity,
-        message,
-        status,
-        createdBy,
+        weekStartKey,
+        requiredNewPages,
+        requiredRecentPages,
+        requiredMinorPages,
+        requiredMajorPages,
+        requiredFridayPages,
         createdAt,
-        reviewedBy,
-        reviewNote
+        updatedAt
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'alerts';
+  static const String $name = 'weekly_plans';
   @override
-  VerificationContext validateIntegrity(Insertable<Alert> instance,
+  VerificationContext validateIntegrity(Insertable<WeeklyPlan> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -3786,30 +2579,46 @@ class $AlertsTable extends Alerts with TableInfo<$AlertsTable, Alert> {
     if (data.containsKey('halaqa_id')) {
       context.handle(_halaqaIdMeta,
           halaqaId.isAcceptableOrUnknown(data['halaqa_id']!, _halaqaIdMeta));
+    } else if (isInserting) {
+      context.missing(_halaqaIdMeta);
     }
-    if (data.containsKey('type')) {
+    if (data.containsKey('week_start_key')) {
       context.handle(
-          _typeMeta, type.isAcceptableOrUnknown(data['type']!, _typeMeta));
+          _weekStartKeyMeta,
+          weekStartKey.isAcceptableOrUnknown(
+              data['week_start_key']!, _weekStartKeyMeta));
     } else if (isInserting) {
-      context.missing(_typeMeta);
+      context.missing(_weekStartKeyMeta);
     }
-    if (data.containsKey('severity')) {
-      context.handle(_severityMeta,
-          severity.isAcceptableOrUnknown(data['severity']!, _severityMeta));
+    if (data.containsKey('required_new_pages')) {
+      context.handle(
+          _requiredNewPagesMeta,
+          requiredNewPages.isAcceptableOrUnknown(
+              data['required_new_pages']!, _requiredNewPagesMeta));
     }
-    if (data.containsKey('message')) {
-      context.handle(_messageMeta,
-          message.isAcceptableOrUnknown(data['message']!, _messageMeta));
-    } else if (isInserting) {
-      context.missing(_messageMeta);
+    if (data.containsKey('required_recent_pages')) {
+      context.handle(
+          _requiredRecentPagesMeta,
+          requiredRecentPages.isAcceptableOrUnknown(
+              data['required_recent_pages']!, _requiredRecentPagesMeta));
     }
-    if (data.containsKey('status')) {
-      context.handle(_statusMeta,
-          status.isAcceptableOrUnknown(data['status']!, _statusMeta));
+    if (data.containsKey('required_minor_pages')) {
+      context.handle(
+          _requiredMinorPagesMeta,
+          requiredMinorPages.isAcceptableOrUnknown(
+              data['required_minor_pages']!, _requiredMinorPagesMeta));
     }
-    if (data.containsKey('created_by')) {
-      context.handle(_createdByMeta,
-          createdBy.isAcceptableOrUnknown(data['created_by']!, _createdByMeta));
+    if (data.containsKey('required_major_pages')) {
+      context.handle(
+          _requiredMajorPagesMeta,
+          requiredMajorPages.isAcceptableOrUnknown(
+              data['required_major_pages']!, _requiredMajorPagesMeta));
+    }
+    if (data.containsKey('required_friday_pages')) {
+      context.handle(
+          _requiredFridayPagesMeta,
+          requiredFridayPages.isAcceptableOrUnknown(
+              data['required_friday_pages']!, _requiredFridayPagesMeta));
     }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
@@ -3817,17 +2626,11 @@ class $AlertsTable extends Alerts with TableInfo<$AlertsTable, Alert> {
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
-    if (data.containsKey('reviewed_by')) {
-      context.handle(
-          _reviewedByMeta,
-          reviewedBy.isAcceptableOrUnknown(
-              data['reviewed_by']!, _reviewedByMeta));
-    }
-    if (data.containsKey('review_note')) {
-      context.handle(
-          _reviewNoteMeta,
-          reviewNote.isAcceptableOrUnknown(
-              data['review_note']!, _reviewNoteMeta));
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
     }
     return context;
   }
@@ -3835,120 +2638,122 @@ class $AlertsTable extends Alerts with TableInfo<$AlertsTable, Alert> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Alert map(Map<String, dynamic> data, {String? tablePrefix}) {
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+        {studentId, weekStartKey},
+      ];
+  @override
+  WeeklyPlan map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Alert(
+    return WeeklyPlan(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
       studentId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}student_id'])!,
       halaqaId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}halaqa_id'])!,
-      type: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}type'])!,
-      severity: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}severity'])!,
-      message: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}message'])!,
-      status: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
-      createdBy: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}created_by'])!,
+      weekStartKey: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}week_start_key'])!,
+      requiredNewPages: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}required_new_pages'])!,
+      requiredRecentPages: attachedDatabase.typeMapping.read(
+          DriftSqlType.double,
+          data['${effectivePrefix}required_recent_pages'])!,
+      requiredMinorPages: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}required_minor_pages'])!,
+      requiredMajorPages: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}required_major_pages'])!,
+      requiredFridayPages: attachedDatabase.typeMapping.read(
+          DriftSqlType.double,
+          data['${effectivePrefix}required_friday_pages'])!,
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
-      reviewedBy: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}reviewed_by']),
-      reviewNote: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}review_note']),
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
     );
   }
 
   @override
-  $AlertsTable createAlias(String alias) {
-    return $AlertsTable(attachedDatabase, alias);
+  $WeeklyPlansTable createAlias(String alias) {
+    return $WeeklyPlansTable(attachedDatabase, alias);
   }
 }
 
-class Alert extends DataClass implements Insertable<Alert> {
+class WeeklyPlan extends DataClass implements Insertable<WeeklyPlan> {
   final String id;
   final String studentId;
   final String halaqaId;
-  final String type;
-  final String severity;
-  final String message;
-  final String status;
-  final String createdBy;
+  final String weekStartKey;
+  final double requiredNewPages;
+  final double requiredRecentPages;
+  final double requiredMinorPages;
+  final double requiredMajorPages;
+  final double requiredFridayPages;
   final DateTime createdAt;
-  final String? reviewedBy;
-  final String? reviewNote;
-  const Alert(
+  final DateTime updatedAt;
+  const WeeklyPlan(
       {required this.id,
       required this.studentId,
       required this.halaqaId,
-      required this.type,
-      required this.severity,
-      required this.message,
-      required this.status,
-      required this.createdBy,
+      required this.weekStartKey,
+      required this.requiredNewPages,
+      required this.requiredRecentPages,
+      required this.requiredMinorPages,
+      required this.requiredMajorPages,
+      required this.requiredFridayPages,
       required this.createdAt,
-      this.reviewedBy,
-      this.reviewNote});
+      required this.updatedAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['student_id'] = Variable<String>(studentId);
     map['halaqa_id'] = Variable<String>(halaqaId);
-    map['type'] = Variable<String>(type);
-    map['severity'] = Variable<String>(severity);
-    map['message'] = Variable<String>(message);
-    map['status'] = Variable<String>(status);
-    map['created_by'] = Variable<String>(createdBy);
+    map['week_start_key'] = Variable<String>(weekStartKey);
+    map['required_new_pages'] = Variable<double>(requiredNewPages);
+    map['required_recent_pages'] = Variable<double>(requiredRecentPages);
+    map['required_minor_pages'] = Variable<double>(requiredMinorPages);
+    map['required_major_pages'] = Variable<double>(requiredMajorPages);
+    map['required_friday_pages'] = Variable<double>(requiredFridayPages);
     map['created_at'] = Variable<DateTime>(createdAt);
-    if (!nullToAbsent || reviewedBy != null) {
-      map['reviewed_by'] = Variable<String>(reviewedBy);
-    }
-    if (!nullToAbsent || reviewNote != null) {
-      map['review_note'] = Variable<String>(reviewNote);
-    }
+    map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
   }
 
-  AlertsCompanion toCompanion(bool nullToAbsent) {
-    return AlertsCompanion(
+  WeeklyPlansCompanion toCompanion(bool nullToAbsent) {
+    return WeeklyPlansCompanion(
       id: Value(id),
       studentId: Value(studentId),
       halaqaId: Value(halaqaId),
-      type: Value(type),
-      severity: Value(severity),
-      message: Value(message),
-      status: Value(status),
-      createdBy: Value(createdBy),
+      weekStartKey: Value(weekStartKey),
+      requiredNewPages: Value(requiredNewPages),
+      requiredRecentPages: Value(requiredRecentPages),
+      requiredMinorPages: Value(requiredMinorPages),
+      requiredMajorPages: Value(requiredMajorPages),
+      requiredFridayPages: Value(requiredFridayPages),
       createdAt: Value(createdAt),
-      reviewedBy: reviewedBy == null && nullToAbsent
-          ? const Value.absent()
-          : Value(reviewedBy),
-      reviewNote: reviewNote == null && nullToAbsent
-          ? const Value.absent()
-          : Value(reviewNote),
+      updatedAt: Value(updatedAt),
     );
   }
 
-  factory Alert.fromJson(Map<String, dynamic> json,
+  factory WeeklyPlan.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Alert(
+    return WeeklyPlan(
       id: serializer.fromJson<String>(json['id']),
       studentId: serializer.fromJson<String>(json['studentId']),
       halaqaId: serializer.fromJson<String>(json['halaqaId']),
-      type: serializer.fromJson<String>(json['type']),
-      severity: serializer.fromJson<String>(json['severity']),
-      message: serializer.fromJson<String>(json['message']),
-      status: serializer.fromJson<String>(json['status']),
-      createdBy: serializer.fromJson<String>(json['createdBy']),
+      weekStartKey: serializer.fromJson<String>(json['weekStartKey']),
+      requiredNewPages: serializer.fromJson<double>(json['requiredNewPages']),
+      requiredRecentPages:
+          serializer.fromJson<double>(json['requiredRecentPages']),
+      requiredMinorPages:
+          serializer.fromJson<double>(json['requiredMinorPages']),
+      requiredMajorPages:
+          serializer.fromJson<double>(json['requiredMajorPages']),
+      requiredFridayPages:
+          serializer.fromJson<double>(json['requiredFridayPages']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      reviewedBy: serializer.fromJson<String?>(json['reviewedBy']),
-      reviewNote: serializer.fromJson<String?>(json['reviewNote']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
   }
   @override
@@ -3958,198 +2763,223 @@ class Alert extends DataClass implements Insertable<Alert> {
       'id': serializer.toJson<String>(id),
       'studentId': serializer.toJson<String>(studentId),
       'halaqaId': serializer.toJson<String>(halaqaId),
-      'type': serializer.toJson<String>(type),
-      'severity': serializer.toJson<String>(severity),
-      'message': serializer.toJson<String>(message),
-      'status': serializer.toJson<String>(status),
-      'createdBy': serializer.toJson<String>(createdBy),
+      'weekStartKey': serializer.toJson<String>(weekStartKey),
+      'requiredNewPages': serializer.toJson<double>(requiredNewPages),
+      'requiredRecentPages': serializer.toJson<double>(requiredRecentPages),
+      'requiredMinorPages': serializer.toJson<double>(requiredMinorPages),
+      'requiredMajorPages': serializer.toJson<double>(requiredMajorPages),
+      'requiredFridayPages': serializer.toJson<double>(requiredFridayPages),
       'createdAt': serializer.toJson<DateTime>(createdAt),
-      'reviewedBy': serializer.toJson<String?>(reviewedBy),
-      'reviewNote': serializer.toJson<String?>(reviewNote),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
   }
 
-  Alert copyWith(
+  WeeklyPlan copyWith(
           {String? id,
           String? studentId,
           String? halaqaId,
-          String? type,
-          String? severity,
-          String? message,
-          String? status,
-          String? createdBy,
+          String? weekStartKey,
+          double? requiredNewPages,
+          double? requiredRecentPages,
+          double? requiredMinorPages,
+          double? requiredMajorPages,
+          double? requiredFridayPages,
           DateTime? createdAt,
-          Value<String?> reviewedBy = const Value.absent(),
-          Value<String?> reviewNote = const Value.absent()}) =>
-      Alert(
+          DateTime? updatedAt}) =>
+      WeeklyPlan(
         id: id ?? this.id,
         studentId: studentId ?? this.studentId,
         halaqaId: halaqaId ?? this.halaqaId,
-        type: type ?? this.type,
-        severity: severity ?? this.severity,
-        message: message ?? this.message,
-        status: status ?? this.status,
-        createdBy: createdBy ?? this.createdBy,
+        weekStartKey: weekStartKey ?? this.weekStartKey,
+        requiredNewPages: requiredNewPages ?? this.requiredNewPages,
+        requiredRecentPages: requiredRecentPages ?? this.requiredRecentPages,
+        requiredMinorPages: requiredMinorPages ?? this.requiredMinorPages,
+        requiredMajorPages: requiredMajorPages ?? this.requiredMajorPages,
+        requiredFridayPages: requiredFridayPages ?? this.requiredFridayPages,
         createdAt: createdAt ?? this.createdAt,
-        reviewedBy: reviewedBy.present ? reviewedBy.value : this.reviewedBy,
-        reviewNote: reviewNote.present ? reviewNote.value : this.reviewNote,
+        updatedAt: updatedAt ?? this.updatedAt,
       );
-  Alert copyWithCompanion(AlertsCompanion data) {
-    return Alert(
+  WeeklyPlan copyWithCompanion(WeeklyPlansCompanion data) {
+    return WeeklyPlan(
       id: data.id.present ? data.id.value : this.id,
       studentId: data.studentId.present ? data.studentId.value : this.studentId,
       halaqaId: data.halaqaId.present ? data.halaqaId.value : this.halaqaId,
-      type: data.type.present ? data.type.value : this.type,
-      severity: data.severity.present ? data.severity.value : this.severity,
-      message: data.message.present ? data.message.value : this.message,
-      status: data.status.present ? data.status.value : this.status,
-      createdBy: data.createdBy.present ? data.createdBy.value : this.createdBy,
+      weekStartKey: data.weekStartKey.present
+          ? data.weekStartKey.value
+          : this.weekStartKey,
+      requiredNewPages: data.requiredNewPages.present
+          ? data.requiredNewPages.value
+          : this.requiredNewPages,
+      requiredRecentPages: data.requiredRecentPages.present
+          ? data.requiredRecentPages.value
+          : this.requiredRecentPages,
+      requiredMinorPages: data.requiredMinorPages.present
+          ? data.requiredMinorPages.value
+          : this.requiredMinorPages,
+      requiredMajorPages: data.requiredMajorPages.present
+          ? data.requiredMajorPages.value
+          : this.requiredMajorPages,
+      requiredFridayPages: data.requiredFridayPages.present
+          ? data.requiredFridayPages.value
+          : this.requiredFridayPages,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      reviewedBy:
-          data.reviewedBy.present ? data.reviewedBy.value : this.reviewedBy,
-      reviewNote:
-          data.reviewNote.present ? data.reviewNote.value : this.reviewNote,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
   }
 
   @override
   String toString() {
-    return (StringBuffer('Alert(')
+    return (StringBuffer('WeeklyPlan(')
           ..write('id: $id, ')
           ..write('studentId: $studentId, ')
           ..write('halaqaId: $halaqaId, ')
-          ..write('type: $type, ')
-          ..write('severity: $severity, ')
-          ..write('message: $message, ')
-          ..write('status: $status, ')
-          ..write('createdBy: $createdBy, ')
+          ..write('weekStartKey: $weekStartKey, ')
+          ..write('requiredNewPages: $requiredNewPages, ')
+          ..write('requiredRecentPages: $requiredRecentPages, ')
+          ..write('requiredMinorPages: $requiredMinorPages, ')
+          ..write('requiredMajorPages: $requiredMajorPages, ')
+          ..write('requiredFridayPages: $requiredFridayPages, ')
           ..write('createdAt: $createdAt, ')
-          ..write('reviewedBy: $reviewedBy, ')
-          ..write('reviewNote: $reviewNote')
+          ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, studentId, halaqaId, type, severity,
-      message, status, createdBy, createdAt, reviewedBy, reviewNote);
+  int get hashCode => Object.hash(
+      id,
+      studentId,
+      halaqaId,
+      weekStartKey,
+      requiredNewPages,
+      requiredRecentPages,
+      requiredMinorPages,
+      requiredMajorPages,
+      requiredFridayPages,
+      createdAt,
+      updatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Alert &&
+      (other is WeeklyPlan &&
           other.id == this.id &&
           other.studentId == this.studentId &&
           other.halaqaId == this.halaqaId &&
-          other.type == this.type &&
-          other.severity == this.severity &&
-          other.message == this.message &&
-          other.status == this.status &&
-          other.createdBy == this.createdBy &&
+          other.weekStartKey == this.weekStartKey &&
+          other.requiredNewPages == this.requiredNewPages &&
+          other.requiredRecentPages == this.requiredRecentPages &&
+          other.requiredMinorPages == this.requiredMinorPages &&
+          other.requiredMajorPages == this.requiredMajorPages &&
+          other.requiredFridayPages == this.requiredFridayPages &&
           other.createdAt == this.createdAt &&
-          other.reviewedBy == this.reviewedBy &&
-          other.reviewNote == this.reviewNote);
+          other.updatedAt == this.updatedAt);
 }
 
-class AlertsCompanion extends UpdateCompanion<Alert> {
+class WeeklyPlansCompanion extends UpdateCompanion<WeeklyPlan> {
   final Value<String> id;
   final Value<String> studentId;
   final Value<String> halaqaId;
-  final Value<String> type;
-  final Value<String> severity;
-  final Value<String> message;
-  final Value<String> status;
-  final Value<String> createdBy;
+  final Value<String> weekStartKey;
+  final Value<double> requiredNewPages;
+  final Value<double> requiredRecentPages;
+  final Value<double> requiredMinorPages;
+  final Value<double> requiredMajorPages;
+  final Value<double> requiredFridayPages;
   final Value<DateTime> createdAt;
-  final Value<String?> reviewedBy;
-  final Value<String?> reviewNote;
+  final Value<DateTime> updatedAt;
   final Value<int> rowid;
-  const AlertsCompanion({
+  const WeeklyPlansCompanion({
     this.id = const Value.absent(),
     this.studentId = const Value.absent(),
     this.halaqaId = const Value.absent(),
-    this.type = const Value.absent(),
-    this.severity = const Value.absent(),
-    this.message = const Value.absent(),
-    this.status = const Value.absent(),
-    this.createdBy = const Value.absent(),
+    this.weekStartKey = const Value.absent(),
+    this.requiredNewPages = const Value.absent(),
+    this.requiredRecentPages = const Value.absent(),
+    this.requiredMinorPages = const Value.absent(),
+    this.requiredMajorPages = const Value.absent(),
+    this.requiredFridayPages = const Value.absent(),
     this.createdAt = const Value.absent(),
-    this.reviewedBy = const Value.absent(),
-    this.reviewNote = const Value.absent(),
+    this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  AlertsCompanion.insert({
+  WeeklyPlansCompanion.insert({
     required String id,
     required String studentId,
-    this.halaqaId = const Value.absent(),
-    required String type,
-    this.severity = const Value.absent(),
-    required String message,
-    this.status = const Value.absent(),
-    this.createdBy = const Value.absent(),
+    required String halaqaId,
+    required String weekStartKey,
+    this.requiredNewPages = const Value.absent(),
+    this.requiredRecentPages = const Value.absent(),
+    this.requiredMinorPages = const Value.absent(),
+    this.requiredMajorPages = const Value.absent(),
+    this.requiredFridayPages = const Value.absent(),
     required DateTime createdAt,
-    this.reviewedBy = const Value.absent(),
-    this.reviewNote = const Value.absent(),
+    required DateTime updatedAt,
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         studentId = Value(studentId),
-        type = Value(type),
-        message = Value(message),
-        createdAt = Value(createdAt);
-  static Insertable<Alert> custom({
+        halaqaId = Value(halaqaId),
+        weekStartKey = Value(weekStartKey),
+        createdAt = Value(createdAt),
+        updatedAt = Value(updatedAt);
+  static Insertable<WeeklyPlan> custom({
     Expression<String>? id,
     Expression<String>? studentId,
     Expression<String>? halaqaId,
-    Expression<String>? type,
-    Expression<String>? severity,
-    Expression<String>? message,
-    Expression<String>? status,
-    Expression<String>? createdBy,
+    Expression<String>? weekStartKey,
+    Expression<double>? requiredNewPages,
+    Expression<double>? requiredRecentPages,
+    Expression<double>? requiredMinorPages,
+    Expression<double>? requiredMajorPages,
+    Expression<double>? requiredFridayPages,
     Expression<DateTime>? createdAt,
-    Expression<String>? reviewedBy,
-    Expression<String>? reviewNote,
+    Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (studentId != null) 'student_id': studentId,
       if (halaqaId != null) 'halaqa_id': halaqaId,
-      if (type != null) 'type': type,
-      if (severity != null) 'severity': severity,
-      if (message != null) 'message': message,
-      if (status != null) 'status': status,
-      if (createdBy != null) 'created_by': createdBy,
+      if (weekStartKey != null) 'week_start_key': weekStartKey,
+      if (requiredNewPages != null) 'required_new_pages': requiredNewPages,
+      if (requiredRecentPages != null)
+        'required_recent_pages': requiredRecentPages,
+      if (requiredMinorPages != null)
+        'required_minor_pages': requiredMinorPages,
+      if (requiredMajorPages != null)
+        'required_major_pages': requiredMajorPages,
+      if (requiredFridayPages != null)
+        'required_friday_pages': requiredFridayPages,
       if (createdAt != null) 'created_at': createdAt,
-      if (reviewedBy != null) 'reviewed_by': reviewedBy,
-      if (reviewNote != null) 'review_note': reviewNote,
+      if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
-  AlertsCompanion copyWith(
+  WeeklyPlansCompanion copyWith(
       {Value<String>? id,
       Value<String>? studentId,
       Value<String>? halaqaId,
-      Value<String>? type,
-      Value<String>? severity,
-      Value<String>? message,
-      Value<String>? status,
-      Value<String>? createdBy,
+      Value<String>? weekStartKey,
+      Value<double>? requiredNewPages,
+      Value<double>? requiredRecentPages,
+      Value<double>? requiredMinorPages,
+      Value<double>? requiredMajorPages,
+      Value<double>? requiredFridayPages,
       Value<DateTime>? createdAt,
-      Value<String?>? reviewedBy,
-      Value<String?>? reviewNote,
+      Value<DateTime>? updatedAt,
       Value<int>? rowid}) {
-    return AlertsCompanion(
+    return WeeklyPlansCompanion(
       id: id ?? this.id,
       studentId: studentId ?? this.studentId,
       halaqaId: halaqaId ?? this.halaqaId,
-      type: type ?? this.type,
-      severity: severity ?? this.severity,
-      message: message ?? this.message,
-      status: status ?? this.status,
-      createdBy: createdBy ?? this.createdBy,
+      weekStartKey: weekStartKey ?? this.weekStartKey,
+      requiredNewPages: requiredNewPages ?? this.requiredNewPages,
+      requiredRecentPages: requiredRecentPages ?? this.requiredRecentPages,
+      requiredMinorPages: requiredMinorPages ?? this.requiredMinorPages,
+      requiredMajorPages: requiredMajorPages ?? this.requiredMajorPages,
+      requiredFridayPages: requiredFridayPages ?? this.requiredFridayPages,
       createdAt: createdAt ?? this.createdAt,
-      reviewedBy: reviewedBy ?? this.reviewedBy,
-      reviewNote: reviewNote ?? this.reviewNote,
+      updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -4166,29 +2996,31 @@ class AlertsCompanion extends UpdateCompanion<Alert> {
     if (halaqaId.present) {
       map['halaqa_id'] = Variable<String>(halaqaId.value);
     }
-    if (type.present) {
-      map['type'] = Variable<String>(type.value);
+    if (weekStartKey.present) {
+      map['week_start_key'] = Variable<String>(weekStartKey.value);
     }
-    if (severity.present) {
-      map['severity'] = Variable<String>(severity.value);
+    if (requiredNewPages.present) {
+      map['required_new_pages'] = Variable<double>(requiredNewPages.value);
     }
-    if (message.present) {
-      map['message'] = Variable<String>(message.value);
+    if (requiredRecentPages.present) {
+      map['required_recent_pages'] =
+          Variable<double>(requiredRecentPages.value);
     }
-    if (status.present) {
-      map['status'] = Variable<String>(status.value);
+    if (requiredMinorPages.present) {
+      map['required_minor_pages'] = Variable<double>(requiredMinorPages.value);
     }
-    if (createdBy.present) {
-      map['created_by'] = Variable<String>(createdBy.value);
+    if (requiredMajorPages.present) {
+      map['required_major_pages'] = Variable<double>(requiredMajorPages.value);
+    }
+    if (requiredFridayPages.present) {
+      map['required_friday_pages'] =
+          Variable<double>(requiredFridayPages.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
-    if (reviewedBy.present) {
-      map['reviewed_by'] = Variable<String>(reviewedBy.value);
-    }
-    if (reviewNote.present) {
-      map['review_note'] = Variable<String>(reviewNote.value);
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -4198,489 +3030,18 @@ class AlertsCompanion extends UpdateCompanion<Alert> {
 
   @override
   String toString() {
-    return (StringBuffer('AlertsCompanion(')
+    return (StringBuffer('WeeklyPlansCompanion(')
           ..write('id: $id, ')
           ..write('studentId: $studentId, ')
           ..write('halaqaId: $halaqaId, ')
-          ..write('type: $type, ')
-          ..write('severity: $severity, ')
-          ..write('message: $message, ')
-          ..write('status: $status, ')
-          ..write('createdBy: $createdBy, ')
+          ..write('weekStartKey: $weekStartKey, ')
+          ..write('requiredNewPages: $requiredNewPages, ')
+          ..write('requiredRecentPages: $requiredRecentPages, ')
+          ..write('requiredMinorPages: $requiredMinorPages, ')
+          ..write('requiredMajorPages: $requiredMajorPages, ')
+          ..write('requiredFridayPages: $requiredFridayPages, ')
           ..write('createdAt: $createdAt, ')
-          ..write('reviewedBy: $reviewedBy, ')
-          ..write('reviewNote: $reviewNote, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $ContactLogsTable extends ContactLogs
-    with TableInfo<$ContactLogsTable, ContactLog> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $ContactLogsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
-      'id', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _studentIdMeta =
-      const VerificationMeta('studentId');
-  @override
-  late final GeneratedColumn<String> studentId = GeneratedColumn<String>(
-      'student_id', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _guardianIdMeta =
-      const VerificationMeta('guardianId');
-  @override
-  late final GeneratedColumn<String> guardianId = GeneratedColumn<String>(
-      'guardian_id', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(''));
-  static const VerificationMeta _channelMeta =
-      const VerificationMeta('channel');
-  @override
-  late final GeneratedColumn<String> channel = GeneratedColumn<String>(
-      'channel', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _reasonMeta = const VerificationMeta('reason');
-  @override
-  late final GeneratedColumn<String> reason = GeneratedColumn<String>(
-      'reason', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(''));
-  static const VerificationMeta _noteMeta = const VerificationMeta('note');
-  @override
-  late final GeneratedColumn<String> note = GeneratedColumn<String>(
-      'note', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(''));
-  static const VerificationMeta _contactedByMeta =
-      const VerificationMeta('contactedBy');
-  @override
-  late final GeneratedColumn<String> contactedBy = GeneratedColumn<String>(
-      'contacted_by', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(''));
-  static const VerificationMeta _contactedAtMeta =
-      const VerificationMeta('contactedAt');
-  @override
-  late final GeneratedColumn<DateTime> contactedAt = GeneratedColumn<DateTime>(
-      'contacted_at', aliasedName, false,
-      type: DriftSqlType.dateTime, requiredDuringInsert: true);
-  static const VerificationMeta _outcomeMeta =
-      const VerificationMeta('outcome');
-  @override
-  late final GeneratedColumn<String> outcome = GeneratedColumn<String>(
-      'outcome', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  @override
-  List<GeneratedColumn> get $columns => [
-        id,
-        studentId,
-        guardianId,
-        channel,
-        reason,
-        note,
-        contactedBy,
-        contactedAt,
-        outcome
-      ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'contact_logs';
-  @override
-  VerificationContext validateIntegrity(Insertable<ContactLog> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
-    }
-    if (data.containsKey('student_id')) {
-      context.handle(_studentIdMeta,
-          studentId.isAcceptableOrUnknown(data['student_id']!, _studentIdMeta));
-    } else if (isInserting) {
-      context.missing(_studentIdMeta);
-    }
-    if (data.containsKey('guardian_id')) {
-      context.handle(
-          _guardianIdMeta,
-          guardianId.isAcceptableOrUnknown(
-              data['guardian_id']!, _guardianIdMeta));
-    }
-    if (data.containsKey('channel')) {
-      context.handle(_channelMeta,
-          channel.isAcceptableOrUnknown(data['channel']!, _channelMeta));
-    } else if (isInserting) {
-      context.missing(_channelMeta);
-    }
-    if (data.containsKey('reason')) {
-      context.handle(_reasonMeta,
-          reason.isAcceptableOrUnknown(data['reason']!, _reasonMeta));
-    }
-    if (data.containsKey('note')) {
-      context.handle(
-          _noteMeta, note.isAcceptableOrUnknown(data['note']!, _noteMeta));
-    }
-    if (data.containsKey('contacted_by')) {
-      context.handle(
-          _contactedByMeta,
-          contactedBy.isAcceptableOrUnknown(
-              data['contacted_by']!, _contactedByMeta));
-    }
-    if (data.containsKey('contacted_at')) {
-      context.handle(
-          _contactedAtMeta,
-          contactedAt.isAcceptableOrUnknown(
-              data['contacted_at']!, _contactedAtMeta));
-    } else if (isInserting) {
-      context.missing(_contactedAtMeta);
-    }
-    if (data.containsKey('outcome')) {
-      context.handle(_outcomeMeta,
-          outcome.isAcceptableOrUnknown(data['outcome']!, _outcomeMeta));
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  ContactLog map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return ContactLog(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
-      studentId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}student_id'])!,
-      guardianId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}guardian_id'])!,
-      channel: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}channel'])!,
-      reason: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}reason'])!,
-      note: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}note'])!,
-      contactedBy: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}contacted_by'])!,
-      contactedAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}contacted_at'])!,
-      outcome: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}outcome']),
-    );
-  }
-
-  @override
-  $ContactLogsTable createAlias(String alias) {
-    return $ContactLogsTable(attachedDatabase, alias);
-  }
-}
-
-class ContactLog extends DataClass implements Insertable<ContactLog> {
-  final String id;
-  final String studentId;
-  final String guardianId;
-  final String channel;
-  final String reason;
-  final String note;
-  final String contactedBy;
-  final DateTime contactedAt;
-  final String? outcome;
-  const ContactLog(
-      {required this.id,
-      required this.studentId,
-      required this.guardianId,
-      required this.channel,
-      required this.reason,
-      required this.note,
-      required this.contactedBy,
-      required this.contactedAt,
-      this.outcome});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
-    map['student_id'] = Variable<String>(studentId);
-    map['guardian_id'] = Variable<String>(guardianId);
-    map['channel'] = Variable<String>(channel);
-    map['reason'] = Variable<String>(reason);
-    map['note'] = Variable<String>(note);
-    map['contacted_by'] = Variable<String>(contactedBy);
-    map['contacted_at'] = Variable<DateTime>(contactedAt);
-    if (!nullToAbsent || outcome != null) {
-      map['outcome'] = Variable<String>(outcome);
-    }
-    return map;
-  }
-
-  ContactLogsCompanion toCompanion(bool nullToAbsent) {
-    return ContactLogsCompanion(
-      id: Value(id),
-      studentId: Value(studentId),
-      guardianId: Value(guardianId),
-      channel: Value(channel),
-      reason: Value(reason),
-      note: Value(note),
-      contactedBy: Value(contactedBy),
-      contactedAt: Value(contactedAt),
-      outcome: outcome == null && nullToAbsent
-          ? const Value.absent()
-          : Value(outcome),
-    );
-  }
-
-  factory ContactLog.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return ContactLog(
-      id: serializer.fromJson<String>(json['id']),
-      studentId: serializer.fromJson<String>(json['studentId']),
-      guardianId: serializer.fromJson<String>(json['guardianId']),
-      channel: serializer.fromJson<String>(json['channel']),
-      reason: serializer.fromJson<String>(json['reason']),
-      note: serializer.fromJson<String>(json['note']),
-      contactedBy: serializer.fromJson<String>(json['contactedBy']),
-      contactedAt: serializer.fromJson<DateTime>(json['contactedAt']),
-      outcome: serializer.fromJson<String?>(json['outcome']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
-      'studentId': serializer.toJson<String>(studentId),
-      'guardianId': serializer.toJson<String>(guardianId),
-      'channel': serializer.toJson<String>(channel),
-      'reason': serializer.toJson<String>(reason),
-      'note': serializer.toJson<String>(note),
-      'contactedBy': serializer.toJson<String>(contactedBy),
-      'contactedAt': serializer.toJson<DateTime>(contactedAt),
-      'outcome': serializer.toJson<String?>(outcome),
-    };
-  }
-
-  ContactLog copyWith(
-          {String? id,
-          String? studentId,
-          String? guardianId,
-          String? channel,
-          String? reason,
-          String? note,
-          String? contactedBy,
-          DateTime? contactedAt,
-          Value<String?> outcome = const Value.absent()}) =>
-      ContactLog(
-        id: id ?? this.id,
-        studentId: studentId ?? this.studentId,
-        guardianId: guardianId ?? this.guardianId,
-        channel: channel ?? this.channel,
-        reason: reason ?? this.reason,
-        note: note ?? this.note,
-        contactedBy: contactedBy ?? this.contactedBy,
-        contactedAt: contactedAt ?? this.contactedAt,
-        outcome: outcome.present ? outcome.value : this.outcome,
-      );
-  ContactLog copyWithCompanion(ContactLogsCompanion data) {
-    return ContactLog(
-      id: data.id.present ? data.id.value : this.id,
-      studentId: data.studentId.present ? data.studentId.value : this.studentId,
-      guardianId:
-          data.guardianId.present ? data.guardianId.value : this.guardianId,
-      channel: data.channel.present ? data.channel.value : this.channel,
-      reason: data.reason.present ? data.reason.value : this.reason,
-      note: data.note.present ? data.note.value : this.note,
-      contactedBy:
-          data.contactedBy.present ? data.contactedBy.value : this.contactedBy,
-      contactedAt:
-          data.contactedAt.present ? data.contactedAt.value : this.contactedAt,
-      outcome: data.outcome.present ? data.outcome.value : this.outcome,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('ContactLog(')
-          ..write('id: $id, ')
-          ..write('studentId: $studentId, ')
-          ..write('guardianId: $guardianId, ')
-          ..write('channel: $channel, ')
-          ..write('reason: $reason, ')
-          ..write('note: $note, ')
-          ..write('contactedBy: $contactedBy, ')
-          ..write('contactedAt: $contactedAt, ')
-          ..write('outcome: $outcome')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(id, studentId, guardianId, channel, reason,
-      note, contactedBy, contactedAt, outcome);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is ContactLog &&
-          other.id == this.id &&
-          other.studentId == this.studentId &&
-          other.guardianId == this.guardianId &&
-          other.channel == this.channel &&
-          other.reason == this.reason &&
-          other.note == this.note &&
-          other.contactedBy == this.contactedBy &&
-          other.contactedAt == this.contactedAt &&
-          other.outcome == this.outcome);
-}
-
-class ContactLogsCompanion extends UpdateCompanion<ContactLog> {
-  final Value<String> id;
-  final Value<String> studentId;
-  final Value<String> guardianId;
-  final Value<String> channel;
-  final Value<String> reason;
-  final Value<String> note;
-  final Value<String> contactedBy;
-  final Value<DateTime> contactedAt;
-  final Value<String?> outcome;
-  final Value<int> rowid;
-  const ContactLogsCompanion({
-    this.id = const Value.absent(),
-    this.studentId = const Value.absent(),
-    this.guardianId = const Value.absent(),
-    this.channel = const Value.absent(),
-    this.reason = const Value.absent(),
-    this.note = const Value.absent(),
-    this.contactedBy = const Value.absent(),
-    this.contactedAt = const Value.absent(),
-    this.outcome = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  ContactLogsCompanion.insert({
-    required String id,
-    required String studentId,
-    this.guardianId = const Value.absent(),
-    required String channel,
-    this.reason = const Value.absent(),
-    this.note = const Value.absent(),
-    this.contactedBy = const Value.absent(),
-    required DateTime contactedAt,
-    this.outcome = const Value.absent(),
-    this.rowid = const Value.absent(),
-  })  : id = Value(id),
-        studentId = Value(studentId),
-        channel = Value(channel),
-        contactedAt = Value(contactedAt);
-  static Insertable<ContactLog> custom({
-    Expression<String>? id,
-    Expression<String>? studentId,
-    Expression<String>? guardianId,
-    Expression<String>? channel,
-    Expression<String>? reason,
-    Expression<String>? note,
-    Expression<String>? contactedBy,
-    Expression<DateTime>? contactedAt,
-    Expression<String>? outcome,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (studentId != null) 'student_id': studentId,
-      if (guardianId != null) 'guardian_id': guardianId,
-      if (channel != null) 'channel': channel,
-      if (reason != null) 'reason': reason,
-      if (note != null) 'note': note,
-      if (contactedBy != null) 'contacted_by': contactedBy,
-      if (contactedAt != null) 'contacted_at': contactedAt,
-      if (outcome != null) 'outcome': outcome,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  ContactLogsCompanion copyWith(
-      {Value<String>? id,
-      Value<String>? studentId,
-      Value<String>? guardianId,
-      Value<String>? channel,
-      Value<String>? reason,
-      Value<String>? note,
-      Value<String>? contactedBy,
-      Value<DateTime>? contactedAt,
-      Value<String?>? outcome,
-      Value<int>? rowid}) {
-    return ContactLogsCompanion(
-      id: id ?? this.id,
-      studentId: studentId ?? this.studentId,
-      guardianId: guardianId ?? this.guardianId,
-      channel: channel ?? this.channel,
-      reason: reason ?? this.reason,
-      note: note ?? this.note,
-      contactedBy: contactedBy ?? this.contactedBy,
-      contactedAt: contactedAt ?? this.contactedAt,
-      outcome: outcome ?? this.outcome,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<String>(id.value);
-    }
-    if (studentId.present) {
-      map['student_id'] = Variable<String>(studentId.value);
-    }
-    if (guardianId.present) {
-      map['guardian_id'] = Variable<String>(guardianId.value);
-    }
-    if (channel.present) {
-      map['channel'] = Variable<String>(channel.value);
-    }
-    if (reason.present) {
-      map['reason'] = Variable<String>(reason.value);
-    }
-    if (note.present) {
-      map['note'] = Variable<String>(note.value);
-    }
-    if (contactedBy.present) {
-      map['contacted_by'] = Variable<String>(contactedBy.value);
-    }
-    if (contactedAt.present) {
-      map['contacted_at'] = Variable<DateTime>(contactedAt.value);
-    }
-    if (outcome.present) {
-      map['outcome'] = Variable<String>(outcome.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('ContactLogsCompanion(')
-          ..write('id: $id, ')
-          ..write('studentId: $studentId, ')
-          ..write('guardianId: $guardianId, ')
-          ..write('channel: $channel, ')
-          ..write('reason: $reason, ')
-          ..write('note: $note, ')
-          ..write('contactedBy: $contactedBy, ')
-          ..write('contactedAt: $contactedAt, ')
-          ..write('outcome: $outcome, ')
+          ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -5047,30 +3408,18 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $UsersTable users = $UsersTable(this);
-  late final $GuardiansTable guardians = $GuardiansTable(this);
   late final $HalaqasTable halaqas = $HalaqasTable(this);
   late final $StudentsTable students = $StudentsTable(this);
   late final $DailyRecordsTable dailyRecords = $DailyRecordsTable(this);
-  late final $FollowUpPlansTable followUpPlans = $FollowUpPlansTable(this);
-  late final $AlertsTable alerts = $AlertsTable(this);
-  late final $ContactLogsTable contactLogs = $ContactLogsTable(this);
+  late final $WeeklyPlansTable weeklyPlans = $WeeklyPlansTable(this);
   late final $StudentTransfersTable studentTransfers =
       $StudentTransfersTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [
-        users,
-        guardians,
-        halaqas,
-        students,
-        dailyRecords,
-        followUpPlans,
-        alerts,
-        contactLogs,
-        studentTransfers
-      ];
+  List<DatabaseSchemaEntity> get allSchemaEntities =>
+      [users, halaqas, students, dailyRecords, weeklyPlans, studentTransfers];
 }
 
 typedef $$UsersTableCreateCompanionBuilder = UsersCompanion Function({
@@ -5284,226 +3633,10 @@ typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
     (User, BaseReferences<_$AppDatabase, $UsersTable, User>),
     User,
     PrefetchHooks Function()>;
-typedef $$GuardiansTableCreateCompanionBuilder = GuardiansCompanion Function({
-  required String id,
-  required String fullName,
-  Value<String> relation,
-  required String primaryPhone,
-  Value<String> whatsappPhone,
-  Value<String> secondaryPhone,
-  Value<String> preferredContact,
-  Value<String> notes,
-  Value<int> rowid,
-});
-typedef $$GuardiansTableUpdateCompanionBuilder = GuardiansCompanion Function({
-  Value<String> id,
-  Value<String> fullName,
-  Value<String> relation,
-  Value<String> primaryPhone,
-  Value<String> whatsappPhone,
-  Value<String> secondaryPhone,
-  Value<String> preferredContact,
-  Value<String> notes,
-  Value<int> rowid,
-});
-
-class $$GuardiansTableFilterComposer
-    extends Composer<_$AppDatabase, $GuardiansTable> {
-  $$GuardiansTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get fullName => $composableBuilder(
-      column: $table.fullName, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get relation => $composableBuilder(
-      column: $table.relation, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get primaryPhone => $composableBuilder(
-      column: $table.primaryPhone, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get whatsappPhone => $composableBuilder(
-      column: $table.whatsappPhone, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get secondaryPhone => $composableBuilder(
-      column: $table.secondaryPhone,
-      builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get preferredContact => $composableBuilder(
-      column: $table.preferredContact,
-      builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get notes => $composableBuilder(
-      column: $table.notes, builder: (column) => ColumnFilters(column));
-}
-
-class $$GuardiansTableOrderingComposer
-    extends Composer<_$AppDatabase, $GuardiansTable> {
-  $$GuardiansTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get fullName => $composableBuilder(
-      column: $table.fullName, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get relation => $composableBuilder(
-      column: $table.relation, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get primaryPhone => $composableBuilder(
-      column: $table.primaryPhone,
-      builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get whatsappPhone => $composableBuilder(
-      column: $table.whatsappPhone,
-      builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get secondaryPhone => $composableBuilder(
-      column: $table.secondaryPhone,
-      builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get preferredContact => $composableBuilder(
-      column: $table.preferredContact,
-      builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get notes => $composableBuilder(
-      column: $table.notes, builder: (column) => ColumnOrderings(column));
-}
-
-class $$GuardiansTableAnnotationComposer
-    extends Composer<_$AppDatabase, $GuardiansTable> {
-  $$GuardiansTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get fullName =>
-      $composableBuilder(column: $table.fullName, builder: (column) => column);
-
-  GeneratedColumn<String> get relation =>
-      $composableBuilder(column: $table.relation, builder: (column) => column);
-
-  GeneratedColumn<String> get primaryPhone => $composableBuilder(
-      column: $table.primaryPhone, builder: (column) => column);
-
-  GeneratedColumn<String> get whatsappPhone => $composableBuilder(
-      column: $table.whatsappPhone, builder: (column) => column);
-
-  GeneratedColumn<String> get secondaryPhone => $composableBuilder(
-      column: $table.secondaryPhone, builder: (column) => column);
-
-  GeneratedColumn<String> get preferredContact => $composableBuilder(
-      column: $table.preferredContact, builder: (column) => column);
-
-  GeneratedColumn<String> get notes =>
-      $composableBuilder(column: $table.notes, builder: (column) => column);
-}
-
-class $$GuardiansTableTableManager extends RootTableManager<
-    _$AppDatabase,
-    $GuardiansTable,
-    Guardian,
-    $$GuardiansTableFilterComposer,
-    $$GuardiansTableOrderingComposer,
-    $$GuardiansTableAnnotationComposer,
-    $$GuardiansTableCreateCompanionBuilder,
-    $$GuardiansTableUpdateCompanionBuilder,
-    (Guardian, BaseReferences<_$AppDatabase, $GuardiansTable, Guardian>),
-    Guardian,
-    PrefetchHooks Function()> {
-  $$GuardiansTableTableManager(_$AppDatabase db, $GuardiansTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$GuardiansTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$GuardiansTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$GuardiansTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<String> id = const Value.absent(),
-            Value<String> fullName = const Value.absent(),
-            Value<String> relation = const Value.absent(),
-            Value<String> primaryPhone = const Value.absent(),
-            Value<String> whatsappPhone = const Value.absent(),
-            Value<String> secondaryPhone = const Value.absent(),
-            Value<String> preferredContact = const Value.absent(),
-            Value<String> notes = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              GuardiansCompanion(
-            id: id,
-            fullName: fullName,
-            relation: relation,
-            primaryPhone: primaryPhone,
-            whatsappPhone: whatsappPhone,
-            secondaryPhone: secondaryPhone,
-            preferredContact: preferredContact,
-            notes: notes,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            required String id,
-            required String fullName,
-            Value<String> relation = const Value.absent(),
-            required String primaryPhone,
-            Value<String> whatsappPhone = const Value.absent(),
-            Value<String> secondaryPhone = const Value.absent(),
-            Value<String> preferredContact = const Value.absent(),
-            Value<String> notes = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              GuardiansCompanion.insert(
-            id: id,
-            fullName: fullName,
-            relation: relation,
-            primaryPhone: primaryPhone,
-            whatsappPhone: whatsappPhone,
-            secondaryPhone: secondaryPhone,
-            preferredContact: preferredContact,
-            notes: notes,
-            rowid: rowid,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
-}
-
-typedef $$GuardiansTableProcessedTableManager = ProcessedTableManager<
-    _$AppDatabase,
-    $GuardiansTable,
-    Guardian,
-    $$GuardiansTableFilterComposer,
-    $$GuardiansTableOrderingComposer,
-    $$GuardiansTableAnnotationComposer,
-    $$GuardiansTableCreateCompanionBuilder,
-    $$GuardiansTableUpdateCompanionBuilder,
-    (Guardian, BaseReferences<_$AppDatabase, $GuardiansTable, Guardian>),
-    Guardian,
-    PrefetchHooks Function()>;
 typedef $$HalaqasTableCreateCompanionBuilder = HalaqasCompanion Function({
   required String id,
   required String name,
-  required String level,
+  Value<String> level,
   Value<String> teacherIds,
   Value<String> supervisorId,
   Value<int> capacity,
@@ -5675,7 +3808,7 @@ class $$HalaqasTableTableManager extends RootTableManager<
           createCompanionCallback: ({
             required String id,
             required String name,
-            required String level,
+            Value<String> level = const Value.absent(),
             Value<String> teacherIds = const Value.absent(),
             Value<String> supervisorId = const Value.absent(),
             Value<int> capacity = const Value.absent(),
@@ -5721,7 +3854,6 @@ typedef $$StudentsTableCreateCompanionBuilder = StudentsCompanion Function({
   Value<String> level,
   Value<bool> active,
   required DateTime joinDate,
-  Value<String> guardianIds,
   Value<String> internalNotes,
   required DateTime createdAt,
   required DateTime updatedAt,
@@ -5735,7 +3867,6 @@ typedef $$StudentsTableUpdateCompanionBuilder = StudentsCompanion Function({
   Value<String> level,
   Value<bool> active,
   Value<DateTime> joinDate,
-  Value<String> guardianIds,
   Value<String> internalNotes,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
@@ -5771,9 +3902,6 @@ class $$StudentsTableFilterComposer
 
   ColumnFilters<DateTime> get joinDate => $composableBuilder(
       column: $table.joinDate, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get guardianIds => $composableBuilder(
-      column: $table.guardianIds, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get internalNotes => $composableBuilder(
       column: $table.internalNotes, builder: (column) => ColumnFilters(column));
@@ -5814,9 +3942,6 @@ class $$StudentsTableOrderingComposer
 
   ColumnOrderings<DateTime> get joinDate => $composableBuilder(
       column: $table.joinDate, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get guardianIds => $composableBuilder(
-      column: $table.guardianIds, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get internalNotes => $composableBuilder(
       column: $table.internalNotes,
@@ -5859,9 +3984,6 @@ class $$StudentsTableAnnotationComposer
   GeneratedColumn<DateTime> get joinDate =>
       $composableBuilder(column: $table.joinDate, builder: (column) => column);
 
-  GeneratedColumn<String> get guardianIds => $composableBuilder(
-      column: $table.guardianIds, builder: (column) => column);
-
   GeneratedColumn<String> get internalNotes => $composableBuilder(
       column: $table.internalNotes, builder: (column) => column);
 
@@ -5902,7 +4024,6 @@ class $$StudentsTableTableManager extends RootTableManager<
             Value<String> level = const Value.absent(),
             Value<bool> active = const Value.absent(),
             Value<DateTime> joinDate = const Value.absent(),
-            Value<String> guardianIds = const Value.absent(),
             Value<String> internalNotes = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
@@ -5916,7 +4037,6 @@ class $$StudentsTableTableManager extends RootTableManager<
             level: level,
             active: active,
             joinDate: joinDate,
-            guardianIds: guardianIds,
             internalNotes: internalNotes,
             createdAt: createdAt,
             updatedAt: updatedAt,
@@ -5930,7 +4050,6 @@ class $$StudentsTableTableManager extends RootTableManager<
             Value<String> level = const Value.absent(),
             Value<bool> active = const Value.absent(),
             required DateTime joinDate,
-            Value<String> guardianIds = const Value.absent(),
             Value<String> internalNotes = const Value.absent(),
             required DateTime createdAt,
             required DateTime updatedAt,
@@ -5944,7 +4063,6 @@ class $$StudentsTableTableManager extends RootTableManager<
             level: level,
             active: active,
             joinDate: joinDate,
-            guardianIds: guardianIds,
             internalNotes: internalNotes,
             createdAt: createdAt,
             updatedAt: updatedAt,
@@ -5977,28 +4095,22 @@ typedef $$DailyRecordsTableCreateCompanionBuilder = DailyRecordsCompanion
   Value<String> teacherId,
   required DateTime date,
   required String dateKey,
-  Value<String> attendance,
-  Value<String> fromSurah,
-  Value<int> fromAyah,
-  Value<String> toSurah,
-  Value<int> toAyah,
-  Value<double> estimatedPages,
-  Value<double> revisionPlannedPages,
-  Value<double> revisionCompletedPages,
-  Value<double> revisionScore,
-  Value<int> minorErrors,
-  Value<int> mediumErrors,
-  Value<int> majorErrors,
-  Value<int> selfCorrections,
-  Value<double> automaticScore,
-  Value<double?> overrideScore,
-  Value<String?> overrideReason,
-  Value<String> homeworkStatus,
-  Value<double> homeworkScore,
-  Value<double> finalScore,
-  Value<String> level,
-  Value<String> internalNote,
-  Value<bool> needsFollowUp,
+  required int weekday,
+  Value<bool> isFriday,
+  Value<int> newFromSurah,
+  Value<int> newFromAyah,
+  Value<int> newToSurah,
+  Value<int> newToAyah,
+  Value<double> newPages,
+  Value<String> grade,
+  Value<int> repetition,
+  Value<int> recentFromPage,
+  Value<int> recentToPage,
+  Value<int> minorFromPage,
+  Value<int> minorToPage,
+  Value<int> majorFromPage,
+  Value<int> majorToPage,
+  Value<String> notes,
   required DateTime createdAt,
   required DateTime updatedAt,
   Value<int> rowid,
@@ -6011,28 +4123,22 @@ typedef $$DailyRecordsTableUpdateCompanionBuilder = DailyRecordsCompanion
   Value<String> teacherId,
   Value<DateTime> date,
   Value<String> dateKey,
-  Value<String> attendance,
-  Value<String> fromSurah,
-  Value<int> fromAyah,
-  Value<String> toSurah,
-  Value<int> toAyah,
-  Value<double> estimatedPages,
-  Value<double> revisionPlannedPages,
-  Value<double> revisionCompletedPages,
-  Value<double> revisionScore,
-  Value<int> minorErrors,
-  Value<int> mediumErrors,
-  Value<int> majorErrors,
-  Value<int> selfCorrections,
-  Value<double> automaticScore,
-  Value<double?> overrideScore,
-  Value<String?> overrideReason,
-  Value<String> homeworkStatus,
-  Value<double> homeworkScore,
-  Value<double> finalScore,
-  Value<String> level,
-  Value<String> internalNote,
-  Value<bool> needsFollowUp,
+  Value<int> weekday,
+  Value<bool> isFriday,
+  Value<int> newFromSurah,
+  Value<int> newFromAyah,
+  Value<int> newToSurah,
+  Value<int> newToAyah,
+  Value<double> newPages,
+  Value<String> grade,
+  Value<int> repetition,
+  Value<int> recentFromPage,
+  Value<int> recentToPage,
+  Value<int> minorFromPage,
+  Value<int> minorToPage,
+  Value<int> majorFromPage,
+  Value<int> majorToPage,
+  Value<String> notes,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
   Value<int> rowid,
@@ -6065,78 +4171,54 @@ class $$DailyRecordsTableFilterComposer
   ColumnFilters<String> get dateKey => $composableBuilder(
       column: $table.dateKey, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get attendance => $composableBuilder(
-      column: $table.attendance, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get weekday => $composableBuilder(
+      column: $table.weekday, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get fromSurah => $composableBuilder(
-      column: $table.fromSurah, builder: (column) => ColumnFilters(column));
+  ColumnFilters<bool> get isFriday => $composableBuilder(
+      column: $table.isFriday, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get fromAyah => $composableBuilder(
-      column: $table.fromAyah, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get newFromSurah => $composableBuilder(
+      column: $table.newFromSurah, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get toSurah => $composableBuilder(
-      column: $table.toSurah, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get newFromAyah => $composableBuilder(
+      column: $table.newFromAyah, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get toAyah => $composableBuilder(
-      column: $table.toAyah, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get newToSurah => $composableBuilder(
+      column: $table.newToSurah, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<double> get estimatedPages => $composableBuilder(
-      column: $table.estimatedPages,
+  ColumnFilters<int> get newToAyah => $composableBuilder(
+      column: $table.newToAyah, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get newPages => $composableBuilder(
+      column: $table.newPages, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get grade => $composableBuilder(
+      column: $table.grade, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get repetition => $composableBuilder(
+      column: $table.repetition, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get recentFromPage => $composableBuilder(
+      column: $table.recentFromPage,
       builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<double> get revisionPlannedPages => $composableBuilder(
-      column: $table.revisionPlannedPages,
-      builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get recentToPage => $composableBuilder(
+      column: $table.recentToPage, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<double> get revisionCompletedPages => $composableBuilder(
-      column: $table.revisionCompletedPages,
-      builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get minorFromPage => $composableBuilder(
+      column: $table.minorFromPage, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<double> get revisionScore => $composableBuilder(
-      column: $table.revisionScore, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get minorToPage => $composableBuilder(
+      column: $table.minorToPage, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get minorErrors => $composableBuilder(
-      column: $table.minorErrors, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get majorFromPage => $composableBuilder(
+      column: $table.majorFromPage, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get mediumErrors => $composableBuilder(
-      column: $table.mediumErrors, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get majorToPage => $composableBuilder(
+      column: $table.majorToPage, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get majorErrors => $composableBuilder(
-      column: $table.majorErrors, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<int> get selfCorrections => $composableBuilder(
-      column: $table.selfCorrections,
-      builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<double> get automaticScore => $composableBuilder(
-      column: $table.automaticScore,
-      builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<double> get overrideScore => $composableBuilder(
-      column: $table.overrideScore, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get overrideReason => $composableBuilder(
-      column: $table.overrideReason,
-      builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get homeworkStatus => $composableBuilder(
-      column: $table.homeworkStatus,
-      builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<double> get homeworkScore => $composableBuilder(
-      column: $table.homeworkScore, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<double> get finalScore => $composableBuilder(
-      column: $table.finalScore, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get level => $composableBuilder(
-      column: $table.level, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get internalNote => $composableBuilder(
-      column: $table.internalNote, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<bool> get needsFollowUp => $composableBuilder(
-      column: $table.needsFollowUp, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
@@ -6172,84 +4254,58 @@ class $$DailyRecordsTableOrderingComposer
   ColumnOrderings<String> get dateKey => $composableBuilder(
       column: $table.dateKey, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get attendance => $composableBuilder(
-      column: $table.attendance, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get weekday => $composableBuilder(
+      column: $table.weekday, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get fromSurah => $composableBuilder(
-      column: $table.fromSurah, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<bool> get isFriday => $composableBuilder(
+      column: $table.isFriday, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get fromAyah => $composableBuilder(
-      column: $table.fromAyah, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get toSurah => $composableBuilder(
-      column: $table.toSurah, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<int> get toAyah => $composableBuilder(
-      column: $table.toAyah, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<double> get estimatedPages => $composableBuilder(
-      column: $table.estimatedPages,
+  ColumnOrderings<int> get newFromSurah => $composableBuilder(
+      column: $table.newFromSurah,
       builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<double> get revisionPlannedPages => $composableBuilder(
-      column: $table.revisionPlannedPages,
+  ColumnOrderings<int> get newFromAyah => $composableBuilder(
+      column: $table.newFromAyah, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get newToSurah => $composableBuilder(
+      column: $table.newToSurah, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get newToAyah => $composableBuilder(
+      column: $table.newToAyah, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get newPages => $composableBuilder(
+      column: $table.newPages, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get grade => $composableBuilder(
+      column: $table.grade, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get repetition => $composableBuilder(
+      column: $table.repetition, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get recentFromPage => $composableBuilder(
+      column: $table.recentFromPage,
       builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<double> get revisionCompletedPages => $composableBuilder(
-      column: $table.revisionCompletedPages,
+  ColumnOrderings<int> get recentToPage => $composableBuilder(
+      column: $table.recentToPage,
       builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<double> get revisionScore => $composableBuilder(
-      column: $table.revisionScore,
+  ColumnOrderings<int> get minorFromPage => $composableBuilder(
+      column: $table.minorFromPage,
       builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get minorErrors => $composableBuilder(
-      column: $table.minorErrors, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get minorToPage => $composableBuilder(
+      column: $table.minorToPage, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get mediumErrors => $composableBuilder(
-      column: $table.mediumErrors,
+  ColumnOrderings<int> get majorFromPage => $composableBuilder(
+      column: $table.majorFromPage,
       builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get majorErrors => $composableBuilder(
-      column: $table.majorErrors, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get majorToPage => $composableBuilder(
+      column: $table.majorToPage, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get selfCorrections => $composableBuilder(
-      column: $table.selfCorrections,
-      builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<double> get automaticScore => $composableBuilder(
-      column: $table.automaticScore,
-      builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<double> get overrideScore => $composableBuilder(
-      column: $table.overrideScore,
-      builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get overrideReason => $composableBuilder(
-      column: $table.overrideReason,
-      builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get homeworkStatus => $composableBuilder(
-      column: $table.homeworkStatus,
-      builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<double> get homeworkScore => $composableBuilder(
-      column: $table.homeworkScore,
-      builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<double> get finalScore => $composableBuilder(
-      column: $table.finalScore, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get level => $composableBuilder(
-      column: $table.level, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get internalNote => $composableBuilder(
-      column: $table.internalNote,
-      builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<bool> get needsFollowUp => $composableBuilder(
-      column: $table.needsFollowUp,
-      builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
@@ -6285,71 +4341,53 @@ class $$DailyRecordsTableAnnotationComposer
   GeneratedColumn<String> get dateKey =>
       $composableBuilder(column: $table.dateKey, builder: (column) => column);
 
-  GeneratedColumn<String> get attendance => $composableBuilder(
-      column: $table.attendance, builder: (column) => column);
+  GeneratedColumn<int> get weekday =>
+      $composableBuilder(column: $table.weekday, builder: (column) => column);
 
-  GeneratedColumn<String> get fromSurah =>
-      $composableBuilder(column: $table.fromSurah, builder: (column) => column);
+  GeneratedColumn<bool> get isFriday =>
+      $composableBuilder(column: $table.isFriday, builder: (column) => column);
 
-  GeneratedColumn<int> get fromAyah =>
-      $composableBuilder(column: $table.fromAyah, builder: (column) => column);
+  GeneratedColumn<int> get newFromSurah => $composableBuilder(
+      column: $table.newFromSurah, builder: (column) => column);
 
-  GeneratedColumn<String> get toSurah =>
-      $composableBuilder(column: $table.toSurah, builder: (column) => column);
+  GeneratedColumn<int> get newFromAyah => $composableBuilder(
+      column: $table.newFromAyah, builder: (column) => column);
 
-  GeneratedColumn<int> get toAyah =>
-      $composableBuilder(column: $table.toAyah, builder: (column) => column);
+  GeneratedColumn<int> get newToSurah => $composableBuilder(
+      column: $table.newToSurah, builder: (column) => column);
 
-  GeneratedColumn<double> get estimatedPages => $composableBuilder(
-      column: $table.estimatedPages, builder: (column) => column);
+  GeneratedColumn<int> get newToAyah =>
+      $composableBuilder(column: $table.newToAyah, builder: (column) => column);
 
-  GeneratedColumn<double> get revisionPlannedPages => $composableBuilder(
-      column: $table.revisionPlannedPages, builder: (column) => column);
+  GeneratedColumn<double> get newPages =>
+      $composableBuilder(column: $table.newPages, builder: (column) => column);
 
-  GeneratedColumn<double> get revisionCompletedPages => $composableBuilder(
-      column: $table.revisionCompletedPages, builder: (column) => column);
+  GeneratedColumn<String> get grade =>
+      $composableBuilder(column: $table.grade, builder: (column) => column);
 
-  GeneratedColumn<double> get revisionScore => $composableBuilder(
-      column: $table.revisionScore, builder: (column) => column);
+  GeneratedColumn<int> get repetition => $composableBuilder(
+      column: $table.repetition, builder: (column) => column);
 
-  GeneratedColumn<int> get minorErrors => $composableBuilder(
-      column: $table.minorErrors, builder: (column) => column);
+  GeneratedColumn<int> get recentFromPage => $composableBuilder(
+      column: $table.recentFromPage, builder: (column) => column);
 
-  GeneratedColumn<int> get mediumErrors => $composableBuilder(
-      column: $table.mediumErrors, builder: (column) => column);
+  GeneratedColumn<int> get recentToPage => $composableBuilder(
+      column: $table.recentToPage, builder: (column) => column);
 
-  GeneratedColumn<int> get majorErrors => $composableBuilder(
-      column: $table.majorErrors, builder: (column) => column);
+  GeneratedColumn<int> get minorFromPage => $composableBuilder(
+      column: $table.minorFromPage, builder: (column) => column);
 
-  GeneratedColumn<int> get selfCorrections => $composableBuilder(
-      column: $table.selfCorrections, builder: (column) => column);
+  GeneratedColumn<int> get minorToPage => $composableBuilder(
+      column: $table.minorToPage, builder: (column) => column);
 
-  GeneratedColumn<double> get automaticScore => $composableBuilder(
-      column: $table.automaticScore, builder: (column) => column);
+  GeneratedColumn<int> get majorFromPage => $composableBuilder(
+      column: $table.majorFromPage, builder: (column) => column);
 
-  GeneratedColumn<double> get overrideScore => $composableBuilder(
-      column: $table.overrideScore, builder: (column) => column);
+  GeneratedColumn<int> get majorToPage => $composableBuilder(
+      column: $table.majorToPage, builder: (column) => column);
 
-  GeneratedColumn<String> get overrideReason => $composableBuilder(
-      column: $table.overrideReason, builder: (column) => column);
-
-  GeneratedColumn<String> get homeworkStatus => $composableBuilder(
-      column: $table.homeworkStatus, builder: (column) => column);
-
-  GeneratedColumn<double> get homeworkScore => $composableBuilder(
-      column: $table.homeworkScore, builder: (column) => column);
-
-  GeneratedColumn<double> get finalScore => $composableBuilder(
-      column: $table.finalScore, builder: (column) => column);
-
-  GeneratedColumn<String> get level =>
-      $composableBuilder(column: $table.level, builder: (column) => column);
-
-  GeneratedColumn<String> get internalNote => $composableBuilder(
-      column: $table.internalNote, builder: (column) => column);
-
-  GeneratedColumn<bool> get needsFollowUp => $composableBuilder(
-      column: $table.needsFollowUp, builder: (column) => column);
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -6390,28 +4428,22 @@ class $$DailyRecordsTableTableManager extends RootTableManager<
             Value<String> teacherId = const Value.absent(),
             Value<DateTime> date = const Value.absent(),
             Value<String> dateKey = const Value.absent(),
-            Value<String> attendance = const Value.absent(),
-            Value<String> fromSurah = const Value.absent(),
-            Value<int> fromAyah = const Value.absent(),
-            Value<String> toSurah = const Value.absent(),
-            Value<int> toAyah = const Value.absent(),
-            Value<double> estimatedPages = const Value.absent(),
-            Value<double> revisionPlannedPages = const Value.absent(),
-            Value<double> revisionCompletedPages = const Value.absent(),
-            Value<double> revisionScore = const Value.absent(),
-            Value<int> minorErrors = const Value.absent(),
-            Value<int> mediumErrors = const Value.absent(),
-            Value<int> majorErrors = const Value.absent(),
-            Value<int> selfCorrections = const Value.absent(),
-            Value<double> automaticScore = const Value.absent(),
-            Value<double?> overrideScore = const Value.absent(),
-            Value<String?> overrideReason = const Value.absent(),
-            Value<String> homeworkStatus = const Value.absent(),
-            Value<double> homeworkScore = const Value.absent(),
-            Value<double> finalScore = const Value.absent(),
-            Value<String> level = const Value.absent(),
-            Value<String> internalNote = const Value.absent(),
-            Value<bool> needsFollowUp = const Value.absent(),
+            Value<int> weekday = const Value.absent(),
+            Value<bool> isFriday = const Value.absent(),
+            Value<int> newFromSurah = const Value.absent(),
+            Value<int> newFromAyah = const Value.absent(),
+            Value<int> newToSurah = const Value.absent(),
+            Value<int> newToAyah = const Value.absent(),
+            Value<double> newPages = const Value.absent(),
+            Value<String> grade = const Value.absent(),
+            Value<int> repetition = const Value.absent(),
+            Value<int> recentFromPage = const Value.absent(),
+            Value<int> recentToPage = const Value.absent(),
+            Value<int> minorFromPage = const Value.absent(),
+            Value<int> minorToPage = const Value.absent(),
+            Value<int> majorFromPage = const Value.absent(),
+            Value<int> majorToPage = const Value.absent(),
+            Value<String> notes = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -6423,28 +4455,22 @@ class $$DailyRecordsTableTableManager extends RootTableManager<
             teacherId: teacherId,
             date: date,
             dateKey: dateKey,
-            attendance: attendance,
-            fromSurah: fromSurah,
-            fromAyah: fromAyah,
-            toSurah: toSurah,
-            toAyah: toAyah,
-            estimatedPages: estimatedPages,
-            revisionPlannedPages: revisionPlannedPages,
-            revisionCompletedPages: revisionCompletedPages,
-            revisionScore: revisionScore,
-            minorErrors: minorErrors,
-            mediumErrors: mediumErrors,
-            majorErrors: majorErrors,
-            selfCorrections: selfCorrections,
-            automaticScore: automaticScore,
-            overrideScore: overrideScore,
-            overrideReason: overrideReason,
-            homeworkStatus: homeworkStatus,
-            homeworkScore: homeworkScore,
-            finalScore: finalScore,
-            level: level,
-            internalNote: internalNote,
-            needsFollowUp: needsFollowUp,
+            weekday: weekday,
+            isFriday: isFriday,
+            newFromSurah: newFromSurah,
+            newFromAyah: newFromAyah,
+            newToSurah: newToSurah,
+            newToAyah: newToAyah,
+            newPages: newPages,
+            grade: grade,
+            repetition: repetition,
+            recentFromPage: recentFromPage,
+            recentToPage: recentToPage,
+            minorFromPage: minorFromPage,
+            minorToPage: minorToPage,
+            majorFromPage: majorFromPage,
+            majorToPage: majorToPage,
+            notes: notes,
             createdAt: createdAt,
             updatedAt: updatedAt,
             rowid: rowid,
@@ -6456,28 +4482,22 @@ class $$DailyRecordsTableTableManager extends RootTableManager<
             Value<String> teacherId = const Value.absent(),
             required DateTime date,
             required String dateKey,
-            Value<String> attendance = const Value.absent(),
-            Value<String> fromSurah = const Value.absent(),
-            Value<int> fromAyah = const Value.absent(),
-            Value<String> toSurah = const Value.absent(),
-            Value<int> toAyah = const Value.absent(),
-            Value<double> estimatedPages = const Value.absent(),
-            Value<double> revisionPlannedPages = const Value.absent(),
-            Value<double> revisionCompletedPages = const Value.absent(),
-            Value<double> revisionScore = const Value.absent(),
-            Value<int> minorErrors = const Value.absent(),
-            Value<int> mediumErrors = const Value.absent(),
-            Value<int> majorErrors = const Value.absent(),
-            Value<int> selfCorrections = const Value.absent(),
-            Value<double> automaticScore = const Value.absent(),
-            Value<double?> overrideScore = const Value.absent(),
-            Value<String?> overrideReason = const Value.absent(),
-            Value<String> homeworkStatus = const Value.absent(),
-            Value<double> homeworkScore = const Value.absent(),
-            Value<double> finalScore = const Value.absent(),
-            Value<String> level = const Value.absent(),
-            Value<String> internalNote = const Value.absent(),
-            Value<bool> needsFollowUp = const Value.absent(),
+            required int weekday,
+            Value<bool> isFriday = const Value.absent(),
+            Value<int> newFromSurah = const Value.absent(),
+            Value<int> newFromAyah = const Value.absent(),
+            Value<int> newToSurah = const Value.absent(),
+            Value<int> newToAyah = const Value.absent(),
+            Value<double> newPages = const Value.absent(),
+            Value<String> grade = const Value.absent(),
+            Value<int> repetition = const Value.absent(),
+            Value<int> recentFromPage = const Value.absent(),
+            Value<int> recentToPage = const Value.absent(),
+            Value<int> minorFromPage = const Value.absent(),
+            Value<int> minorToPage = const Value.absent(),
+            Value<int> majorFromPage = const Value.absent(),
+            Value<int> majorToPage = const Value.absent(),
+            Value<String> notes = const Value.absent(),
             required DateTime createdAt,
             required DateTime updatedAt,
             Value<int> rowid = const Value.absent(),
@@ -6489,28 +4509,22 @@ class $$DailyRecordsTableTableManager extends RootTableManager<
             teacherId: teacherId,
             date: date,
             dateKey: dateKey,
-            attendance: attendance,
-            fromSurah: fromSurah,
-            fromAyah: fromAyah,
-            toSurah: toSurah,
-            toAyah: toAyah,
-            estimatedPages: estimatedPages,
-            revisionPlannedPages: revisionPlannedPages,
-            revisionCompletedPages: revisionCompletedPages,
-            revisionScore: revisionScore,
-            minorErrors: minorErrors,
-            mediumErrors: mediumErrors,
-            majorErrors: majorErrors,
-            selfCorrections: selfCorrections,
-            automaticScore: automaticScore,
-            overrideScore: overrideScore,
-            overrideReason: overrideReason,
-            homeworkStatus: homeworkStatus,
-            homeworkScore: homeworkScore,
-            finalScore: finalScore,
-            level: level,
-            internalNote: internalNote,
-            needsFollowUp: needsFollowUp,
+            weekday: weekday,
+            isFriday: isFriday,
+            newFromSurah: newFromSurah,
+            newFromAyah: newFromAyah,
+            newToSurah: newToSurah,
+            newToAyah: newToAyah,
+            newPages: newPages,
+            grade: grade,
+            repetition: repetition,
+            recentFromPage: recentFromPage,
+            recentToPage: recentToPage,
+            minorFromPage: minorFromPage,
+            minorToPage: minorToPage,
+            majorFromPage: majorFromPage,
+            majorToPage: majorToPage,
+            notes: notes,
             createdAt: createdAt,
             updatedAt: updatedAt,
             rowid: rowid,
@@ -6537,271 +4551,40 @@ typedef $$DailyRecordsTableProcessedTableManager = ProcessedTableManager<
     ),
     DailyRecord,
     PrefetchHooks Function()>;
-typedef $$FollowUpPlansTableCreateCompanionBuilder = FollowUpPlansCompanion
+typedef $$WeeklyPlansTableCreateCompanionBuilder = WeeklyPlansCompanion
     Function({
   required String id,
   required String studentId,
-  required String createdBy,
-  required DateTime startDate,
-  Value<DateTime?> endDate,
-  Value<String> goals,
-  Value<String> actions,
-  Value<String> status,
-  Value<String> notes,
-  Value<int> rowid,
-});
-typedef $$FollowUpPlansTableUpdateCompanionBuilder = FollowUpPlansCompanion
-    Function({
-  Value<String> id,
-  Value<String> studentId,
-  Value<String> createdBy,
-  Value<DateTime> startDate,
-  Value<DateTime?> endDate,
-  Value<String> goals,
-  Value<String> actions,
-  Value<String> status,
-  Value<String> notes,
-  Value<int> rowid,
-});
-
-class $$FollowUpPlansTableFilterComposer
-    extends Composer<_$AppDatabase, $FollowUpPlansTable> {
-  $$FollowUpPlansTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get studentId => $composableBuilder(
-      column: $table.studentId, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get createdBy => $composableBuilder(
-      column: $table.createdBy, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<DateTime> get startDate => $composableBuilder(
-      column: $table.startDate, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<DateTime> get endDate => $composableBuilder(
-      column: $table.endDate, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get goals => $composableBuilder(
-      column: $table.goals, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get actions => $composableBuilder(
-      column: $table.actions, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get status => $composableBuilder(
-      column: $table.status, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get notes => $composableBuilder(
-      column: $table.notes, builder: (column) => ColumnFilters(column));
-}
-
-class $$FollowUpPlansTableOrderingComposer
-    extends Composer<_$AppDatabase, $FollowUpPlansTable> {
-  $$FollowUpPlansTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get studentId => $composableBuilder(
-      column: $table.studentId, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get createdBy => $composableBuilder(
-      column: $table.createdBy, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<DateTime> get startDate => $composableBuilder(
-      column: $table.startDate, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<DateTime> get endDate => $composableBuilder(
-      column: $table.endDate, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get goals => $composableBuilder(
-      column: $table.goals, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get actions => $composableBuilder(
-      column: $table.actions, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get status => $composableBuilder(
-      column: $table.status, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get notes => $composableBuilder(
-      column: $table.notes, builder: (column) => ColumnOrderings(column));
-}
-
-class $$FollowUpPlansTableAnnotationComposer
-    extends Composer<_$AppDatabase, $FollowUpPlansTable> {
-  $$FollowUpPlansTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get studentId =>
-      $composableBuilder(column: $table.studentId, builder: (column) => column);
-
-  GeneratedColumn<String> get createdBy =>
-      $composableBuilder(column: $table.createdBy, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get startDate =>
-      $composableBuilder(column: $table.startDate, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get endDate =>
-      $composableBuilder(column: $table.endDate, builder: (column) => column);
-
-  GeneratedColumn<String> get goals =>
-      $composableBuilder(column: $table.goals, builder: (column) => column);
-
-  GeneratedColumn<String> get actions =>
-      $composableBuilder(column: $table.actions, builder: (column) => column);
-
-  GeneratedColumn<String> get status =>
-      $composableBuilder(column: $table.status, builder: (column) => column);
-
-  GeneratedColumn<String> get notes =>
-      $composableBuilder(column: $table.notes, builder: (column) => column);
-}
-
-class $$FollowUpPlansTableTableManager extends RootTableManager<
-    _$AppDatabase,
-    $FollowUpPlansTable,
-    FollowUpPlan,
-    $$FollowUpPlansTableFilterComposer,
-    $$FollowUpPlansTableOrderingComposer,
-    $$FollowUpPlansTableAnnotationComposer,
-    $$FollowUpPlansTableCreateCompanionBuilder,
-    $$FollowUpPlansTableUpdateCompanionBuilder,
-    (
-      FollowUpPlan,
-      BaseReferences<_$AppDatabase, $FollowUpPlansTable, FollowUpPlan>
-    ),
-    FollowUpPlan,
-    PrefetchHooks Function()> {
-  $$FollowUpPlansTableTableManager(_$AppDatabase db, $FollowUpPlansTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$FollowUpPlansTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$FollowUpPlansTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$FollowUpPlansTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<String> id = const Value.absent(),
-            Value<String> studentId = const Value.absent(),
-            Value<String> createdBy = const Value.absent(),
-            Value<DateTime> startDate = const Value.absent(),
-            Value<DateTime?> endDate = const Value.absent(),
-            Value<String> goals = const Value.absent(),
-            Value<String> actions = const Value.absent(),
-            Value<String> status = const Value.absent(),
-            Value<String> notes = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              FollowUpPlansCompanion(
-            id: id,
-            studentId: studentId,
-            createdBy: createdBy,
-            startDate: startDate,
-            endDate: endDate,
-            goals: goals,
-            actions: actions,
-            status: status,
-            notes: notes,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            required String id,
-            required String studentId,
-            required String createdBy,
-            required DateTime startDate,
-            Value<DateTime?> endDate = const Value.absent(),
-            Value<String> goals = const Value.absent(),
-            Value<String> actions = const Value.absent(),
-            Value<String> status = const Value.absent(),
-            Value<String> notes = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              FollowUpPlansCompanion.insert(
-            id: id,
-            studentId: studentId,
-            createdBy: createdBy,
-            startDate: startDate,
-            endDate: endDate,
-            goals: goals,
-            actions: actions,
-            status: status,
-            notes: notes,
-            rowid: rowid,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
-}
-
-typedef $$FollowUpPlansTableProcessedTableManager = ProcessedTableManager<
-    _$AppDatabase,
-    $FollowUpPlansTable,
-    FollowUpPlan,
-    $$FollowUpPlansTableFilterComposer,
-    $$FollowUpPlansTableOrderingComposer,
-    $$FollowUpPlansTableAnnotationComposer,
-    $$FollowUpPlansTableCreateCompanionBuilder,
-    $$FollowUpPlansTableUpdateCompanionBuilder,
-    (
-      FollowUpPlan,
-      BaseReferences<_$AppDatabase, $FollowUpPlansTable, FollowUpPlan>
-    ),
-    FollowUpPlan,
-    PrefetchHooks Function()>;
-typedef $$AlertsTableCreateCompanionBuilder = AlertsCompanion Function({
-  required String id,
-  required String studentId,
-  Value<String> halaqaId,
-  required String type,
-  Value<String> severity,
-  required String message,
-  Value<String> status,
-  Value<String> createdBy,
+  required String halaqaId,
+  required String weekStartKey,
+  Value<double> requiredNewPages,
+  Value<double> requiredRecentPages,
+  Value<double> requiredMinorPages,
+  Value<double> requiredMajorPages,
+  Value<double> requiredFridayPages,
   required DateTime createdAt,
-  Value<String?> reviewedBy,
-  Value<String?> reviewNote,
+  required DateTime updatedAt,
   Value<int> rowid,
 });
-typedef $$AlertsTableUpdateCompanionBuilder = AlertsCompanion Function({
+typedef $$WeeklyPlansTableUpdateCompanionBuilder = WeeklyPlansCompanion
+    Function({
   Value<String> id,
   Value<String> studentId,
   Value<String> halaqaId,
-  Value<String> type,
-  Value<String> severity,
-  Value<String> message,
-  Value<String> status,
-  Value<String> createdBy,
+  Value<String> weekStartKey,
+  Value<double> requiredNewPages,
+  Value<double> requiredRecentPages,
+  Value<double> requiredMinorPages,
+  Value<double> requiredMajorPages,
+  Value<double> requiredFridayPages,
   Value<DateTime> createdAt,
-  Value<String?> reviewedBy,
-  Value<String?> reviewNote,
+  Value<DateTime> updatedAt,
   Value<int> rowid,
 });
 
-class $$AlertsTableFilterComposer
-    extends Composer<_$AppDatabase, $AlertsTable> {
-  $$AlertsTableFilterComposer({
+class $$WeeklyPlansTableFilterComposer
+    extends Composer<_$AppDatabase, $WeeklyPlansTable> {
+  $$WeeklyPlansTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -6817,34 +4600,39 @@ class $$AlertsTableFilterComposer
   ColumnFilters<String> get halaqaId => $composableBuilder(
       column: $table.halaqaId, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get type => $composableBuilder(
-      column: $table.type, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get weekStartKey => $composableBuilder(
+      column: $table.weekStartKey, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get severity => $composableBuilder(
-      column: $table.severity, builder: (column) => ColumnFilters(column));
+  ColumnFilters<double> get requiredNewPages => $composableBuilder(
+      column: $table.requiredNewPages,
+      builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get message => $composableBuilder(
-      column: $table.message, builder: (column) => ColumnFilters(column));
+  ColumnFilters<double> get requiredRecentPages => $composableBuilder(
+      column: $table.requiredRecentPages,
+      builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get status => $composableBuilder(
-      column: $table.status, builder: (column) => ColumnFilters(column));
+  ColumnFilters<double> get requiredMinorPages => $composableBuilder(
+      column: $table.requiredMinorPages,
+      builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get createdBy => $composableBuilder(
-      column: $table.createdBy, builder: (column) => ColumnFilters(column));
+  ColumnFilters<double> get requiredMajorPages => $composableBuilder(
+      column: $table.requiredMajorPages,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get requiredFridayPages => $composableBuilder(
+      column: $table.requiredFridayPages,
+      builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get reviewedBy => $composableBuilder(
-      column: $table.reviewedBy, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get reviewNote => $composableBuilder(
-      column: $table.reviewNote, builder: (column) => ColumnFilters(column));
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
 }
 
-class $$AlertsTableOrderingComposer
-    extends Composer<_$AppDatabase, $AlertsTable> {
-  $$AlertsTableOrderingComposer({
+class $$WeeklyPlansTableOrderingComposer
+    extends Composer<_$AppDatabase, $WeeklyPlansTable> {
+  $$WeeklyPlansTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -6860,34 +4648,40 @@ class $$AlertsTableOrderingComposer
   ColumnOrderings<String> get halaqaId => $composableBuilder(
       column: $table.halaqaId, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get type => $composableBuilder(
-      column: $table.type, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get weekStartKey => $composableBuilder(
+      column: $table.weekStartKey,
+      builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get severity => $composableBuilder(
-      column: $table.severity, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<double> get requiredNewPages => $composableBuilder(
+      column: $table.requiredNewPages,
+      builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get message => $composableBuilder(
-      column: $table.message, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<double> get requiredRecentPages => $composableBuilder(
+      column: $table.requiredRecentPages,
+      builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get status => $composableBuilder(
-      column: $table.status, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<double> get requiredMinorPages => $composableBuilder(
+      column: $table.requiredMinorPages,
+      builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get createdBy => $composableBuilder(
-      column: $table.createdBy, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<double> get requiredMajorPages => $composableBuilder(
+      column: $table.requiredMajorPages,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get requiredFridayPages => $composableBuilder(
+      column: $table.requiredFridayPages,
+      builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get reviewedBy => $composableBuilder(
-      column: $table.reviewedBy, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get reviewNote => $composableBuilder(
-      column: $table.reviewNote, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
 }
 
-class $$AlertsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $AlertsTable> {
-  $$AlertsTableAnnotationComposer({
+class $$WeeklyPlansTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WeeklyPlansTable> {
+  $$WeeklyPlansTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -6903,107 +4697,107 @@ class $$AlertsTableAnnotationComposer
   GeneratedColumn<String> get halaqaId =>
       $composableBuilder(column: $table.halaqaId, builder: (column) => column);
 
-  GeneratedColumn<String> get type =>
-      $composableBuilder(column: $table.type, builder: (column) => column);
+  GeneratedColumn<String> get weekStartKey => $composableBuilder(
+      column: $table.weekStartKey, builder: (column) => column);
 
-  GeneratedColumn<String> get severity =>
-      $composableBuilder(column: $table.severity, builder: (column) => column);
+  GeneratedColumn<double> get requiredNewPages => $composableBuilder(
+      column: $table.requiredNewPages, builder: (column) => column);
 
-  GeneratedColumn<String> get message =>
-      $composableBuilder(column: $table.message, builder: (column) => column);
+  GeneratedColumn<double> get requiredRecentPages => $composableBuilder(
+      column: $table.requiredRecentPages, builder: (column) => column);
 
-  GeneratedColumn<String> get status =>
-      $composableBuilder(column: $table.status, builder: (column) => column);
+  GeneratedColumn<double> get requiredMinorPages => $composableBuilder(
+      column: $table.requiredMinorPages, builder: (column) => column);
 
-  GeneratedColumn<String> get createdBy =>
-      $composableBuilder(column: $table.createdBy, builder: (column) => column);
+  GeneratedColumn<double> get requiredMajorPages => $composableBuilder(
+      column: $table.requiredMajorPages, builder: (column) => column);
+
+  GeneratedColumn<double> get requiredFridayPages => $composableBuilder(
+      column: $table.requiredFridayPages, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
-  GeneratedColumn<String> get reviewedBy => $composableBuilder(
-      column: $table.reviewedBy, builder: (column) => column);
-
-  GeneratedColumn<String> get reviewNote => $composableBuilder(
-      column: $table.reviewNote, builder: (column) => column);
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 }
 
-class $$AlertsTableTableManager extends RootTableManager<
+class $$WeeklyPlansTableTableManager extends RootTableManager<
     _$AppDatabase,
-    $AlertsTable,
-    Alert,
-    $$AlertsTableFilterComposer,
-    $$AlertsTableOrderingComposer,
-    $$AlertsTableAnnotationComposer,
-    $$AlertsTableCreateCompanionBuilder,
-    $$AlertsTableUpdateCompanionBuilder,
-    (Alert, BaseReferences<_$AppDatabase, $AlertsTable, Alert>),
-    Alert,
+    $WeeklyPlansTable,
+    WeeklyPlan,
+    $$WeeklyPlansTableFilterComposer,
+    $$WeeklyPlansTableOrderingComposer,
+    $$WeeklyPlansTableAnnotationComposer,
+    $$WeeklyPlansTableCreateCompanionBuilder,
+    $$WeeklyPlansTableUpdateCompanionBuilder,
+    (WeeklyPlan, BaseReferences<_$AppDatabase, $WeeklyPlansTable, WeeklyPlan>),
+    WeeklyPlan,
     PrefetchHooks Function()> {
-  $$AlertsTableTableManager(_$AppDatabase db, $AlertsTable table)
+  $$WeeklyPlansTableTableManager(_$AppDatabase db, $WeeklyPlansTable table)
       : super(TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$AlertsTableFilterComposer($db: db, $table: table),
+              $$WeeklyPlansTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$AlertsTableOrderingComposer($db: db, $table: table),
+              $$WeeklyPlansTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$AlertsTableAnnotationComposer($db: db, $table: table),
+              $$WeeklyPlansTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<String> id = const Value.absent(),
             Value<String> studentId = const Value.absent(),
             Value<String> halaqaId = const Value.absent(),
-            Value<String> type = const Value.absent(),
-            Value<String> severity = const Value.absent(),
-            Value<String> message = const Value.absent(),
-            Value<String> status = const Value.absent(),
-            Value<String> createdBy = const Value.absent(),
+            Value<String> weekStartKey = const Value.absent(),
+            Value<double> requiredNewPages = const Value.absent(),
+            Value<double> requiredRecentPages = const Value.absent(),
+            Value<double> requiredMinorPages = const Value.absent(),
+            Value<double> requiredMajorPages = const Value.absent(),
+            Value<double> requiredFridayPages = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
-            Value<String?> reviewedBy = const Value.absent(),
-            Value<String?> reviewNote = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
-              AlertsCompanion(
+              WeeklyPlansCompanion(
             id: id,
             studentId: studentId,
             halaqaId: halaqaId,
-            type: type,
-            severity: severity,
-            message: message,
-            status: status,
-            createdBy: createdBy,
+            weekStartKey: weekStartKey,
+            requiredNewPages: requiredNewPages,
+            requiredRecentPages: requiredRecentPages,
+            requiredMinorPages: requiredMinorPages,
+            requiredMajorPages: requiredMajorPages,
+            requiredFridayPages: requiredFridayPages,
             createdAt: createdAt,
-            reviewedBy: reviewedBy,
-            reviewNote: reviewNote,
+            updatedAt: updatedAt,
             rowid: rowid,
           ),
           createCompanionCallback: ({
             required String id,
             required String studentId,
-            Value<String> halaqaId = const Value.absent(),
-            required String type,
-            Value<String> severity = const Value.absent(),
-            required String message,
-            Value<String> status = const Value.absent(),
-            Value<String> createdBy = const Value.absent(),
+            required String halaqaId,
+            required String weekStartKey,
+            Value<double> requiredNewPages = const Value.absent(),
+            Value<double> requiredRecentPages = const Value.absent(),
+            Value<double> requiredMinorPages = const Value.absent(),
+            Value<double> requiredMajorPages = const Value.absent(),
+            Value<double> requiredFridayPages = const Value.absent(),
             required DateTime createdAt,
-            Value<String?> reviewedBy = const Value.absent(),
-            Value<String?> reviewNote = const Value.absent(),
+            required DateTime updatedAt,
             Value<int> rowid = const Value.absent(),
           }) =>
-              AlertsCompanion.insert(
+              WeeklyPlansCompanion.insert(
             id: id,
             studentId: studentId,
             halaqaId: halaqaId,
-            type: type,
-            severity: severity,
-            message: message,
-            status: status,
-            createdBy: createdBy,
+            weekStartKey: weekStartKey,
+            requiredNewPages: requiredNewPages,
+            requiredRecentPages: requiredRecentPages,
+            requiredMinorPages: requiredMinorPages,
+            requiredMajorPages: requiredMajorPages,
+            requiredFridayPages: requiredFridayPages,
             createdAt: createdAt,
-            reviewedBy: reviewedBy,
-            reviewNote: reviewNote,
+            updatedAt: updatedAt,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
@@ -7013,244 +4807,17 @@ class $$AlertsTableTableManager extends RootTableManager<
         ));
 }
 
-typedef $$AlertsTableProcessedTableManager = ProcessedTableManager<
+typedef $$WeeklyPlansTableProcessedTableManager = ProcessedTableManager<
     _$AppDatabase,
-    $AlertsTable,
-    Alert,
-    $$AlertsTableFilterComposer,
-    $$AlertsTableOrderingComposer,
-    $$AlertsTableAnnotationComposer,
-    $$AlertsTableCreateCompanionBuilder,
-    $$AlertsTableUpdateCompanionBuilder,
-    (Alert, BaseReferences<_$AppDatabase, $AlertsTable, Alert>),
-    Alert,
-    PrefetchHooks Function()>;
-typedef $$ContactLogsTableCreateCompanionBuilder = ContactLogsCompanion
-    Function({
-  required String id,
-  required String studentId,
-  Value<String> guardianId,
-  required String channel,
-  Value<String> reason,
-  Value<String> note,
-  Value<String> contactedBy,
-  required DateTime contactedAt,
-  Value<String?> outcome,
-  Value<int> rowid,
-});
-typedef $$ContactLogsTableUpdateCompanionBuilder = ContactLogsCompanion
-    Function({
-  Value<String> id,
-  Value<String> studentId,
-  Value<String> guardianId,
-  Value<String> channel,
-  Value<String> reason,
-  Value<String> note,
-  Value<String> contactedBy,
-  Value<DateTime> contactedAt,
-  Value<String?> outcome,
-  Value<int> rowid,
-});
-
-class $$ContactLogsTableFilterComposer
-    extends Composer<_$AppDatabase, $ContactLogsTable> {
-  $$ContactLogsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get studentId => $composableBuilder(
-      column: $table.studentId, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get guardianId => $composableBuilder(
-      column: $table.guardianId, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get channel => $composableBuilder(
-      column: $table.channel, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get reason => $composableBuilder(
-      column: $table.reason, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get note => $composableBuilder(
-      column: $table.note, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get contactedBy => $composableBuilder(
-      column: $table.contactedBy, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<DateTime> get contactedAt => $composableBuilder(
-      column: $table.contactedAt, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get outcome => $composableBuilder(
-      column: $table.outcome, builder: (column) => ColumnFilters(column));
-}
-
-class $$ContactLogsTableOrderingComposer
-    extends Composer<_$AppDatabase, $ContactLogsTable> {
-  $$ContactLogsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get studentId => $composableBuilder(
-      column: $table.studentId, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get guardianId => $composableBuilder(
-      column: $table.guardianId, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get channel => $composableBuilder(
-      column: $table.channel, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get reason => $composableBuilder(
-      column: $table.reason, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get note => $composableBuilder(
-      column: $table.note, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get contactedBy => $composableBuilder(
-      column: $table.contactedBy, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<DateTime> get contactedAt => $composableBuilder(
-      column: $table.contactedAt, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get outcome => $composableBuilder(
-      column: $table.outcome, builder: (column) => ColumnOrderings(column));
-}
-
-class $$ContactLogsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $ContactLogsTable> {
-  $$ContactLogsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get studentId =>
-      $composableBuilder(column: $table.studentId, builder: (column) => column);
-
-  GeneratedColumn<String> get guardianId => $composableBuilder(
-      column: $table.guardianId, builder: (column) => column);
-
-  GeneratedColumn<String> get channel =>
-      $composableBuilder(column: $table.channel, builder: (column) => column);
-
-  GeneratedColumn<String> get reason =>
-      $composableBuilder(column: $table.reason, builder: (column) => column);
-
-  GeneratedColumn<String> get note =>
-      $composableBuilder(column: $table.note, builder: (column) => column);
-
-  GeneratedColumn<String> get contactedBy => $composableBuilder(
-      column: $table.contactedBy, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get contactedAt => $composableBuilder(
-      column: $table.contactedAt, builder: (column) => column);
-
-  GeneratedColumn<String> get outcome =>
-      $composableBuilder(column: $table.outcome, builder: (column) => column);
-}
-
-class $$ContactLogsTableTableManager extends RootTableManager<
-    _$AppDatabase,
-    $ContactLogsTable,
-    ContactLog,
-    $$ContactLogsTableFilterComposer,
-    $$ContactLogsTableOrderingComposer,
-    $$ContactLogsTableAnnotationComposer,
-    $$ContactLogsTableCreateCompanionBuilder,
-    $$ContactLogsTableUpdateCompanionBuilder,
-    (ContactLog, BaseReferences<_$AppDatabase, $ContactLogsTable, ContactLog>),
-    ContactLog,
-    PrefetchHooks Function()> {
-  $$ContactLogsTableTableManager(_$AppDatabase db, $ContactLogsTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$ContactLogsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$ContactLogsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$ContactLogsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<String> id = const Value.absent(),
-            Value<String> studentId = const Value.absent(),
-            Value<String> guardianId = const Value.absent(),
-            Value<String> channel = const Value.absent(),
-            Value<String> reason = const Value.absent(),
-            Value<String> note = const Value.absent(),
-            Value<String> contactedBy = const Value.absent(),
-            Value<DateTime> contactedAt = const Value.absent(),
-            Value<String?> outcome = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              ContactLogsCompanion(
-            id: id,
-            studentId: studentId,
-            guardianId: guardianId,
-            channel: channel,
-            reason: reason,
-            note: note,
-            contactedBy: contactedBy,
-            contactedAt: contactedAt,
-            outcome: outcome,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            required String id,
-            required String studentId,
-            Value<String> guardianId = const Value.absent(),
-            required String channel,
-            Value<String> reason = const Value.absent(),
-            Value<String> note = const Value.absent(),
-            Value<String> contactedBy = const Value.absent(),
-            required DateTime contactedAt,
-            Value<String?> outcome = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              ContactLogsCompanion.insert(
-            id: id,
-            studentId: studentId,
-            guardianId: guardianId,
-            channel: channel,
-            reason: reason,
-            note: note,
-            contactedBy: contactedBy,
-            contactedAt: contactedAt,
-            outcome: outcome,
-            rowid: rowid,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
-}
-
-typedef $$ContactLogsTableProcessedTableManager = ProcessedTableManager<
-    _$AppDatabase,
-    $ContactLogsTable,
-    ContactLog,
-    $$ContactLogsTableFilterComposer,
-    $$ContactLogsTableOrderingComposer,
-    $$ContactLogsTableAnnotationComposer,
-    $$ContactLogsTableCreateCompanionBuilder,
-    $$ContactLogsTableUpdateCompanionBuilder,
-    (ContactLog, BaseReferences<_$AppDatabase, $ContactLogsTable, ContactLog>),
-    ContactLog,
+    $WeeklyPlansTable,
+    WeeklyPlan,
+    $$WeeklyPlansTableFilterComposer,
+    $$WeeklyPlansTableOrderingComposer,
+    $$WeeklyPlansTableAnnotationComposer,
+    $$WeeklyPlansTableCreateCompanionBuilder,
+    $$WeeklyPlansTableUpdateCompanionBuilder,
+    (WeeklyPlan, BaseReferences<_$AppDatabase, $WeeklyPlansTable, WeeklyPlan>),
+    WeeklyPlan,
     PrefetchHooks Function()>;
 typedef $$StudentTransfersTableCreateCompanionBuilder
     = StudentTransfersCompanion Function({
@@ -7449,20 +5016,14 @@ class $AppDatabaseManager {
   $AppDatabaseManager(this._db);
   $$UsersTableTableManager get users =>
       $$UsersTableTableManager(_db, _db.users);
-  $$GuardiansTableTableManager get guardians =>
-      $$GuardiansTableTableManager(_db, _db.guardians);
   $$HalaqasTableTableManager get halaqas =>
       $$HalaqasTableTableManager(_db, _db.halaqas);
   $$StudentsTableTableManager get students =>
       $$StudentsTableTableManager(_db, _db.students);
   $$DailyRecordsTableTableManager get dailyRecords =>
       $$DailyRecordsTableTableManager(_db, _db.dailyRecords);
-  $$FollowUpPlansTableTableManager get followUpPlans =>
-      $$FollowUpPlansTableTableManager(_db, _db.followUpPlans);
-  $$AlertsTableTableManager get alerts =>
-      $$AlertsTableTableManager(_db, _db.alerts);
-  $$ContactLogsTableTableManager get contactLogs =>
-      $$ContactLogsTableTableManager(_db, _db.contactLogs);
+  $$WeeklyPlansTableTableManager get weeklyPlans =>
+      $$WeeklyPlansTableTableManager(_db, _db.weeklyPlans);
   $$StudentTransfersTableTableManager get studentTransfers =>
       $$StudentTransfersTableTableManager(_db, _db.studentTransfers);
 }

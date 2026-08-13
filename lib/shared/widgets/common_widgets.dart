@@ -84,34 +84,22 @@ class StatCard extends StatelessWidget {
   }
 }
 
-Color levelColor(String level) {
-  switch (level) {
+Color gradeColor(String grade) {
+  switch (grade) {
     case 'excellent': return const Color(0xFF2E7D32);
     case 'veryGood': return const Color(0xFF558B2F);
     case 'good': return const Color(0xFFF9A825);
-    case 'improve': return const Color(0xFFE65100);
-    case 'followUp': return const Color(0xFFC62828);
+    case 'repeat': return const Color(0xFFC62828);
     default: return Colors.grey;
   }
 }
 
-String levelAr(String level) {
-  switch (level) {
-    case 'excellent': return 'متقن';
+String gradeAr(String grade) {
+  switch (grade) {
+    case 'excellent': return 'ممتاز';
     case 'veryGood': return 'جيد جداً';
     case 'good': return 'جيد';
-    case 'improve': return 'يحتاج تحسيناً';
-    case 'followUp': return 'يحتاج متابعة';
-    default: return level;
-  }
-}
-
-String attendanceAr(String a) {
-  switch (a) {
-    case 'present': return 'حاضر';
-    case 'late': return 'متأخر';
-    case 'excusedAbsence': return 'غائب بعذر';
-    case 'unexcusedAbsence': return 'غائب بلا عذر';
-    default: return a;
+    case 'repeat': return 'إعادة';
+    default: return grade;
   }
 }

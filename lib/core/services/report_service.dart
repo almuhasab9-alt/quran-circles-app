@@ -1,111 +1,189 @@
-import 'package:drift/drift.dart';
-import 'package:csv/csv.dart';
+import 'package:drift/drift.dart' show Value, OrderingTerm;
+import 'package:uuid/uuid.dart';
 import '../database/app_database.dart';
+import '../constants/enums.dart';
 import '../utils/date_utils.dart' as du;
+import 'session_service.dart';
 
-// خدمة التقارير — قابلة لإضافة PDF لاحقاً
+const _uuid = Uuid();
+
+/// عدد الصفحات في نطاق مراجعة (من صفحة إلى صفحة، شامل)
+int pagesOfRange(int from, int to) => (from > 0 && to >= from) ? to - from + 1 : 0;
+
+/// ملخص إنجاز فترة (أسبوع/شهر) مقارنة بالمطلوب
+class PeriodReport {
+  final double requiredNew, doneNew;
+  final double requiredRecent, doneRecent;
+  final double requiredMinor, doneMinor;
+  final double requiredMajor, doneMajor;
+  final double requiredFriday, doneFriday;
+  final int daysRecorded;
+  final int fridaysRecorded;
+  final EvaluationGrade? weeklyGrade; // أدنى تقدير في الأسبوع (المتماثل)
+
+  const PeriodReport({
+    required this.requiredNew, required this.doneNew,
+    required this.requiredRecent, required this.doneRecent,
+    required this.requiredMinor, required this.doneMinor,
+    required this.requiredMajor, required this.doneMajor,
+    required this.requiredFriday, required this.doneFriday,
+    required this.daysRecorded, required this.fridaysRecorded,
+    this.weeklyGrade,
+  });
+
+  static double _pct(double done, double req) {
+    if (req <= 0) return done > 0 ? 100 : 0;
+    final p = done / req * 100;
+    return p > 100 ? 100 : p;
+  }
+
+  double get newPct => _pct(doneNew, requiredNew);
+  double get recentPct => _pct(doneRecent, requiredRecent);
+  double get minorPct => _pct(doneMinor, requiredMinor);
+  double get majorPct => _pct(doneMajor, requiredMajor);
+  double get fridayPct => _pct(doneFriday, requiredFriday);
+
+  double get requiredTotal =>
+      requiredNew + requiredRecent + requiredMinor + requiredMajor + requiredFriday;
+  double get doneTotal => doneNew + doneRecent + doneMinor + doneMajor + doneFriday;
+  double get overallPct => _pct(doneTotal, requiredTotal);
+}
+
 class ReportService {
   final AppDatabase db;
-  DateTime? lastGeneratedAt;
   ReportService(this.db);
 
-  Future<String> studentReport(Student s) async {
-    final h = await (db.select(db.halaqas)..where((x) => x.id.equals(s.halaqaId))).getSingleOrNull();
-    final recs = await (db.select(db.dailyRecords)..where((r) => r.studentId.equals(s.id))).get();
-    lastGeneratedAt = DateTime.now();
-    final present = recs.where((r) => r.attendance == 'present' || r.attendance == 'late').length;
-    final attRate = recs.isEmpty ? 0.0 : present / recs.length * 100;
-    final avg = recs.isEmpty ? 0.0 : recs.map((r) => r.finalScore).reduce((a, b) => a + b) / recs.length;
-    final now = du.formatDate(DateTime.now());
-    return '''
-تقرير الطالب - مركز السنة للعلوم الشرعية وتأهيل الدعاة
-التاريخ: $now
-الطالب: ${s.fullName} (${s.studentCode})
-الحلقة: ${h?.name ?? ''}
-الانضمام: ${du.formatDate(s.joinDate)}
----
-نسبة الحضور: ${attRate.toStringAsFixed(1)}%
-متوسط التقييم النهائي: ${avg.toStringAsFixed(1)}/100
-عدد الجلسات المسجلة: ${recs.length}
----
-آخر 5 سجلات:
-${recs.reversed.take(5).map((r) => '${r.dateKey}: ${r.finalScore.toStringAsFixed(1)}').join('\n')}
-''';
+  /// حفظ/تحديث المطلوب الأسبوعي لطالب
+  Future<void> saveWeeklyPlan({
+    required String studentId,
+    required String halaqaId,
+    required DateTime anyDayInWeek,
+    double requiredNewPages = 0,
+    double requiredRecentPages = 0,
+    double requiredMinorPages = 0,
+    double requiredMajorPages = 0,
+    double requiredFridayPages = 0,
+  }) async {
+    final weekStart = SessionService.weekStartOf(anyDayInWeek);
+    final key = du.dateKeyOf(weekStart);
+    final now = DateTime.now();
+    await db.into(db.weeklyPlans).insertOnConflictUpdate(WeeklyPlansCompanion(
+      id: Value(_uuid.v4()),
+      studentId: Value(studentId),
+      halaqaId: Value(halaqaId),
+      weekStartKey: Value(key),
+      requiredNewPages: Value(requiredNewPages),
+      requiredRecentPages: Value(requiredRecentPages),
+      requiredMinorPages: Value(requiredMinorPages),
+      requiredMajorPages: Value(requiredMajorPages),
+      requiredFridayPages: Value(requiredFridayPages),
+      createdAt: Value(now),
+      updatedAt: Value(now),
+    ));
   }
 
-  Future<String> halaqaReport(Halaqa h) async {
-    final students = await (db.select(db.students)..where((s) => s.halaqaId.equals(h.id) & s.active.equals(true))).get();
-    final recs = await (db.select(db.dailyRecords)..where((r) => r.halaqaId.equals(h.id))).get();
-    lastGeneratedAt = DateTime.now();
-    final present = recs.where((r) => r.attendance == 'present' || r.attendance == 'late').length;
-    final attRate = recs.isEmpty ? 0.0 : present / recs.length * 100;
-    final avg = recs.isEmpty ? 0.0 : recs.map((r) => r.finalScore).reduce((a, b) => a + b) / recs.length;
-    final sb = StringBuffer('''
-تقرير الحلقة - مركز السنة للعلوم الشرعية وتأهيل الدعاة
-التاريخ: ${du.formatDate(DateTime.now())}
-الحلقة: ${h.name} | المستوى: ${h.level}
-عدد الطلاب: ${students.length}
-نسبة الحضور: ${attRate.toStringAsFixed(1)}%
-متوسط التقييم: ${avg.toStringAsFixed(1)}/100
----
-الطلاب:
-''');
-    for (final s in students) {
-      final srecs = recs.where((r) => r.studentId == s.id).toList();
-      final savg = srecs.isEmpty ? 0.0 : srecs.map((r) => r.finalScore).reduce((a, b) => a + b) / srecs.length;
-      sb.writeln('${s.fullName}: ${savg.toStringAsFixed(1)}');
-    }
-    return sb.toString();
+  Future<WeeklyPlan?> weeklyPlanOf(String studentId, DateTime anyDayInWeek) {
+    final key = du.dateKeyOf(SessionService.weekStartOf(anyDayInWeek));
+    return (db.select(db.weeklyPlans)
+          ..where((p) => p.studentId.equals(studentId) & p.weekStartKey.equals(key)))
+        .getSingleOrNull();
   }
 
-  Future<String> centerReport() async {
-    final halaqas = await db.select(db.halaqas).get();
-    final students = await (db.select(db.students)..where((s) => s.active.equals(true))).get();
-    final recs = await db.select(db.dailyRecords).get();
-    final alerts = await (db.select(db.alerts)..where((a) => a.status.isNotIn(['closed']))).get();
-    lastGeneratedAt = DateTime.now();
-    final present = recs.where((r) => r.attendance == 'present' || r.attendance == 'late').length;
-    final attRate = recs.isEmpty ? 0.0 : present / recs.length * 100;
-    final avg = recs.isEmpty ? 0.0 : recs.map((r) => r.finalScore).reduce((a, b) => a + b) / recs.length;
-    final sb = StringBuffer('''
-التقرير العام للمركز - مركز السنة للعلوم الشرعية وتأهيل الدعاة
-التاريخ: ${du.formatDate(DateTime.now())}
-عدد الحلقات: ${halaqas.length}
-عدد الطلاب النشطين: ${students.length}
-نسبة الحضور العامة: ${attRate.toStringAsFixed(1)}%
-متوسط التقييم العام: ${avg.toStringAsFixed(1)}/100
-التنبيهات المفتوحة: ${alerts.length}
----
-أداء الحلقات:
-''');
-    for (final h in halaqas) {
-      final hrecs = recs.where((r) => r.halaqaId == h.id).toList();
-      final hpresent = hrecs.where((r) => r.attendance == 'present' || r.attendance == 'late').length;
-      final hrate = hrecs.isEmpty ? 0.0 : hpresent / hrecs.length * 100;
-      final havg = hrecs.isEmpty ? 0.0 : hrecs.map((r) => r.finalScore).reduce((a, b) => a + b) / hrecs.length;
-      sb.writeln('${h.name}: حضور ${hrate.toStringAsFixed(0)}% | تقييم ${havg.toStringAsFixed(1)}');
-    }
-    return sb.toString();
+  /// التقرير الأسبوعي لطالب
+  Future<PeriodReport> weeklyReport(String studentId, DateTime anyDayInWeek) async {
+    final days = SessionService.weekDaysOf(anyDayInWeek);
+    final from = days.first;
+    final to = days.last;
+    return _buildReport(studentId, from, to, singleWeek: true, anyDayInWeek: anyDayInWeek);
   }
 
-  Future<String> csvExport({String? halaqaId}) async {
-    final students = halaqaId != null
-        ? await (db.select(db.students)..where((s) => s.halaqaId.equals(halaqaId) & s.active.equals(true))).get()
-        : await (db.select(db.students)..where((s) => s.active.equals(true))).get();
-    final recs = await db.select(db.dailyRecords).get();
-    final halaqas = await db.select(db.halaqas).get();
-    final hMap = {for (final h in halaqas) h.id: h.name};
-    lastGeneratedAt = DateTime.now();
-    final rows = <List<dynamic>>[
-      ['الكود', 'الطالب', 'الحلقة', 'نسبة الحضور %', 'متوسط التقييم', 'عدد الجلسات'],
-    ];
-    for (final s in students) {
-      final srecs = recs.where((r) => r.studentId == s.id).toList();
-      final present = srecs.where((r) => r.attendance == 'present' || r.attendance == 'late').length;
-      final attRate = srecs.isEmpty ? 0.0 : present / srecs.length * 100;
-      final avg = srecs.isEmpty ? 0.0 : srecs.map((r) => r.finalScore).reduce((a, b) => a + b) / srecs.length;
-      rows.add([s.studentCode, s.fullName, hMap[s.halaqaId] ?? '', attRate.toStringAsFixed(1), avg.toStringAsFixed(1), srecs.length]);
+  /// التقرير الشهري لطالب (من أول يوم لآخر يوم في الشهر)
+  Future<PeriodReport> monthlyReport(String studentId, int year, int month) async {
+    final from = DateTime(year, month, 1);
+    final to = DateTime(year, month + 1, 0);
+    return _buildReport(studentId, from, to, singleWeek: false, month: month, year: year);
+  }
+
+  Future<PeriodReport> _buildReport(
+    String studentId,
+    DateTime from,
+    DateTime to, {
+    required bool singleWeek,
+    DateTime? anyDayInWeek,
+    int? month,
+    int? year,
+  }) async {
+    // 1) اجمع المطلوب
+    double reqNew = 0, reqRecent = 0, reqMinor = 0, reqMajor = 0, reqFriday = 0;
+    if (singleWeek) {
+      final p = await weeklyPlanOf(studentId, anyDayInWeek!);
+      if (p != null) {
+        reqNew = p.requiredNewPages;
+        reqRecent = p.requiredRecentPages;
+        reqMinor = p.requiredMinorPages;
+        reqMajor = p.requiredMajorPages;
+        reqFriday = p.requiredFridayPages;
+      }
+    } else {
+      // للشهر: اجمع كل الخطط الأسبوعية الواقعة في الشهر
+      final plans = await (db.select(db.weeklyPlans)
+            ..where((p) => p.studentId.equals(studentId)))
+          .get();
+      for (final p in plans) {
+        final ws = DateTime.parse(p.weekStartKey);
+        // احتسب الأسبوع إن تقاطع مع الشهر
+        final we = ws.add(const Duration(days: 6));
+        if (ws.isBefore(to.add(const Duration(days: 1))) && we.isAfter(from.subtract(const Duration(days: 1)))) {
+          reqNew += p.requiredNewPages;
+          reqRecent += p.requiredRecentPages;
+          reqMinor += p.requiredMinorPages;
+          reqMajor += p.requiredMajorPages;
+          reqFriday += p.requiredFridayPages;
+        }
+      }
     }
-    return const ListToCsvConverter().convert(rows);
+
+    // 2) اجمع المنجز
+    final recs = await (db.select(db.dailyRecords)
+          ..where((r) =>
+              r.studentId.equals(studentId) &
+              r.dateKey.isBetweenValues(du.dateKeyOf(from), du.dateKeyOf(to)))
+          ..orderBy([(r) => OrderingTerm.asc(r.dateKey)]))
+        .get();
+
+    double doneNew = 0, doneRecent = 0, doneMinor = 0, doneMajor = 0, doneFriday = 0;
+    int days = 0, fridays = 0;
+    int minGradeRank = 5; // لحساب «المتماثل» (أدنى تقدير)
+    EvaluationGrade? weeklyGrade;
+
+    for (final r in recs) {
+      if (r.isFriday) {
+        fridays++;
+        doneFriday += pagesOfRange(r.recentFromPage, r.recentToPage) +
+            pagesOfRange(r.minorFromPage, r.minorToPage) +
+            pagesOfRange(r.majorFromPage, r.majorToPage);
+      } else {
+        days++;
+        doneNew += r.newPages;
+        doneRecent += pagesOfRange(r.recentFromPage, r.recentToPage);
+        doneMinor += pagesOfRange(r.minorFromPage, r.minorToPage);
+        doneMajor += pagesOfRange(r.majorFromPage, r.majorToPage);
+        final g = EvaluationGradeAr.fromName(r.grade);
+        if (g != null && g.rank < minGradeRank) {
+          minGradeRank = g.rank;
+          weeklyGrade = g;
+        }
+      }
+    }
+
+    return PeriodReport(
+      requiredNew: reqNew, doneNew: doneNew,
+      requiredRecent: reqRecent, doneRecent: doneRecent,
+      requiredMinor: reqMinor, doneMinor: doneMinor,
+      requiredMajor: reqMajor, doneMajor: doneMajor,
+      requiredFriday: reqFriday, doneFriday: doneFriday,
+      daysRecorded: days, fridaysRecorded: fridays,
+      weeklyGrade: weeklyGrade,
+    );
   }
 }

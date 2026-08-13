@@ -12,14 +12,14 @@ class QuranCenterApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
-    final settings = ref.watch(settingsProvider).valueOrNull;
+    final darkMode = ref.watch(darkModeProvider);
     return MaterialApp.router(
       title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
       routerConfig: router,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
-      themeMode: settings?.darkMode == true ? ThemeMode.dark : ThemeMode.light,
+      themeMode: darkMode ? ThemeMode.dark : ThemeMode.light,
       locale: const Locale('ar'),
       supportedLocales: const [Locale('ar'), Locale('en')],
       localizationsDelegates: const [

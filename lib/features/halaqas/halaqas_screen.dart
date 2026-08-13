@@ -17,11 +17,15 @@ class HalaqasScreen extends ConsumerWidget {
     final teachers = users.where((u) => u.role == 'teacher' && u.active).toList();
     final supervisors = users.where((u) => u.role == 'supervisor' && u.active).toList();
     final nameCtrl = TextEditingController(text: existing?.name ?? '');
-    final schedCtrl = TextEditingController(text: existing?.scheduleDescription ?? 'السبت والاثنين والأربعاء - بعد العصر');
+    final schedCtrl = TextEditingController(text: existing?.scheduleDescription ?? 'يومياً من السبت إلى الجمعة - بعد العصر');
     final capCtrl = TextEditingController(text: existing?.capacity.toString() ?? '25');
     String level = existing?.level ?? AppConstants.levels.first;
-    String? teacherId = existing != null && existing.teacherIds.isNotEmpty ? existing.teacherIds.split(',').first : (teachers.isNotEmpty ? teachers.first.id : null);
-    String? supervisorId = existing != null && existing.supervisorId.isNotEmpty ? existing.supervisorId : (supervisors.isNotEmpty ? supervisors.first.id : null);
+    String? teacherId = existing != null && existing.teacherIds.isNotEmpty
+        ? existing.teacherIds.split(',').first
+        : (teachers.isNotEmpty ? teachers.first.id : null);
+    String? supervisorId = existing != null && existing.supervisorId.isNotEmpty
+        ? existing.supervisorId
+        : (supervisors.isNotEmpty ? supervisors.first.id : null);
     if (!context.mounted) return;
 
     showDialog(
@@ -66,7 +70,7 @@ class HalaqasScreen extends ConsumerWidget {
                   scheduleDescription: Value(schedCtrl.text.trim()),
                 );
                 if (existing == null) { await repo.insert(c); } else { await repo.update(c); }
-                ref.read(dataVersionProvider.notifier).state++;
+                bumpDataVersion(ref);
                 if (ctx.mounted) Navigator.pop(ctx);
               },
               child: const Text('حفظ'),
@@ -83,24 +87,23 @@ class HalaqasScreen extends ConsumerWidget {
     final halaqasAsync = ref.watch(halaqasProvider);
     final studentsAsync = ref.watch(studentsProvider);
     final recordsAsync = ref.watch(allRecordsProvider);
+    final isSupervisor = session?.isSupervisor ?? false;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('إدارة الحلقات')),
-      floatingActionButton: session?.role == 'teacher' ? null : FloatingActionButton(
+      appBar: AppBar(title: Text(isSupervisor ? 'كل الحلقات' : 'حلقتي')),
+      floatingActionButton: isSupervisor ? FloatingActionButton(
         onPressed: () => _halaqaDialog(context, ref),
         backgroundColor: AppColors.primary,
         child: const Icon(Icons.add, color: Colors.white),
-      ),
+      ) : null,
       body: halaqasAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => ErrorState(message: '$e'),
         data: (halaqas) {
-          // المعلم يرى حلقاته فقط
+          // المعلم يرى حلقته فقط، المشرف يرى الكل
           var list = halaqas;
-          if (session?.role == 'teacher') {
+          if (session?.isTeacher ?? false) {
             list = halaqas.where((h) => h.teacherIds.contains(session!.userId)).toList();
-          } else if (session?.role == 'supervisor') {
-            list = halaqas.where((h) => h.supervisorId == session!.userId).toList();
           }
           if (list.isEmpty) return const EmptyState(icon: Icons.groups, message: 'لا توجد حلقات');
           final students = studentsAsync.value ?? [];
@@ -112,29 +115,28 @@ class HalaqasScreen extends ConsumerWidget {
               final h = list[i];
               final count = students.where((s) => s.halaqaId == h.id).length;
               final hRecs = records.where((r) => r.halaqaId == h.id).toList();
-              final hp = hRecs.where((r) => r.attendance == 'present' || r.attendance == 'late').length;
-              final attRate = hRecs.isEmpty ? 0.0 : hp / hRecs.length * 100;
-              final avg = hRecs.isEmpty ? 0.0 : hRecs.map((r) => r.finalScore).reduce((a, b) => a + b) / hRecs.length;
+              final totalNew = hRecs.fold<double>(0, (a, r) => a + r.newPages);
+              final excellent = hRecs.where((r) => r.grade == 'excellent').length;
               return Card(child: ListTile(
                 leading: CircleAvatar(backgroundColor: AppColors.primary, child: Text('${i + 1}', style: const TextStyle(color: Colors.white))),
                 title: Text(h.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text('${h.level} • $count طالب\nحضور ${attRate.toStringAsFixed(0)}% • تقييم ${avg.toStringAsFixed(1)}'),
+                subtitle: Text('${h.level} • $count طالب\nحفظ جديد ${totalNew.toStringAsFixed(1)} صفحة • ممتاز $excellent'),
                 isThreeLine: true,
-                trailing: session?.role == 'teacher'
-                    ? const Icon(Icons.arrow_forward_ios, size: 16)
-                    : PopupMenuButton<String>(
+                trailing: isSupervisor
+                    ? PopupMenuButton<String>(
                         onSelected: (v) async {
                           if (v == 'edit') _halaqaDialog(context, ref, existing: h);
                           if (v == 'disable') {
                             await ref.read(halaqaRepoProvider).deactivate(h.id);
-                            ref.read(dataVersionProvider.notifier).state++;
+                            bumpDataVersion(ref);
                           }
                         },
-                        itemBuilder: (_) => [
-                          const PopupMenuItem(value: 'edit', child: Text('تعديل')),
-                          const PopupMenuItem(value: 'disable', child: Text('تعطيل')),
+                        itemBuilder: (_) => const [
+                          PopupMenuItem(value: 'edit', child: Text('تعديل')),
+                          PopupMenuItem(value: 'disable', child: Text('تعطيل')),
                         ],
-                      ),
+                      )
+                    : const Icon(Icons.arrow_forward_ios, size: 16),
                 onTap: () => ctx.push('/halaqa/${h.id}'),
               ));
             },

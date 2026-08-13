@@ -5,11 +5,12 @@ import '../constants/app_constants.dart';
 import '../constants/enums.dart';
 import '../database/app_database.dart';
 import '../utils/date_utils.dart' as du;
-import 'alert_engine.dart';
-import 'app_settings.dart';
-import 'evaluation_service.dart';
+import 'quran_meta.dart';
+import 'quran_meta_data.dart';
+import 'session_service.dart';
 
 // يولد بيانات تجريبية deterministic باستخدام seed ثابت
+// النظام الجديد: مشرف + معلمون، سجلات يومية (جديد بالآيات + مراجعات بالصفحات)
 class DemoSeedService {
   final AppDatabase db;
   static const int seedValue = 2026;
@@ -37,13 +38,11 @@ class DemoSeedService {
   ];
   static const halaqaNames = [
     'حلقة النور','حلقة الفرقان','حلقة الإخلاص','حلقة التقوى','حلقة الهدى',
-    'حلقة الصديق','حلقة الفاروق','حلقة ذي النورين','حلقة سيف الله','حلقة الإتقان',
+    'حلقة الصديق','حلقة الفاروق','حلقة ذي النورين',
   ];
 
   String _name(Random r) =>
       '${firstNames[r.nextInt(firstNames.length)]} ${secondNames[r.nextInt(secondNames.length)]}';
-
-  String _phone(Random r) => '77${1000000 + r.nextInt(9000000)}';
 
   Future<void> seed({bool force = false}) async {
     final existing = await db.select(db.users).get();
@@ -51,35 +50,27 @@ class DemoSeedService {
     if (force) await wipe();
     final r = Random(seedValue);
     final now = DateTime.now();
-    final settings = await AppSettings.load();
-    final evaluator = EvaluationService(settings);
 
-    // مستخدمون: مدير + 3 مشرفين + 12 معلماً
-    final adminId = _uuid.v4();
+    // مشرف واحد رئيسي + مشرف ثانٍ
     final supervisors = <String>[];
-    final teachers = <String>[];
-    final teacherNames = <String, String>{};
-
-    await db.into(db.users).insert(UsersCompanion(
-      id: Value(adminId), fullName: const Value('أبو عمر صالح'),
-      username: const Value('admin'), role: const Value('admin'),
-      createdAt: Value(now), updatedAt: Value(now),
-    ));
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 2; i++) {
       final id = _uuid.v4();
       supervisors.add(id);
       await db.into(db.users).insert(UsersCompanion(
         id: Value(id),
-        fullName: Value('${teacherFirst[i]} ${teacherSecond[i]}'),
-        username: Value('supervisor${i + 1}'), role: const Value('supervisor'),
+        fullName: Value(i == 0 ? 'أبو عمر صالح' : '${teacherFirst[i]} ${teacherSecond[i]}'),
+        username: Value(i == 0 ? 'supervisor' : 'supervisor2'),
+        role: const Value('supervisor'),
         createdAt: Value(now), updatedAt: Value(now),
       ));
     }
-    for (int i = 0; i < 12; i++) {
+
+    // 8 معلمين
+    final teachers = <String>[];
+    for (int i = 0; i < 8; i++) {
       final id = _uuid.v4();
       teachers.add(id);
-      final nm = '${teacherFirst[i]} ${teacherSecond[i]}';
-      teacherNames[id] = nm;
+      final nm = '${teacherFirst[i + 2]} ${teacherSecond[i]}';
       await db.into(db.users).insert(UsersCompanion(
         id: Value(id), fullName: Value(nm),
         username: Value('teacher${i + 1}'), role: const Value('teacher'),
@@ -87,13 +78,13 @@ class DemoSeedService {
       ));
     }
 
-    // 10 حلقات
+    // 8 حلقات — معلم لكل حلقة
     final halaqaIds = <String>[];
     final halaqaTeacher = <String, String>{};
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 8; i++) {
       final id = _uuid.v4();
       halaqaIds.add(id);
-      final tid = teachers[i % teachers.length];
+      final tid = teachers[i];
       halaqaTeacher[id] = tid;
       await db.into(db.halaqas).insert(HalaqasCompanion(
         id: Value(id), name: Value(halaqaNames[i]),
@@ -101,206 +92,148 @@ class DemoSeedService {
         teacherIds: Value(tid),
         supervisorId: Value(supervisors[i % supervisors.length]),
         capacity: const Value(25),
-        scheduleDescription: Value(i % 2 == 0
-            ? 'السبت والاثنين والأربعاء - بعد العصر'
-            : 'الأحد والثلاثاء والخميس - بعد المغرب'),
+        scheduleDescription: const Value('يومياً من السبت إلى الجمعة - بعد العصر'),
       ));
-      // ربط المعلم بالحلقة
       await (db.update(db.users)..where((u) => u.id.equals(tid))).write(
         UsersCompanion(assignedHalaqaIds: Value(id)),
       );
     }
 
-    // 200 طالب (20 لكل حلقة) + أولياء أمور
+    // 12 طالباً لكل حلقة
     final studentIds = <String>[];
     final studentHalaqa = <String, String>{};
     int code = 1000;
     for (final hid in halaqaIds) {
       final hlevel = AppConstants.levels[halaqaIds.indexOf(hid) % AppConstants.levels.length];
-      for (int j = 0; j < 20; j++) {
+      for (int j = 0; j < 12; j++) {
         code++;
         final stId = _uuid.v4();
-        final name = _name(r);
         studentIds.add(stId);
         studentHalaqa[stId] = hid;
-        // ولي الأمر: أبو + الاسم الأول للطالب
-        final gId = _uuid.v4();
-        final phone = _phone(r);
-        await db.into(db.guardians).insert(GuardiansCompanion(
-          id: Value(gId),
-          fullName: Value('أبو ${name.split(' ').first}'),
-          primaryPhone: Value(phone),
-          whatsappPhone: Value(phone),
-          preferredContact: Value(r.nextBool() ? 'whatsapp' : 'call'),
-        ));
         await db.into(db.students).insert(StudentsCompanion(
           id: Value(stId), studentCode: Value('ST$code'),
-          fullName: Value(name), halaqaId: Value(hid), level: Value(hlevel),
-          joinDate: Value(now.subtract(Duration(days: 60 + r.nextInt(500)))),
-          guardianIds: Value(gId),
+          fullName: Value(_name(r)), halaqaId: Value(hid), level: Value(hlevel),
+          joinDate: Value(now.subtract(Duration(days: 60 + r.nextInt(400)))),
           createdAt: Value(now), updatedAt: Value(now),
         ));
       }
     }
 
-    // توزيع فئات الأداء: 20% متقن، 30% جيد جداً، 30% جيد، 12% يحتاج تحسين، 8% متابعة
-    double perfOf(String sid) {
-      final idx = studentIds.indexOf(sid) % 100;
-      if (idx < 20) return 90 + r.nextDouble() * 10; // متقن
-      if (idx < 50) return 80 + r.nextDouble() * 9; // جيد جداً
-      if (idx < 80) return 70 + r.nextDouble() * 9; // جيد
-      if (idx < 92) return 60 + r.nextDouble() * 9; // يحتاج تحسيناً
-      return 35 + r.nextDouble() * 24; // يحتاج متابعة
+    // مواضع حفظ متدرجة لكل طالب (يبدأ كل طالب من موضع مختلف قليلاً)
+    final progress = <String, (int surah, int ayah)>{};
+    for (int i = 0; i < studentIds.length; i++) {
+      // يبدأ من جزء عمود: النبأ (78) وتقدّم — سور قصيرة
+      progress[studentIds[i]] = (78 + (i % 10), 1);
     }
 
-    // 12 أسبوعاً × 3 جلسات = 36 سجلاً لكل طالب
+    // أسبوعان كاملان من السجلات (السبت..الجمعة) لكل طالب
     final today = DateTime(now.year, now.month, now.day);
+    final thisWeekStart = SessionService.weekStartOf(today);
+    final grades = [
+      EvaluationGrade.excellent, EvaluationGrade.veryGood,
+      EvaluationGrade.veryGood, EvaluationGrade.good,
+      EvaluationGrade.good, EvaluationGrade.excellent,
+      EvaluationGrade.veryGood, EvaluationGrade.repeat,
+    ];
+
     final batch = <DailyRecordsCompanion>[];
-    for (int week = 0; week < 12; week++) {
-      for (int session = 0; session < 3; session++) {
-        final date = today.subtract(Duration(days: (11 - week) * 7 + (2 - session) * 2));
-        final dateKey = du.dateKeyOf(date);
-        for (final sid in studentIds) {
-          final hid = studentHalaqa[sid]!;
-          final target = perfOf(sid);
-          // تحديد الحضور بناءً على الفئة
-          final roll = r.nextDouble() * 100;
-          AttendanceStatus att;
-          if (target >= 80) {
-            att = roll < 93 ? AttendanceStatus.present : roll < 97 ? AttendanceStatus.late : roll < 99 ? AttendanceStatus.excusedAbsence : AttendanceStatus.unexcusedAbsence;
-          } else if (target >= 60) {
-            att = roll < 85 ? AttendanceStatus.present : roll < 92 ? AttendanceStatus.late : roll < 97 ? AttendanceStatus.excusedAbsence : AttendanceStatus.unexcusedAbsence;
+    final plans = <WeeklyPlansCompanion>[];
+
+    for (int w = 0; w < 2; w++) {
+      final weekStart = thisWeekStart.subtract(Duration(days: 7 * (1 - w)));
+      final weekKey = du.dateKeyOf(weekStart);
+      for (final sid in studentIds) {
+        final hid = studentHalaqa[sid]!;
+        final tid = halaqaTeacher[hid]!;
+
+        // المطلوب الأسبوعي
+        plans.add(WeeklyPlansCompanion(
+          id: Value(_uuid.v4()), studentId: Value(sid), halaqaId: Value(hid),
+          weekStartKey: Value(weekKey),
+          requiredNewPages: const Value(2),
+          requiredRecentPages: const Value(3),
+          requiredMinorPages: const Value(5),
+          requiredMajorPages: const Value(10),
+          requiredFridayPages: const Value(4),
+        ));
+
+        // 7 أيام
+        for (int d = 0; d < 7; d++) {
+          final date = weekStart.add(Duration(days: d));
+          if (date.isAfter(today)) continue; // لا سجلات مستقبلية
+          final dateKey = du.dateKeyOf(date);
+          final isFriday = date.weekday == DateTime.friday;
+
+          if (isFriday) {
+            // ربط الجمعة: مراجعة فقط
+            final rf = 1 + r.nextInt(500);
+            final rt = rf + 2 + r.nextInt(3);
+            batch.add(DailyRecordsCompanion(
+              id: Value(_uuid.v4()), studentId: Value(sid), halaqaId: Value(hid),
+              teacherId: Value(tid), date: Value(date), dateKey: Value(dateKey),
+              weekday: Value(date.weekday), isFriday: const Value(true),
+              recentFromPage: Value(rf), recentToPage: Value(rt.clamp(rf, 604)),
+              notes: const Value('ربط الجمعة'),
+              createdAt: Value(now), updatedAt: Value(now),
+            ));
           } else {
-            att = roll < 65 ? AttendanceStatus.present : roll < 78 ? AttendanceStatus.late : roll < 88 ? AttendanceStatus.excusedAbsence : AttendanceStatus.unexcusedAbsence;
+            // يوم عادي: جديد بالآيات + مراجعات بالصفحات
+            final cur = progress[sid]!;
+            final span = 4 + r.nextInt(8); // 4-11 آية جديدة
+            var (fs, fa) = cur;
+            var ts = fs, ta = fa + span;
+            // إذا تجاوز آيات السورة، انتقل للسورة التالية
+            if (ta > _ayahCount(ts)) {
+              final extra = ta - _ayahCount(ts);
+              ts = ts + 1 > 114 ? 114 : ts + 1;
+              ta = extra.clamp(1, _ayahCount(ts));
+            }
+            final pages = QuranMeta.rangeInPages((fs, fa), (ts, ta));
+            final nextAyah = ta + 1;
+            progress[sid] = nextAyah > _ayahCount(ts)
+                ? ((ts + 1 > 114 ? 114 : ts + 1), 1)
+                : (ts, nextAyah);
+
+            final recentF = 1 + r.nextInt(100);
+            final minorF = 100 + r.nextInt(200);
+            final majorF = 300 + r.nextInt(200);
+            batch.add(DailyRecordsCompanion(
+              id: Value(_uuid.v4()), studentId: Value(sid), halaqaId: Value(hid),
+              teacherId: Value(tid), date: Value(date), dateKey: Value(dateKey),
+              weekday: Value(date.weekday), isFriday: const Value(false),
+              newFromSurah: Value(fs), newFromAyah: Value(fa),
+              newToSurah: Value(ts), newToAyah: Value(ta),
+              newPages: Value(pages),
+              grade: Value(grades[r.nextInt(grades.length)].name),
+              repetition: Value(3 + r.nextInt(8)),
+              recentFromPage: Value(recentF), recentToPage: Value(recentF + r.nextInt(2)),
+              minorFromPage: Value(minorF), minorToPage: Value(minorF + r.nextInt(3)),
+              majorFromPage: Value(majorF), majorToPage: Value(majorF + 1 + r.nextInt(4)),
+              notes: Value(r.nextDouble() < 0.15 ? 'يحتاج تركيزاً على مخارج الحروف' : ''),
+              createdAt: Value(now), updatedAt: Value(now),
+            ));
           }
-          final present = att == AttendanceStatus.present || att == AttendanceStatus.late;
-
-          // أخطاء تُعطي درجة قريبة من المستهدفة
-          int minor = 0, medium = 0, major = 0, selfCorr = 0;
-          double planned = 0, completed = 0;
-          HomeworkStatus hw = HomeworkStatus.completed;
-          String fromS = '', toS = '';
-          int fromA = 0, toA = 0;
-          double pages = 0;
-
-          if (present) {
-            final gap = (100 - target).clamp(0, 70);
-            // توزيع الفجوة على الأخطاء
-            major = gap > 40 ? (r.nextBool() ? 2 : 1) : gap > 25 ? (r.nextDouble() < 0.4 ? 1 : 0) : 0;
-            medium = ((gap - major * 6) / 3).clamp(0, 8).round();
-            minor = (gap - major * 6 - medium * 3).clamp(0, 12).round();
-            if (r.nextDouble() < 0.3) selfCorr = r.nextInt(3);
-            fromS = AppConstants.surahs[r.nextInt(AppConstants.surahs.length)];
-            toS = fromS;
-            fromA = 1 + r.nextInt(10);
-            toA = fromA + 3 + r.nextInt(10);
-            pages = 0.5 + r.nextDouble() * 1.5;
-            planned = 1 + r.nextInt(3).toDouble();
-            completed = (planned * (0.6 + r.nextDouble() * 0.4)).clamp(0, planned);
-            hw = r.nextDouble() < 0.8 ? HomeworkStatus.completed : r.nextDouble() < 0.6 ? HomeworkStatus.partial : HomeworkStatus.notCompleted;
-          }
-
-          final ev = evaluator.evaluate(
-            attendance: att, minorErrors: minor, mediumErrors: medium,
-            majorErrors: major, selfCorrections: selfCorr,
-            revisionPlannedPages: planned, revisionCompletedPages: completed,
-            homework: hw,
-          );
-
-          batch.add(DailyRecordsCompanion(
-            id: Value(_uuid.v4()),
-            studentId: Value(sid), halaqaId: Value(hid),
-            teacherId: Value(halaqaTeacher[hid] ?? ''),
-            date: Value(date), dateKey: Value(dateKey),
-            attendance: Value(att.name),
-            fromSurah: Value(fromS), fromAyah: Value(fromA),
-            toSurah: Value(toS), toAyah: Value(toA),
-            estimatedPages: Value(pages),
-            revisionPlannedPages: Value(planned),
-            revisionCompletedPages: Value(completed),
-            revisionScore: Value(ev.revisionScore),
-            minorErrors: Value(minor), mediumErrors: Value(medium),
-            majorErrors: Value(major), selfCorrections: Value(selfCorr),
-            automaticScore: Value(ev.recitationScore),
-            homeworkStatus: Value(hw.name), homeworkScore: Value(ev.homeworkScore),
-            finalScore: Value(ev.finalScore), level: Value(ev.level.name),
-            needsFollowUp: Value(ev.level == PerformanceLevel.followUp),
-            createdAt: Value(now), updatedAt: Value(now),
-          ));
         }
       }
     }
-    // إدراج جماعي ضمن معاملة
-    await db.batch((b) => b.insertAll(db.dailyRecords, batch));
 
-    // توليد تنبيهات أولية
-    await _generateInitialAlerts();
-
-    // خطط متابعة لبعض الطلاب المتعثرين
-    final struggling = (await db.select(db.dailyRecords).get())
-        .where((d) => d.needsFollowUp).map((d) => d.studentId).toSet().take(15);
-    for (final sid in struggling) {
-      await db.into(db.followUpPlans).insert(FollowUpPlansCompanion(
-        id: Value(_uuid.v4()), studentId: Value(sid),
-        createdBy: Value(supervisors.first),
-        startDate: Value(now.subtract(const Duration(days: 7))),
-        goals: const Value('رفع متوسط التقييم إلى 70 فأكثر خلال شهر'),
-        actions: const Value('مراجعة يومية 10 دقائق + تواصل أسبوعي مع ولي الأمر + جلسة تقوية'),
-      ));
-      await db.into(db.contactLogs).insert(ContactLogsCompanion(
-        id: Value(_uuid.v4()), studentId: Value(sid),
-        channel: const Value('call'),
-        reason: const Value('مناقشة مستوى الطالب'),
-        note: const Value('تم التواصل مع ولي الأمر وأبدى تعاونه'),
-        contactedBy: Value(supervisors.first),
-        contactedAt: Value(now.subtract(Duration(days: 2 + r.nextInt(5)))),
-        outcome: const Value('وعد بمتابعة الطالب في المنزل'),
-      ));
-    }
+    await db.batch((b) {
+      b.insertAll(db.weeklyPlans, plans);
+      b.insertAll(db.dailyRecords, batch);
+    });
   }
 
-  Future<void> _generateInitialAlerts() async {
-    final settings = await AppSettings.load();
-    final engine = AlertEngine(settings);
-    final records = await db.select(db.dailyRecords).get();
-    final byStudent = <String, List<DailyRecord>>{};
-    for (final rec in records) {
-      byStudent.putIfAbsent(rec.studentId, () => []).add(rec);
-    }
-    final alertsBatch = <AlertsCompanion>[];
-    byStudent.forEach((sid, recs) {
-      recs.sort((a, b) => a.date.compareTo(b.date));
-      final lites = recs.map((e) => DailyRecordLite(
-        studentId: e.studentId, halaqaId: e.halaqaId, date: e.date,
-        attendance: e.attendance, finalScore: e.finalScore,
-        majorErrors: e.majorErrors, hasRecitation: e.fromSurah.isNotEmpty,
-      )).toList();
-      final drafts = engine.evaluate(
-        studentId: sid, halaqaId: recs.first.halaqaId,
-        records: lites, openTypes: {},
-      );
-      for (final d in drafts) {
-        alertsBatch.add(AlertsCompanion(
-          id: Value(_uuid.v4()), studentId: Value(d.studentId),
-          halaqaId: Value(d.halaqaId), type: Value(d.type.name),
-          severity: Value(d.severity.name), message: Value(d.message),
-          status: const Value('pendingReview'),
-          createdAt: Value(d.createdAt),
-        ));
-      }
-    });
-    await db.batch((b) => b.insertAll(db.alerts, alertsBatch));
+  int _ayahCount(int surah) {
+    if (surah < 1 || surah > 114) return 1;
+    return QuranMetaData.ayahCount[surah];
   }
 
   Future<void> wipe() async {
     await db.transaction(() async {
       await db.delete(db.dailyRecords).go();
-      await db.delete(db.alerts).go();
-      await db.delete(db.contactLogs).go();
-      await db.delete(db.followUpPlans).go();
+      await db.delete(db.weeklyPlans).go();
       await db.delete(db.studentTransfers).go();
       await db.delete(db.students).go();
-      await db.delete(db.guardians).go();
       await db.delete(db.halaqas).go();
       await db.delete(db.users).go();
     });
