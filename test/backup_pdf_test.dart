@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_center/core/database/app_database.dart';
 import 'package:quran_center/core/services/backup_service.dart';
@@ -243,6 +244,38 @@ void main() {
     test('بدون أي نسخة سابقة والتذكير مفعّل = مستحق', () {
       expect(
         const BackupSettings(reminder: BackupReminder.daily).isOverdue, true);
+    });
+
+    test('الوضع الافتراضي عند أول تشغيل: أسبوعي (يظهر التنبيه تلقائياً)', () async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      final Map<String, Object> values = {};
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(
+        const MethodChannel('plugins.flutter.io/shared_preferences'),
+        (MethodCall call) async {
+          if (call.method == 'getAll') return values;
+          if (call.method == 'setString') {
+            values[call.arguments['key'] as String] =
+                call.arguments['value'] as Object;
+          }
+          return true;
+        },
+      );
+      final db = _memDb();
+      addTearDown(db.close);
+      final service = BackupService(db);
+
+      // لم يختر المستخدم شيئاً بعد → أسبوعي افتراضياً ومستحق فوراً
+      final s1 = await service.loadSettings();
+      expect(s1.reminder, BackupReminder.weekly);
+      expect(s1.isOverdue, true);
+      expect(s1.autoBackup, true);
+
+      // بعد اختيار المستخدم «إيقاف» صراحةً يبقى إيقاف (لا يرجع للافتراضي)
+      await service.saveReminder(BackupReminder.off);
+      final s2 = await service.loadSettings();
+      expect(s2.reminder, BackupReminder.off);
+      expect(s2.isOverdue, false);
     });
 
     test('الأسماء العربية والتحويل من الاسم', () {

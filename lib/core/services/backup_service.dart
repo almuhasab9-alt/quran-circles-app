@@ -270,8 +270,12 @@ class BackupService {
   Future<BackupSettings> loadSettings() async {
     final p = await SharedPreferences.getInstance();
     final lastStr = p.getString(_kLastAt);
+    final reminderStr = p.getString(_kReminder);
     return BackupSettings(
-      reminder: BackupReminderAr.fromName(p.getString(_kReminder)),
+      // الافتراضي عند أول تشغيل: تذكير أسبوعي (حتى يختار المستخدم غير ذلك)
+      reminder: reminderStr == null
+          ? BackupReminder.weekly
+          : BackupReminderAr.fromName(reminderStr),
       autoBackup: p.getBool(_kAuto) ?? true,
       lastBackupAt: lastStr == null ? null : DateTime.tryParse(lastStr),
     );
