@@ -50,20 +50,28 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
         ],
       )),
     );
-    if (saved != true || nameCtrl.text.trim().isEmpty || halaqaId == null) return;
+    final newName = nameCtrl.text.trim();
+    nameCtrl.dispose();
+    if (saved != true || newName.isEmpty || halaqaId == null) return;
     final repo = ref.read(studentRepoProvider);
     final now = DateTime.now();
     if (s == null) {
       final all = await repo.getAll();
-      final code = 'ST${1001 + all.length}';
+      // توليد رقم فريد: نبدأ من أعلى رقم موجود + 1 لتفادي التكرار بعد الحذف
+      var maxNum = 1000;
+      for (final st in all) {
+        final n = int.tryParse(st.studentCode.replaceFirst('ST', ''));
+        if (n != null && n > maxNum) maxNum = n;
+      }
+      final code = 'ST${maxNum + 1}';
       await repo.insert(StudentsCompanion(
         id: drift.Value(const Uuid().v4()), studentCode: drift.Value(code),
-        fullName: drift.Value(nameCtrl.text.trim()), halaqaId: drift.Value(halaqaId!),
+        fullName: drift.Value(newName), halaqaId: drift.Value(halaqaId!),
         level: drift.Value(level), joinDate: drift.Value(now),
         createdAt: drift.Value(now), updatedAt: drift.Value(now),
       ));
     } else {
-      await repo.update(s.copyWith(fullName: nameCtrl.text.trim(), halaqaId: halaqaId!, level: level, updatedAt: now).toCompanion(true));
+      await repo.update(s.copyWith(fullName: newName, halaqaId: halaqaId!, level: level, updatedAt: now).toCompanion(true));
     }
     bumpDataVersion(ref);
   }

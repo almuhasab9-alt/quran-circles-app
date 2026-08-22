@@ -150,7 +150,7 @@ class BackupService {
     final data = await buildBackupData(teacherId: teacherId);
     final jsonStr = const JsonEncoder.withIndent('  ').convert(data);
     final raw = utf8.encode(jsonStr);
-    return GZipEncoder().encode(raw);
+    return const GZipEncoder().encode(raw);
   }
 
   /// حفظ النسخة الاحتياطية التلقائية في ملف داخل مجلد المستندات.
@@ -183,7 +183,7 @@ class BackupService {
   Map<String, dynamic> decodeBackup(List<int> bytes) {
     List<int> raw;
     try {
-      raw = GZipDecoder().decodeBytes(bytes);
+      raw = const GZipDecoder().decodeBytes(bytes);
     } catch (_) {
       // ربما الملف JSON غير مضغوط
       raw = bytes;

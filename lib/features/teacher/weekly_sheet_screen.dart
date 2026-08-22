@@ -363,14 +363,22 @@ class _WeeklySheetScreenState extends ConsumerState<WeeklySheetScreen> {
         ],
       ),
     );
+    // نلتقط القيم قبل التخلص من المتحكمات
+    final vNew = double.tryParse(newCtrl.text) ?? 0;
+    final vRecent = double.tryParse(recentCtrl.text) ?? 0;
+    final vMinor = double.tryParse(minorCtrl.text) ?? 0;
+    final vMajor = double.tryParse(majorCtrl.text) ?? 0;
+    final vFriday = double.tryParse(fridayCtrl.text) ?? 0;
+    newCtrl.dispose(); recentCtrl.dispose(); minorCtrl.dispose();
+    majorCtrl.dispose(); fridayCtrl.dispose();
     if (saved == true) {
       await ref.read(reportServiceProvider).saveWeeklyPlan(
         studentId: _student!.id, halaqaId: widget.halaqaId, anyDayInWeek: _weekRef,
-        requiredNewPages: double.tryParse(newCtrl.text) ?? 0,
-        requiredRecentPages: double.tryParse(recentCtrl.text) ?? 0,
-        requiredMinorPages: double.tryParse(minorCtrl.text) ?? 0,
-        requiredMajorPages: double.tryParse(majorCtrl.text) ?? 0,
-        requiredFridayPages: double.tryParse(fridayCtrl.text) ?? 0,
+        requiredNewPages: vNew,
+        requiredRecentPages: vRecent,
+        requiredMinorPages: vMinor,
+        requiredMajorPages: vMajor,
+        requiredFridayPages: vFriday,
       );
       bumpDataVersion(ref);
       _load();

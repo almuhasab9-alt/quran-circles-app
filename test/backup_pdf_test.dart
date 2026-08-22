@@ -27,11 +27,11 @@ Future<void> _insertFixture(AppDatabase db) async {
         assignedHalaqaIds: const Value('h1'),
         createdAt: Value(now), updatedAt: Value(now),
       ));
-  await db.into(db.halaqas).insert(HalaqasCompanion(
-        id: const Value('h1'), name: const Value('حلقة الفرقان'),
-        level: const Value('متوسط'), teacherIds: const Value('u-t1'),
-        supervisorId: const Value('u-sup'), capacity: const Value(25),
-        scheduleDescription: const Value('يومياً بعد الفجر'),
+  await db.into(db.halaqas).insert(const HalaqasCompanion(
+        id: Value('h1'), name: Value('حلقة الفرقان'),
+        level: Value('متوسط'), teacherIds: Value('u-t1'),
+        supervisorId: Value('u-sup'), capacity: Value(25),
+        scheduleDescription: Value('يومياً بعد الفجر'),
       ));
   await db.into(db.students).insert(StudentsCompanion(
         id: const Value('s1'), studentCode: const Value('ST1001'),
@@ -109,9 +109,9 @@ void main() {
 
     test('تصدير المعلم مقصور على حلقاته فقط', () async {
       // حلقة أخرى لا يملكها المعلم u-t1
-      await db.into(db.halaqas).insert(HalaqasCompanion(
-            id: const Value('h2'), name: const Value('حلقة النور'),
-            teacherIds: const Value('u-t2'),
+      await db.into(db.halaqas).insert(const HalaqasCompanion(
+            id: Value('h2'), name: Value('حلقة النور'),
+            teacherIds: Value('u-t2'),
           ));
       await db.into(db.students).insert(StudentsCompanion(
             id: const Value('s2'), studentCode: const Value('ST1002'),

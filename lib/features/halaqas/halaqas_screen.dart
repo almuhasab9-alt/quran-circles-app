@@ -26,9 +26,12 @@ class HalaqasScreen extends ConsumerWidget {
     String? supervisorId = existing != null && existing.supervisorId.isNotEmpty
         ? existing.supervisorId
         : (supervisors.isNotEmpty ? supervisors.first.id : null);
-    if (!context.mounted) return;
+    if (!context.mounted) {
+      nameCtrl.dispose(); schedCtrl.dispose(); capCtrl.dispose();
+      return;
+    }
 
-    showDialog(
+    await showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(builder: (ctx, setD) {
         return AlertDialog(
@@ -79,6 +82,7 @@ class HalaqasScreen extends ConsumerWidget {
         );
       }),
     );
+    nameCtrl.dispose(); schedCtrl.dispose(); capCtrl.dispose();
   }
 
   @override

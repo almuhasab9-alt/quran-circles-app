@@ -27,9 +27,17 @@ class _DemoLoginScreenState extends ConsumerState<DemoLoginScreen> {
     _loadUsers();
   }
 
+  @override
+  void dispose() {
+    nameCtrl.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadUsers() async {
     final repo = DemoAuthRepository(ref.read(dbProvider));
-    users = await repo.demoUsersByRole(role.name);
+    final loaded = await repo.demoUsersByRole(role.name);
+    if (!mounted) return;
+    users = loaded;
     selectedUser = users.isNotEmpty ? users.first : null;
     nameCtrl.text = selectedUser?.fullName ?? '';
     setState(() => loading = false);

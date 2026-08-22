@@ -42,9 +42,9 @@ void main() {
           username: const Value('teacher1'), role: const Value('teacher'),
           createdAt: Value(now), updatedAt: Value(now),
         ));
-    await db.into(db.halaqas).insert(HalaqasCompanion(
-          id: const Value('h1'), name: const Value('حلقة الفرقان'),
-          level: const Value('متوسط'), teacherIds: const Value('u-t1'),
+    await db.into(db.halaqas).insert(const HalaqasCompanion(
+          id: Value('h1'), name: Value('حلقة الفرقان'),
+          level: Value('متوسط'), teacherIds: Value('u-t1'),
         ));
     await db.into(db.students).insert(StudentsCompanion(
           id: const Value('s1'), studentCode: const Value('ST1001'),
