@@ -1,29 +1,38 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/database/app_database.dart';
+import '../../core/services/api_client.dart';
 import '../../core/services/backup_service.dart';
 import '../../core/services/backup_ui_service.dart';
 import '../../core/services/demo_seed_service.dart';
 import '../../core/services/local_repositories.dart';
+import '../../core/services/remote_repositories.dart';
 import '../../core/services/report_service.dart';
 import '../../core/services/session_service.dart';
 import '../../core/services/transfer_service.dart';
 import '../models/repositories.dart';
 
+// ─── قاعدة البيانات المحلية (تُستخدم للنسخ الاحتياطي والتقارير) ───
 final dbProvider = Provider<AppDatabase>((ref) => AppDatabase());
 
-final seedServiceProvider = Provider<DemoSeedService>((ref) => DemoSeedService(ref.watch(dbProvider)));
+// ─── عميل API السحابي ───
+final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
 
+// ─── مزودات الخدمات (محلية مؤقتاً) ───
 final sessionServiceProvider = Provider<SessionService>((ref) => SessionService(ref.watch(dbProvider)));
 final reportServiceProvider = Provider<ReportService>((ref) => ReportService(ref.watch(dbProvider)));
 final transferServiceProvider = Provider<TransferService>((ref) => TransferService(ref.watch(dbProvider)));
 final backupServiceProvider = Provider<BackupService>((ref) => BackupService(ref.watch(dbProvider)));
 final backupUiServiceProvider = Provider<BackupUiService>((ref) => BackupUiService(ref.watch(backupServiceProvider)));
 
-final halaqaRepoProvider = Provider<IHalaqaRepository>((ref) => LocalHalaqaRepository(ref.watch(dbProvider)));
-final studentRepoProvider = Provider<IStudentRepository>((ref) => LocalStudentRepository(ref.watch(dbProvider)));
-final recordRepoProvider = Provider<IDailyRecordRepository>((ref) => LocalDailyRecordRepository(ref.watch(dbProvider)));
-final userRepoProvider = Provider<IUserRepository>((ref) => LocalUserRepository(ref.watch(dbProvider)));
+// ─── المستودعات البعيدة (D1 عبر Cloudflare Worker) ───
+final halaqaRepoProvider = Provider<IHalaqaRepository>((ref) => RemoteHalaqaRepository(ref.watch(apiClientProvider)));
+final studentRepoProvider = Provider<IStudentRepository>((ref) => RemoteStudentRepository(ref.watch(apiClientProvider)));
+final recordRepoProvider = Provider<IDailyRecordRepository>((ref) => RemoteDailyRecordRepository(ref.watch(apiClientProvider)));
+final userRepoProvider = Provider<IUserRepository>((ref) => RemoteUserRepository(ref.watch(apiClientProvider)));
+
+// ─── خدمة الزرع البعيدة ───
+final seedServiceProvider = Provider<RemoteSeedService>((ref) => RemoteSeedService(ref.watch(apiClientProvider)));
 
 // جلسة المستخدم التجريبي
 class DemoSession {

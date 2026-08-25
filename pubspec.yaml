@@ -31,6 +31,7 @@ dependencies:
   archive: ^4.0.9
   universal_io: ^2.3.1
   universal_html: ^2.3.0
+  http: ^1.2.2
 
 dev_dependencies:
   flutter_test:
@@ -38,28 +39,3 @@ dev_dependencies:
   flutter_lints: ^4.0.0
   build_runner: ^2.4.13
   drift_dev: ^2.22.0
-  flutter_launcher_icons: ^0.14.1
-  flutter_native_splash: ^2.4.1
-
-flutter_launcher_icons:
-  android: true
-  image_path: assets/images/center_logo.png
-  adaptive_icon_background: "#0B5E48"
-  adaptive_icon_foreground: assets/images/center_logo.png
-  web:
-    generate: true
-    image_path: assets/images/center_logo.png
-    background_color: "#0B5E48"
-
-flutter_native_splash:
-  color: "#0B5E48"
-  image: assets/images/center_logo.png
-  android_12:
-    color: "#0B5E48"
-    image: assets/images/center_logo.png
-
-flutter:
-  uses-material-design: true
-  assets:
-    - assets/images/
-    - assets/fonts/
