@@ -1,0 +1,114 @@
+name: Diagnose Worker
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Configure Cloudflare credentials
+        run: |
+          echo "CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_API_TOKEN }}" >> $GITHUB_ENV
+          echo "CLOUDFLARE_ACCOUNT_ID=${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" >> $GITHUB_ENV
+
+      - name: Get Worker URL and test endpoints
+        run: |
+          echo "=== wrangler deployments list ==="
+          npx wrangler deployments list 2>&1 | tee /tmp/deployments.txt || true
+
+          echo "=== Trying standard workers.dev URL ==="
+          # The worker name is quran-circles-api
+          # Try common URL patterns
+          for URL in \
+            "https://quran-circles-api.almuhasab9-alt.workers.dev" \
+            "https://quran-circles-api.23f393728445f65d19a245d16cb4d4dd.workers.dev"; do
+            echo "--- Testing: $URL ---"
+            HTTP_CODE=$(curl -sS -o /tmp/health.txt -w "%{http_code}" "$URL/api/health" 2>&1 || echo "000")
+            echo "HTTP: $HTTP_CODE"
+            cat /tmp/health.txt 2>/dev/null || echo "(no body)"
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "FOUND_URL=$URL" >> $GITHUB_ENV
+              break
+            fi
+          done
+
+          # If still no URL, try wrangler tail or dev info
+          if [ -z "$FOUND_URL" ]; then
+            echo "=== wrangler deployments view ==="
+            npx wrangler deployments view 2>&1 || true
+          fi
+
+      - name: Test API endpoints
+        run: |
+          URL="${{ env.FOUND_URL }}"
+          if [ -z "$URL" ]; then
+            echo "ERROR: No worker URL found"
+            # Try to extract from wrangler deployments list
+            URL=$(grep -oE 'https://[a-z0-9-]+\.workers\.dev' /tmp/deployments.txt 2>/dev/null | head -1)
+            echo "Extracted URL: $URL"
+          fi
+
+          echo "=== Health ==="
+          curl -sS "$URL/api/health" 2>&1
+
+          echo ""
+          echo "=== Tables ==="
+          curl -sS "$URL/api/halaqas" 2>&1 | head -c 500
+
+          echo ""
+          echo "=== Users ==="
+          curl -sS "$URL/api/users" 2>&1 | head -c 500
+
+          echo ""
+          echo "=== Seed ==="
+          curl -sS -X POST "$URL/api/seed" -H "Content-Type: application/json" -d '{}' 2>&1
+
+          echo ""
+          echo "=== After seed: Halaqas ==="
+          curl -sS "$URL/api/halaqas" 2>&1 | head -c 500
+
+          echo ""
+          echo "=== After seed: Students count ==="
+          curl -sS "$URL/api/students" 2>&1 | python3 -c "import json,sys; d=json.load(sys.stdin); print(f'Students: {len(d)}')" 2>/dev/null || echo "(parse error)"
+
+          echo ""
+          echo "=== After seed: Daily records count ==="
+          curl -sS "$URL/api/daily-records" 2>&1 | python3 -c "import json,sys; d=json.load(sys.stdin); print(f'Daily records: {len(d)}')" 2>/dev/null || echo "(parse error)"
+
+      - name: Write report
+        run: |
+          URL="${{ env.FOUND_URL }}"
+          {
+            echo "# Worker Diagnosis Report"
+            echo "Date: $(date -u)"
+            echo ""
+            echo "- **Worker URL**: $URL"
+            echo "- **Health**: $(curl -sS "$URL/api/health" 2>&1)"
+            echo "- **Halaqas**: $(curl -sS "$URL/api/halaqas" 2>&1 | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
+            echo "- **Students**: $(curl -sS "$URL/api/students" 2>&1 | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
+            echo "- **Users**: $(curl -sS "$URL/api/users" 2>&1 | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
+            echo ""
+            echo "## Deployments output"
+            echo '```'"
+          } > worker-diagnosis.md 2>&1
+          cat /tmp/deployments.txt >> worker-diagnosis.md 2>/dev/null || true
+          echo '```' >> worker-diagnosis.md
+          cat worker-diagnosis.md
+
+      - name: Commit report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add worker-diagnosis.md
+          git commit -m "chore: add worker diagnosis report" || echo "no changes"
+          git push || echo "nothing to push"
