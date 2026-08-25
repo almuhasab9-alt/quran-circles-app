@@ -29,20 +29,40 @@ jobs:
         run: npx wrangler whoami
 
       - name: Deploy Worker
+        id: deploy
         working-directory: worker
         run: |
-          npx wrangler deploy 2>&1 | tee /tmp/deploy.txt
-          WORKER_URL=$(grep -oE 'https://[a-z0-9-]+\.[a-z0-9-]+\.workers\.dev' /tmp/deploy.txt | head -1)
+          set -o pipefail
+          npx wrangler deploy 2>&1 | tee /tmp/deploy_output.txt
+          # Parse the workers.dev URL from output
+          WORKER_URL=$(grep -oE 'https://[a-z0-9_-]+\.[a-z0-9_-]+\.workers\.dev' /tmp/deploy_output.txt | head -1)
           echo "WORKER_URL=$WORKER_URL"
           echo "worker_url=$WORKER_URL" >> $GITHUB_OUTPUT
-        id: deploy
 
-      - name: Verify health
+      - name: Health check + seed
         run: |
-          sleep 3
           URL="${{ steps.deploy.outputs.worker_url }}"
-          echo "Checking $URL/api/health"
-          curl -sS "$URL/api/health" || echo "Health check failed"
+          echo "Worker URL: $URL"
+          if [ -z "$URL" ]; then
+            echo "ERROR: No worker URL found in deploy output"
+            cat /tmp/deploy_output.txt
+            exit 1
+          fi
+          sleep 2
+          echo "=== Health ==="
+          curl -sS "$URL/api/health"
+          echo ""
+          echo "=== Tables (empty) ==="
+          curl -sS "$URL/api/halaqas" | head -c 200
+          echo ""
+          echo "=== Seeding data ==="
+          curl -sS -X POST "$URL/api/seed" -H "Content-Type: application/json" -d '{}'
+          echo ""
+          echo "=== After seed ==="
+          echo "Users: $(curl -sS "$URL/api/users" | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
+          echo "Halaqas: $(curl -sS "$URL/api/halaqas" | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
+          echo "Students: $(curl -sS "$URL/api/students" | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
+          echo "Daily records: $(curl -sS "$URL/api/daily-records" | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
 
       - name: Write report
         run: |
@@ -52,20 +72,16 @@ jobs:
             echo "Date: $(date -u)"
             echo ""
             echo "- **Worker URL**: $URL"
-            echo "- **Health check**: $(curl -sS "$URL/api/health" 2>&1)"
+            echo "- **Health**: $(curl -sS "$URL/api/health" 2>&1)"
+            echo "- **Users**: $(curl -sS "$URL/api/users" 2>&1 | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
+            echo "- **Halaqas**: $(curl -sS "$URL/api/halaqas" 2>&1 | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
+            echo "- **Students**: $(curl -sS "$URL/api/students" 2>&1 | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
+            echo "- **Daily records**: $(curl -sS "$URL/api/daily-records" 2>&1 | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
             echo ""
-            echo "## Endpoints"
-            echo "- \`GET /api/health\` — health check"
-            echo "- \`POST /api/seed\` — seed demo data"
-            echo "- \`POST /api/wipe\` — wipe all data"
-            echo "- \`GET/POST /api/users\`"
-            echo "- \`GET/PUT/DELETE /api/halaqas/:id\`"
-            echo "- \`GET/POST /api/students\`"
-            echo "- \`GET/PUT/DELETE /api/students/:id\`"
-            echo "- \`GET/POST /api/daily-records\`"
-            echo "- \`GET/POST /api/weekly-plans\`"
-            echo "- \`GET/POST /api/student-transfers\`"
-            echo "- \`POST /api/transfer-student\` — atomic transfer"
+            echo "## Deploy output"
+            echo '```'
+            cat /tmp/deploy_output.txt
+            echo '```'
           } > worker-deploy-report.md 2>&1
           cat worker-deploy-report.md
 
