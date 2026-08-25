@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/database/app_database.dart';
 import '../../core/services/backup_service.dart';
 import '../../core/services/backup_ui_service.dart';
+import '../../core/services/cloud_auth_service.dart';
 import '../../core/services/demo_seed_service.dart';
 import '../../core/services/local_repositories.dart';
 import '../../core/services/report_service.dart';
@@ -25,17 +26,21 @@ final studentRepoProvider = Provider<IStudentRepository>((ref) => LocalStudentRe
 final recordRepoProvider = Provider<IDailyRecordRepository>((ref) => LocalDailyRecordRepository(ref.watch(dbProvider)));
 final userRepoProvider = Provider<IUserRepository>((ref) => LocalUserRepository(ref.watch(dbProvider)));
 
-// جلسة المستخدم التجريبي
-class DemoSession {
+// جلسة المستخدم — مرتبطة بحساب سحابي محمي بكلمة مرور
+class AppSession {
   final String userId;
   final String name;
   final String role; // supervisor | teacher
-  const DemoSession({required this.userId, required this.name, required this.role});
+  final String username;
+  const AppSession({required this.userId, required this.name, required this.role, this.username = ''});
   bool get isSupervisor => role == 'supervisor';
   bool get isTeacher => role == 'teacher';
 }
 
-final sessionProvider = StateProvider<DemoSession?>((ref) => null);
+final sessionProvider = StateProvider<AppSession?>((ref) => null);
+
+// خدمة المصادقة السحابية (Cloudflare D1 — كلمات المرور مشفرة)
+final cloudAuthProvider = Provider<CloudAuthService>((ref) => CloudAuthService());
 
 // محفز تحديث عام — يزيد عند أي تغيير في البيانات لإعادة جلب القوائم
 final dataVersionProvider = StateProvider<int>((ref) => 0);
