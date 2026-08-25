@@ -73,9 +73,9 @@ class _CloudSyncTileState extends ConsumerState<_CloudSyncTile> {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: const Icon(Icons.cloud_upload, color: Color(0xFF0B5E48)),
-      title: const Text('رفع البيانات للسحابة'),
-      subtitle: const Text('يرفع كل البيانات المحفوظة في الهاتف إلى السحابة (نسخة واحدة تُحدَّث دون تكرار)'),
+      leading: const Icon(Icons.cloud_sync, color: Color(0xFF0B5E48)),
+      title: const Text('تحديث بيانات السحابة (رفع الآن)'),
+      subtitle: const Text('يرفع كل بيانات الجهاز إلى السحابة فوراً — نسخة واحدة تُحدَّث في مكانها (للمشرف والمعلم)'),
       trailing: _busy
           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
           : const Icon(Icons.chevron_left),
@@ -146,10 +146,11 @@ class _BackupSectionState extends ConsumerState<_BackupSection> {
           }
         }),
       ),
+      _PeriodExportTile(teacherId: widget.teacherId),
       ListTile(
         leading: const Icon(Icons.download_for_offline, color: Color(0xFF0B5E48)),
         title: const Text('استيراد نسخة احتياطية'),
-        subtitle: const Text('استعادة البيانات من ملف نسخة سابقة (يستبدل البيانات الحالية)'),
+        subtitle: const Text('استعادة البيانات من ملف نسخة سابقة (يستبدل البيانات الحالية) — ثم اضغط «تحديث بيانات السحابة» لحفظها سحابياً وإظهارها لكل المعلمين'),
         onTap: () => _run(() async {
           final confirm = await showDialog<bool>(
             context: context,
@@ -170,7 +171,7 @@ class _BackupSectionState extends ConsumerState<_BackupSection> {
             await ref.read(backupSettingsProvider.notifier).reload();
             bumpDataVersion(ref);
             final c = res.counts;
-            _toast('تم الاستيراد بنجاح: ${c['students']} طالب، ${c['dailyRecords']} سجل');
+            _toast('تم الاستيراد بنجاح: ${c['students']} طالب، ${c['dailyRecords']} سجل — لحفظها في السحابة اضغط «تحديث بيانات السحابة»');
           } else {
             _toast('فشل الاستيراد: ${res.error}', error: true);
           }
@@ -201,5 +202,89 @@ class _BackupSectionState extends ConsumerState<_BackupSection> {
         onChanged: (v) => ref.read(backupSettingsProvider.notifier).setAutoBackup(v),
       ),
     ]);
+  }
+}
+
+/// تصدير نسخة محلية لفترة محددة: يوم، يومان، أسبوع ... حتى شهر كامل.
+/// تشمل الهيكل كاملاً (الحلقات والطلاب) وسجلات الفترة المختارة فقط —
+/// قابلة للاستيراد لاحقاً من زر «استيراد نسخة احتياطية».
+class _PeriodExportTile extends ConsumerStatefulWidget {
+  final String? teacherId;
+  const _PeriodExportTile({required this.teacherId});
+  @override
+  ConsumerState<_PeriodExportTile> createState() => _PeriodExportTileState();
+}
+
+class _PeriodExportTileState extends ConsumerState<_PeriodExportTile> {
+  bool _busy = false;
+
+  static const _options = <(String, int)>[
+    ('يوم واحد (اليوم)', 1),
+    ('يومان', 2),
+    ('3 أيام', 3),
+    ('أسبوع', 7),
+    ('أسبوعان', 14),
+    ('3 أسابيع', 21),
+    ('شهر كامل (30 يوماً)', 30),
+  ];
+
+  Future<void> _export() async {
+    if (_busy) return;
+    final days = await showDialog<int>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: const Text('نسخة بيانات فترة محددة'),
+        children: [
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+            child: Text('اختر الفترة (من اليوم رجوعاً):',
+                style: TextStyle(fontSize: 13, color: Colors.black54)),
+          ),
+          for (final o in _options)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(ctx, o.$2),
+              child: Row(children: [
+                const Icon(Icons.calendar_month, size: 18, color: Color(0xFF0B5E48)),
+                const SizedBox(width: 8),
+                Text(o.$1),
+              ]),
+            ),
+        ],
+      ),
+    );
+    if (days == null || !mounted) return;
+    setState(() => _busy = true);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final now = DateTime.now();
+      final from = DateTime(now.year, now.month, now.day)
+          .subtract(Duration(days: days - 1));
+      final name = await ref.read(backupUiServiceProvider).exportAndDeliver(
+          teacherId: widget.teacherId, fromDate: from, toDate: now);
+      if (name != null) {
+        messenger.showSnackBar(SnackBar(
+          content: Text('تم إنشاء نسخة الفترة: $name'),
+          backgroundColor: const Color(0xFF0B5E48),
+        ));
+      }
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(
+          content: Text('تعذر التصدير: $e'), backgroundColor: Colors.red));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.date_range, color: Color(0xFF0B5E48)),
+      title: const Text('نسخة محلية لفترة محددة'),
+      subtitle: const Text('صدّر بيانات يوم أو يومين ... حتى شهر كامل — قابلة للاستيراد لاحقاً'),
+      trailing: _busy
+          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+          : const Icon(Icons.chevron_left),
+      onTap: _export,
+    );
   }
 }

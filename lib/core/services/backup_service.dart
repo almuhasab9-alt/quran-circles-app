@@ -88,7 +88,10 @@ class BackupService {
 
   /// بناء خريطة بيانات النسخة الاحتياطية.
   /// [teacherId] إن مُرّر فالتصدير مقصور على حلقات هذا المعلم.
-  Future<Map<String, dynamic>> buildBackupData({String? teacherId}) async {
+  /// [fromDate]/[toDate] إن مُرّرا فالسجلات اليومية تُقصر على الفترة
+  /// (الهيكل كاملاً: المستخدمون والحلقات والطلاب — حتى يصح الاستيراد لاحقاً).
+  Future<Map<String, dynamic>> buildBackupData(
+      {String? teacherId, DateTime? fromDate, DateTime? toDate}) async {
     Set<String>? halaqaIds;
     Set<String>? studentIds;
 
@@ -113,8 +116,14 @@ class BackupService {
     final students = (await db.select(db.students).get())
         .where((s) => ownH(s.halaqaId))
         .toList();
+    final fromKey = fromDate == null ? null : du.dateKeyOf(fromDate);
+    final toKey = toDate == null ? null : du.dateKeyOf(toDate);
+    bool inRange(String dateKey) =>
+        (fromKey == null || dateKey.compareTo(fromKey) >= 0) &&
+        (toKey == null || dateKey.compareTo(toKey) <= 0);
+
     final records = (await db.select(db.dailyRecords).get())
-        .where((r) => ownS(r.studentId))
+        .where((r) => ownS(r.studentId) && inRange(r.dateKey))
         .toList();
     final plans = (await db.select(db.weeklyPlans).get())
         .where((p) => ownS(p.studentId))
@@ -127,7 +136,9 @@ class BackupService {
       'format': formatName,
       'version': formatVersion,
       'createdAt': DateTime.now().toIso8601String(),
-      'scope': teacherId == null ? 'full' : 'teacher',
+      'scope': fromKey != null ? 'period' : (teacherId == null ? 'full' : 'teacher'),
+      if (fromKey != null) 'periodFrom': fromKey,
+      if (toKey != null) 'periodTo': toKey,
       'counts': {
         'users': users.length,
         'halaqas': halaqas.length,
@@ -146,8 +157,10 @@ class BackupService {
   }
 
   /// تصدير النسخة الاحتياطية إلى بايتات (JSON → UTF8 → GZip).
-  Future<List<int>> exportBytes({String? teacherId}) async {
-    final data = await buildBackupData(teacherId: teacherId);
+  Future<List<int>> exportBytes(
+      {String? teacherId, DateTime? fromDate, DateTime? toDate}) async {
+    final data = await buildBackupData(
+        teacherId: teacherId, fromDate: fromDate, toDate: toDate);
     final jsonStr = const JsonEncoder.withIndent('  ').convert(data);
     final raw = utf8.encode(jsonStr);
     return const GZipEncoder().encode(raw);
@@ -171,8 +184,12 @@ class BackupService {
   }
 
   /// اسم ملف مقترح للتنزيل/المشاركة.
-  String suggestedFileName({String? teacherId}) {
+  String suggestedFileName(
+      {String? teacherId, DateTime? fromDate, DateTime? toDate}) {
     final stamp = du.dateKeyOf(DateTime.now());
+    if (fromDate != null && toDate != null) {
+      return 'quran_backup_period_${du.dateKeyOf(fromDate)}_to_${du.dateKeyOf(toDate)}.$ext';
+    }
     final scope = teacherId == null ? 'full' : 'teacher';
     return 'quran_backup_${scope}_$stamp.$ext';
   }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,12 +20,16 @@ class BackupUiService {
 
   /// تصدير النسخة الاحتياطية وتسليمها للمستخدم (تنزيل على الويب / مشاركة على الجوال).
   /// تُعيد اسم الملف عند النجاح، وnull عند الإلغاء/الفشل.
-  Future<String?> exportAndDeliver({String? teacherId}) async {
-    final bytes = await service.exportBytes(teacherId: teacherId);
-    final name = service.suggestedFileName(teacherId: teacherId);
+  Future<String?> exportAndDeliver(
+      {String? teacherId, DateTime? fromDate, DateTime? toDate}) async {
+    final bytes = await service.exportBytes(
+        teacherId: teacherId, fromDate: fromDate, toDate: toDate);
+    final name = service.suggestedFileName(
+        teacherId: teacherId, fromDate: fromDate, toDate: toDate);
     final ok = await _deliverBytes(name, Uint8List.fromList(bytes), 'application/gzip');
     if (ok) {
-      await service.markBackupDone();
+      // نسخ الفترة الجزئية لا تُحتسب نسخة كاملة للتذكير
+      if (fromDate == null) await service.markBackupDone();
       return name;
     }
     return null;
@@ -57,9 +62,13 @@ class BackupUiService {
 
   // ---------------- الاستيراد ----------------
 
-  /// فتح منتقي الملفات (ويب) وإرجاع بايتات الملف المختار.
-  /// على المنصات الأخرى تُعاد null حالياً (التصدير عبر المشاركة هو الأساس).
+  /// فتح منتقي الملفات وإرجاع بايتات الملف المختار
+  /// (ويب: عنصر إدخال المتصفح — جوال/سطح مكتب: file_picker).
   Future<Uint8List?> pickBackupFile() async {
+    if (!kIsWeb) {
+      final res = await FilePicker.platform.pickFiles(withData: true);
+      return res?.files.firstOrNull?.bytes;
+    }
     if (kIsWeb) {
       final input = html.FileUploadInputElement()
         ..accept = '.${BackupService.ext},.json,.gz,application/gzip,application/json';
