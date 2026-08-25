@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 /// عميل HTTP للـ Cloudflare Worker API فوق D1
