@@ -28,6 +28,27 @@ jobs:
       - name: Verify token
         run: npx wrangler whoami
 
+      - name: Register workers.dev subdomain
+        run: |
+          # Check if subdomain exists
+          echo "=== Checking workers.dev subdomain ==="
+          RES=$(curl -sS "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" 2>&1)
+          echo "$RES"
+          SUB=$(echo "$RES" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('result',{}).get('subdomain',''))" 2>/dev/null || echo "")
+
+          if [ -z "$SUB" ]; then
+            echo "=== Registering subdomain 'almuhasab9-alt' ==="
+            REG_RES=$(curl -sS -X PUT "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain" \
+              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d '{"subdomain":"almuhasab9-alt"}' 2>&1)
+            echo "$REG_RES"
+            SUB="almuhasab9-alt"
+          fi
+          echo "Subdomain: $SUB"
+          echo "subdomain=$SUB" >> $GITHUB_ENV
+
       - name: Deploy Worker
         id: deploy
         working-directory: worker
@@ -35,56 +56,17 @@ jobs:
           npx wrangler deploy > /tmp/deploy_output.txt 2>&1 || true
           echo "=== Deploy output ==="
           cat /tmp/deploy_output.txt
-          echo "=== End output ==="
-          # Try multiple patterns to find URL
-          WORKER_URL=""
-          # Pattern 1: https://name.subdomain.workers.dev
-          WORKER_URL=$(grep -oE 'https://[a-z0-9_-]+\.[a-z0-9_-]+\.workers\.dev' /tmp/deploy_output.txt | head -1 || true)
-          # Pattern 2: just the worker name mentioned with a URL
-          if [ -z "$WORKER_URL" ]; then
-            WORKER_URL=$(grep -oE 'https://quran-circles-api[^\s"]*' /tmp/deploy_output.txt | head -1 || true)
-          fi
-          echo "Found URL: $WORKER_URL"
+          WORKER_URL="https://quran-circles-api.${{ env.subdomain }}.workers.dev"
+          echo "Expected URL: $WORKER_URL"
           echo "worker_url=$WORKER_URL" >> $GITHUB_OUTPUT
-
-      - name: Enable workers.dev subdomain if needed
-        id: enable
-        if: steps.deploy.outputs.worker_url == ''
-        working-directory: worker
-        run: |
-          echo "No workers.dev URL found. Trying to enable workers.dev subdomain..."
-          # Try to enable the workers.dev subdomain for this worker
-          npx wrangler deploy --routes '[]' > /tmp/deploy2.txt 2>&1 || true
-          cat /tmp/deploy2.txt
-          WORKER_URL=$(grep -oE 'https://[a-z0-9_-]+\.[a-z0-9_-]+\.workers\.dev' /tmp/deploy2.txt | head -1 || true)
-          if [ -n "$WORKER_URL" ]; then
-            echo "worker_url=$WORKER_URL" >> $GITHUB_OUTPUT
-          else
-            # Last resort: try the standard pattern with account subdomain
-            # Get the subdomain from the Cloudflare API
-            echo "Trying Cloudflare API for subdomain..."
-            SUBDOMAIN_RES=$(curl -sS "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain" \
-              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" 2>&1)
-            echo "Subdomain response: $SUBDOMAIN_RES"
-            SUB=$(echo "$SUBDOMAIN_RES" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('result',{}).get('subdomain',''))" 2>/dev/null || echo "")
-            if [ -n "$SUB" ]; then
-              WORKER_URL="https://quran-circles-api.$SUB.workers.dev"
-              echo "Constructed URL: $WORKER_URL"
-              echo "worker_url=$WORKER_URL" >> $GITHUB_OUTPUT
-            fi
-          fi
 
       - name: Health check + seed
         run: |
-          URL="${{ steps.deploy.outputs.worker_url }}${{ steps.enable.outputs.worker_url }}"
+          URL="${{ steps.deploy.outputs.worker_url }}"
           echo "Worker URL: $URL"
-          if [ -z "$URL" ]; then
-            echo "ERROR: No worker URL found"
-            exit 1
-          fi
           sleep 3
           echo "=== Health ==="
-          curl -sS -v "$URL/api/health" 2>&1 || true
+          curl -sS "$URL/api/health" 2>&1 || true
           echo ""
           echo "=== Seed ==="
           curl -sS -X POST "$URL/api/seed" -H "Content-Type: application/json" -d '{}' 2>&1 || true
@@ -98,22 +80,21 @@ jobs:
       - name: Write report
         if: always()
         run: |
-          URL="${{ steps.deploy.outputs.worker_url }}${{ steps.enable.outputs.worker_url }}"
+          URL="${{ steps.deploy.outputs.worker_url }}"
           {
             echo "# Worker API Deploy Report"
             echo "Date: $(date -u)"
             echo ""
             echo "- **Worker URL**: $URL"
             echo "- **Health**: $(curl -sS "$URL/api/health" 2>&1 || echo 'failed')"
+            echo "- **Users**: $(curl -sS "$URL/api/users" 2>/dev/null | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
+            echo "- **Halaqas**: $(curl -sS "$URL/api/halaqas" 2>/dev/null | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
+            echo "- **Students**: $(curl -sS "$URL/api/students" 2>/dev/null | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
+            echo "- **Daily records**: $(curl -sS "$URL/api/daily-records" 2>/dev/null | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
             echo ""
-            echo "## Deploy output (run 1)"
+            echo "## Deploy output"
             echo '```'
             cat /tmp/deploy_output.txt 2>/dev/null || echo "(no output)"
-            echo '```'
-            echo ""
-            echo "## Deploy output (run 2)"
-            echo '```'
-            cat /tmp/deploy2.txt 2>/dev/null || echo "(no output)"
             echo '```'
           } > worker-deploy-report.md 2>&1
           cat worker-deploy-report.md
