@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'package:drift/drift.dart' show Value;
 import '../database/app_database.dart';
 import '../../shared/models/repositories.dart';
 import 'api_client.dart';
@@ -275,7 +273,7 @@ class RemoteUserRepository implements IUserRepository {
   }
 }
 
-// ─── Remote WeeklyPlan Repository (no interface defined yet) ───
+// ─── Remote WeeklyPlan Repository ───
 
 class RemoteWeeklyPlanRepository {
   final ApiClient api;
