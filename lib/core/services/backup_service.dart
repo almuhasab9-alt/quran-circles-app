@@ -220,6 +220,19 @@ class BackupService {
     } catch (e) {
       return ImportResult.fail('تعذر قراءة ملف النسخة الاحتياطية: $e');
     }
+    return importData(data);
+  }
+
+  /// استيراد من خريطة بيانات مباشرة (تستخدمها المزامنة السحابية) —
+  /// استبدال كامل داخل معاملة: لا تكرار ولا نسخ متعددة.
+  Future<ImportResult> importData(Map<String, dynamic> data) async {
+    for (final key in const [
+      'users', 'halaqas', 'students', 'dailyRecords', 'weeklyPlans', 'studentTransfers'
+    ]) {
+      if (data[key] is! List) {
+        return ImportResult.fail('البيانات غير صالحة: القسم «$key» مفقود');
+      }
+    }
 
     final users = (data['users'] as List).cast<Map<String, dynamic>>();
     final halaqas = (data['halaqas'] as List).cast<Map<String, dynamic>>();

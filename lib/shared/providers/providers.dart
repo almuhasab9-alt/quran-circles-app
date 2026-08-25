@@ -4,6 +4,7 @@ import '../../core/database/app_database.dart';
 import '../../core/services/backup_service.dart';
 import '../../core/services/backup_ui_service.dart';
 import '../../core/services/cloud_auth_service.dart';
+import '../../core/services/cloud_sync_service.dart';
 import '../../core/services/demo_seed_service.dart';
 import '../../core/services/local_repositories.dart';
 import '../../core/services/report_service.dart';
@@ -43,11 +44,21 @@ final sessionProvider = StateProvider<AppSession?>((ref) => null);
 // خدمة المصادقة السحابية (Cloudflare D1 — كلمات المرور مشفرة)
 final cloudAuthProvider = Provider<CloudAuthService>((ref) => CloudAuthService());
 
+// خدمة المزامنة السحابية — نسخة واحدة فقط تُحدَّث في مكانها (لا تكرار)
+final cloudSyncProvider = Provider<CloudSyncService>((ref) => CloudSyncService(
+      backup: ref.watch(backupServiceProvider),
+      auth: ref.watch(cloudAuthProvider),
+    ));
+
 // محفز تحديث عام — يزيد عند أي تغيير في البيانات لإعادة جلب القوائم
 final dataVersionProvider = StateProvider<int>((ref) => 0);
 
-void bumpDataVersion(WidgetRef ref) =>
-    ref.read(dataVersionProvider.notifier).state++;
+/// يُستدعى بعد أي تعديل في البيانات: يحدّث الواجهات + يجدول رفعاً سحابياً
+/// تلقائياً (تحديث في المكان — لا ينشئ نسخاً جديدة في السحابة)
+void bumpDataVersion(WidgetRef ref) {
+  ref.read(dataVersionProvider.notifier).state++;
+  ref.read(cloudSyncProvider).scheduleUpload();
+}
 
 /// الوضع الداكن — محفوظ محلياً عبر SharedPreferences
 class DarkModeNotifier extends StateNotifier<bool> {
