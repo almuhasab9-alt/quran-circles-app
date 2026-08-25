@@ -1,22 +1,42 @@
 # Build Debug Report
-Date: Tue Aug 25 07:49:44 UTC 2026
+Date: Tue Aug 25 08:00:53 UTC 2026
 
 ## Analyze
 ```
 Analyzing quran-circles-app...                                  
 
+  error • The name 'SettingsScreen' isn't a class. Try correcting the name to match an existing class • lib/core/router/app_router.dart:37:69 • creation_with_non_type
+  error • The method 'read' isn't defined for the type 'Function'. Try correcting the name to the name of an existing method, or defining a method named 'read' • lib/core/router/app_router.dart:83:25 • undefined_method
+  error • The method 'read' isn't defined for the type 'Function'. Try correcting the name to the name of an existing method, or defining a method named 'read' • lib/core/router/app_router.dart:87:12 • undefined_method
+  error • The method 'read' isn't defined for the type 'Function'. Try correcting the name to the name of an existing method, or defining a method named 'read' • lib/core/router/app_router.dart:89:17 • undefined_method
+  error • The method 'watch' isn't defined for the type 'Function'. Try correcting the name to the name of an existing method, or defining a method named 'watch' • lib/core/router/app_router.dart:100:26 • undefined_method
+  error • The method 'read' isn't defined for the type 'Function'. Try correcting the name to the name of an existing method, or defining a method named 'read' • lib/core/router/app_router.dart:131:41 • undefined_method
+  error • The method 'read' isn't defined for the type 'Function'. Try correcting the name to the name of an existing method, or defining a method named 'read' • lib/core/router/app_router.dart:135:26 • undefined_method
+  error • The method 'read' isn't defined for the type 'Function'. Try correcting the name to the name of an existing method, or defining a method named 'read' • lib/core/router/app_router.dart:137:31 • undefined_method
    info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/core/services/backup_service.dart:153:12 • prefer_const_constructors
    info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/core/services/backup_service.dart:186:13 • prefer_const_constructors
-warning • Unused import: 'dart:convert'. Try removing the import directive • lib/core/services/remote_repositories.dart:1:8 • unused_import
-warning • Unused import: 'package:drift/drift.dart'. Try removing the import directive • lib/core/services/remote_repositories.dart:2:8 • unused_import
-  error • The named parameter 'force' isn't defined. Try correcting the name to an existing named parameter's name, or defining a named parameter with the name 'force' • lib/features/settings/settings_screen.dart:24:48 • undefined_named_parameter
-warning • Unused import: '../../core/services/demo_seed_service.dart'. Try removing the import directive • lib/shared/providers/providers.dart:7:8 • unused_import
-warning • Unused import: '../../core/services/local_repositories.dart'. Try removing the import directive • lib/shared/providers/providers.dart:8:8 • unused_import
+  error • Undefined name 'await' in function body not marked with 'async'. Try correcting the name to one that is defined, defining the name, or adding 'async' to the enclosing function body • lib/features/settings/settings_screen.dart:1:7 • undefined_identifier_await
+  error • Functions must have an explicit list of parameters. Try adding a parameter list • lib/features/settings/settings_screen.dart:1:13 • missing_function_parameters
+  error • A function body must be provided. Try adding a function body • lib/features/settings/settings_screen.dart:1:16 • missing_function_body
+  error • Expected a method, getter, setter or operator declaration. This appears to be incomplete code. Try removing it or completing it • lib/features/settings/settings_screen.dart:1:16 • expected_executable
+  error • A function body must be provided. Try adding a function body • lib/features/settings/settings_screen.dart:1:42 • missing_function_body
+  error • Expected a method, getter, setter or operator declaration. This appears to be incomplete code. Try removing it or completing it • lib/features/settings/settings_screen.dart:1:42 • expected_executable
+  error • A function body must be provided. Try adding a function body • lib/features/settings/settings_screen.dart:1:49 • missing_function_body
+  error • Undefined name 'await' in function body not marked with 'async'. Try correcting the name to one that is defined, defining the name, or adding 'async' to the enclosing function body • lib/features/settings/settings_screen.dart:2:7 • undefined_identifier_await
+  error • Functions must have an explicit list of parameters. Try adding a parameter list • lib/features/settings/settings_screen.dart:2:13 • missing_function_parameters
+  error • The name 'ref' is already defined. Try renaming one of the declarations • lib/features/settings/settings_screen.dart:2:13 • duplicate_definition
+  error • A function body must be provided. Try adding a function body • lib/features/settings/settings_screen.dart:2:16 • missing_function_body
+  error • Expected a method, getter, setter or operator declaration. This appears to be incomplete code. Try removing it or completing it • lib/features/settings/settings_screen.dart:2:16 • expected_executable
+  error • The name 'read' is already defined. Try renaming one of the declarations • lib/features/settings/settings_screen.dart:2:17 • duplicate_definition
+  error • A function body must be provided. Try adding a function body • lib/features/settings/settings_screen.dart:2:42 • missing_function_body
+  error • Expected a method, getter, setter or operator declaration. This appears to be incomplete code. Try removing it or completing it • lib/features/settings/settings_screen.dart:2:42 • expected_executable
+  error • A function body must be provided. Try adding a function body • lib/features/settings/settings_screen.dart:2:49 • missing_function_body
+  error • A function body must be provided. Try adding a function body • lib/features/settings/settings_screen.dart:3:27 • missing_function_body
    info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • test/backup_pdf_test.dart:30:36 • prefer_const_constructors
    info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • test/backup_pdf_test.dart:112:40 • prefer_const_constructors
    info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • test/pdf_visual_test.dart:45:38 • prefer_const_constructors
 
-10 issues found. (ran in 18.4s)
+30 issues found. (ran in 16.7s)
 ```
 
 ## Build
@@ -33,10 +53,114 @@ package:universal_html/src/_sdk_html_additions.dart 16:1 - dart:html unsupported
 
 Use --no-wasm-dry-run to disable these warnings.
 Target dart2js failed: ProcessException: Process exited abnormally with exit code 1:
-lib/features/settings/settings_screen.dart:24:48:
-Error: No named parameter with the name 'force'.
-      await ref.read(seedServiceProvider).seed(force: true);
-                                               ^^^^^
+lib/features/settings/settings_screen.dart:1:13:
+Error: A function declaration needs an explicit list of parameters.
+      await ref.read(seedServiceProvider).wipe();
+            ^^^
+lib/features/settings/settings_screen.dart:1:16:
+Error: Expected '{' before this.
+      await ref.read(seedServiceProvider).wipe();
+               ^
+lib/features/settings/settings_screen.dart:1:16:
+Error: Expected a declaration, but got '.'.
+      await ref.read(seedServiceProvider).wipe();
+               ^
+lib/features/settings/settings_screen.dart:1:42:
+Error: Expected '{' before this.
+      await ref.read(seedServiceProvider).wipe();
+                                         ^
+lib/features/settings/settings_screen.dart:1:42:
+Error: Expected a declaration, but got '.'.
+      await ref.read(seedServiceProvider).wipe();
+                                         ^
+lib/features/settings/settings_screen.dart:1:49:
+Error: Expected a function body or '=>'.
+      await ref.read(seedServiceProvider).wipe();
+                                                ^
+lib/features/settings/settings_screen.dart:2:13:
+Error: A function declaration needs an explicit list of parameters.
+      await ref.read(seedServiceProvider).seed();
+            ^^^
+lib/features/settings/settings_screen.dart:2:16:
+Error: Expected '{' before this.
+      await ref.read(seedServiceProvider).seed();
+               ^
+lib/features/settings/settings_screen.dart:2:16:
+Error: Expected a declaration, but got '.'.
+      await ref.read(seedServiceProvider).seed();
+               ^
+lib/features/settings/settings_screen.dart:2:42:
+Error: Expected '{' before this.
+      await ref.read(seedServiceProvider).seed();
+                                         ^
+lib/features/settings/settings_screen.dart:2:42:
+Error: Expected a declaration, but got '.'.
+      await ref.read(seedServiceProvider).seed();
+                                         ^
+lib/features/settings/settings_screen.dart:2:49:
+Error: Expected a function body or '=>'.
+      await ref.read(seedServiceProvider).seed();
+                                                ^
+lib/features/settings/settings_screen.dart:3:27:
+Error: Expected a function body or '=>'.
+      bumpDataVersion(ref);
+                          ^
+lib/features/settings/settings_screen.dart:2:13:
+Error: 'ref' is already declared in this scope.
+      await ref.read(seedServiceProvider).seed();
+            ^^^
+lib/features/settings/settings_screen.dart:1:13:
+Info: Previous declaration of 'ref'.
+      await ref.read(seedServiceProvider).wipe();
+            ^^^
+lib/features/settings/settings_screen.dart:2:17:
+Error: 'read' is already declared in this scope.
+      await ref.read(seedServiceProvider).seed();
+                ^^^^
+lib/features/settings/settings_screen.dart:1:17:
+Info: Previous declaration of 'read'.
+      await ref.read(seedServiceProvider).wipe();
+                ^^^^
+lib/features/settings/settings_screen.dart:1:7:
+Error: Type 'await' not found.
+      await ref.read(seedServiceProvider).wipe();
+      ^^^^^
+lib/features/settings/settings_screen.dart:2:7:
+Error: Type 'await' not found.
+      await ref.read(seedServiceProvider).seed();
+      ^^^^^
+lib/core/router/app_router.dart:37:69:
+Error: Couldn't find constructor 'SettingsScreen'.
+          GoRoute(path: '/home/settings', builder: (_, __) => const SettingsScreen()),
+                                                                    ^^^^^^^^^^^^^^
+lib/core/router/app_router.dart:83:25:
+Error: The method 'read' isn't defined for the type 'invalid-type Function()'.
+    final session = ref.read(sessionProvider);
+                        ^^^^
+lib/core/router/app_router.dart:87:12:
+Error: The method 'read' isn't defined for the type 'invalid-type Function()'.
+          .read(backupUiServiceProvider)
+           ^^^^
+lib/core/router/app_router.dart:89:17:
+Error: The method 'read' isn't defined for the type 'invalid-type Function()'.
+      await ref.read(backupSettingsProvider.notifier).reload();
+                ^^^^
+lib/core/router/app_router.dart:100:26:
+Error: The method 'watch' isn't defined for the type 'invalid-type Function()'.
+    final settings = ref.watch(backupSettingsProvider);
+                         ^^^^^
+lib/core/router/app_router.dart:131:41:
+Error: The method 'read' isn't defined for the type 'invalid-type Function()'.
+                    final session = ref.read(sessionProvider);
+                                        ^^^^
+lib/core/router/app_router.dart:135:26:
+Error: The method 'read' isn't defined for the type 'invalid-type Function()'.
+                        .read(backupUiServiceProvider)
+                         ^^^^
+lib/core/router/app_router.dart:137:31:
+Error: The method 'read' isn't defined for the type 'invalid-type Function()'.
+                    await ref.read(backupSettingsProvider.notifier).reload();
+                              ^^^^
 Error: Compilation failed.
   Command: /opt/hostedtoolcache/flutter/stable-3.47.1-x64/flutter/bin/cache/dart-sdk/bin/dart compile js --platform-binaries=/opt/hostedtoolcache/flutter/stable-3.47.1-x64/flutter/bin/cache/flutter_web_sdk/kernel --invoker=flutter_tool -Ddart.vm.product=true -DFLUTTER_BUILD_NAME=1.0.0 -DFLUTTER_BUILD_NUMBER=1 -DFLUTTER_VERSION=3.47.1 -DFLUTTER_CHANNEL=stable -DFLUTTER_GIT_URL=https://github.com/flutter/flutter.git -DFLUTTER_FRAMEWORK_REVISION=6655482ec0 -DFLUTTER_ENGINE_REVISION=5d53178869 -DFLUTTER_DART_VERSION=3.13.1 -DFLUTTER_WEB_USE_SKIA=true -DFLUTTER_WEB_USE_SKWASM=false -DFLUTTER_WEB_CANVASKIT_URL=https://www.gstatic.com/flutter-canvaskit/5d531788691ec3404cac0cee66ead4007b177363/ --write-resources --enable-experiment=record-use --native-null-assertions --no-source-maps -O4 --minify -o /home/runner/work/quran-circles-app/quran-circles-app/.dart_tool/flutter_build/78ba38472f7aaf7865c44448a45bb4c1/app.dill --packages=/home/runner/work/quran-circles-app/quran-circles-app/.dart_tool/package_config.json --cfe-only /home/runner/work/quran-circles-app/quran-circles-app/.dart_tool/flutter_build/78ba38472f7aaf7865c44448a45bb4c1/main.dart
 #0      RunResult.throwException (package:flutter_tools/src/base/process.dart:153:5)
@@ -85,6 +209,6 @@ Error: Compilation failed.
 #22     main (package:flutter_tools/executable.dart:103:3)
 <asynchronous suspension>
 
-Compiling lib/main.dart for the Web...                             59.6s
+Compiling lib/main.dart for the Web...                             54.4s
 Error: Failed to compile application for the Web.
 ```
