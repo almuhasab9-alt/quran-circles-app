@@ -1,0 +1,15 @@
+{
+  "name": "quran-circles-api",
+  "main": "src/index.js",
+  "compatibility_date": "2025-01-01",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "quran-circles-db",
+      "database_id": "63369c25-6332-4c78-aeeb-476b5a53e156"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}
