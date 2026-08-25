@@ -66,9 +66,38 @@ class _DailyEntryScreenState extends ConsumerState<DailyEntryScreen> {
     return QuranMeta.rangeInPages((_newFromSurah, _newFromAyah), (_newToSurah, _newToAyah));
   }
 
-  Future<void> _save() async {
+  /// تحقق من اكتمال كل الحقول — لا يُقبل الفراغ:
+  /// إن لم يسمّع الطالب أو لم يربط يكتب المعلم صفراً (0) لتتم عملية الحفظ.
+  String? _validateComplete() {
+    final fields = <(String, TextEditingController)>[
+      ('حديث العهد — من', _recentFrom), ('حديث العهد — إلى', _recentTo),
+      ('المراجعة الصغرى — من', _minorFrom), ('المراجعة الصغرى — إلى', _minorTo),
+      ('المراجعة الكبرى — من', _majorFrom), ('المراجعة الكبرى — إلى', _majorTo),
+      if (!_isFriday) ('التكرار', _repCtrl),
+    ];
+    for (final (label, c) in fields) {
+      final t = c.text.trim();
+      if (t.isEmpty) {
+        return 'حقل «$label» فارغ — البيانات الناقصة لا تُحفظ. إن لم يسمّع الطالب أو لم يربط اكتب 0';
+      }
+      if (int.tryParse(t) == null) {
+        return 'حقل «$label» يجب أن يكون رقماً (اكتب 0 إن لم يوجد)';
+      }
+    }
+    return null;
+  }
+
+  Future<void> _save({required bool toCloud}) async {
     final session = ref.read(sessionProvider);
     if (_student == null || session == null) return;
+
+    // منع حفظ بيانات ناقصة — محلياً أو سحابياً
+    final incomplete = _validateComplete();
+    if (incomplete != null) {
+      setState(() => _error = incomplete);
+      return;
+    }
+
     setState(() { _saving = true; _error = null; });
 
     final svc = ref.read(sessionServiceProvider);
@@ -91,17 +120,33 @@ class _DailyEntryScreenState extends ConsumerState<DailyEntryScreen> {
     );
 
     if (!mounted) return;
-    setState(() => _saving = false);
-    if (result.ok) {
-      bumpDataVersion(ref);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('تم حفظ سجل ${_student!.fullName} ليوم ${_date.weekdayAr} ${du.dateKeyOf(_date)}'),
-        backgroundColor: AppColors.success,
-      ));
-      Navigator.pop(context);
-    } else {
-      setState(() => _error = result.error);
+    if (!result.ok) {
+      setState(() { _saving = false; _error = result.error; });
+      return;
     }
+
+    // تحديث الواجهات فقط — بدون جدولة رفع تلقائي (الرفع بقرار المعلم)
+    ref.read(dataVersionProvider.notifier).state++;
+
+    String msg;
+    Color color = AppColors.success;
+    if (toCloud) {
+      // حفظ في الهاتف + رفع للسحابة (تحديث في المكان — نسخة واحدة)
+      final sync = await ref.read(cloudSyncProvider).uploadNow();
+      if (sync.ok) {
+        msg = 'تم الحفظ في الهاتف والسحابة ✓ — سجل ${_student!.fullName} ليوم ${_date.weekdayAr}';
+      } else {
+        msg = 'حُفظ في الهاتف ✓ لكن تعذر الرفع للسحابة (${sync.error}) — ارفع لاحقاً من زر السحابة في الإعدادات';
+        color = Colors.orange.shade800;
+      }
+    } else {
+      msg = 'تم الحفظ في ذاكرة الهاتف ✓ — ارفع للسحابة عند توفر الإنترنت';
+    }
+
+    if (!mounted) return;
+    setState(() => _saving = false);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), backgroundColor: color, duration: const Duration(seconds: 4)));
+    Navigator.pop(context);
   }
 
   Future<void> _pickDate() async {
@@ -270,15 +315,48 @@ class _DailyEntryScreenState extends ConsumerState<DailyEntryScreen> {
               ),
               const SizedBox(height: 20),
 
-              SizedBox(
-                height: 50,
-                child: FilledButton.icon(
-                  onPressed: _saving ? null : _save,
-                  icon: _saving ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Icon(Icons.save),
-                  label: Text(_saving ? 'جارٍ الحفظ...' : 'حفظ السجل', style: const TextStyle(fontSize: 16)),
-                  style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+              // تنبيه: الفراغات غير مقبولة — اكتب 0 إن لم يوجد
+              Container(
+                padding: const EdgeInsets.all(10),
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: Colors.amber.shade50,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.amber.shade300),
                 ),
+                child: const Row(children: [
+                  Icon(Icons.info_outline, size: 18, color: Colors.black54),
+                  SizedBox(width: 8),
+                  Expanded(child: Text('لا تُحفظ بيانات ناقصة: إن لم يسمّع الطالب أو لم يربط اكتب 0 في الفراغات', style: TextStyle(fontSize: 12))),
+                ]),
               ),
+              // خيارا الحفظ: في الهاتف (بدون إنترنت) أو في السحابة
+              Row(children: [
+                Expanded(child: SizedBox(
+                  height: 50,
+                  child: OutlinedButton.icon(
+                    onPressed: _saving ? null : () => _save(toCloud: false),
+                    icon: const Icon(Icons.phone_android),
+                    label: const Text('حفظ في الهاتف', style: TextStyle(fontSize: 15)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      side: const BorderSide(color: AppColors.primary, width: 1.5),
+                    ),
+                  ),
+                )),
+                const SizedBox(width: 10),
+                Expanded(child: SizedBox(
+                  height: 50,
+                  child: FilledButton.icon(
+                    onPressed: _saving ? null : () => _save(toCloud: true),
+                    icon: _saving
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Icon(Icons.cloud_upload),
+                    label: Text(_saving ? 'جارٍ الحفظ...' : 'حفظ في السحابة', style: const TextStyle(fontSize: 15)),
+                    style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+                  ),
+                )),
+              ]),
               const SizedBox(height: 30),
             ]),
     );

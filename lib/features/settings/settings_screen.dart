@@ -24,6 +24,8 @@ class SettingsScreen extends ConsumerWidget {
           onChanged: (v) => ref.read(darkModeProvider.notifier).set(v),
         ),
         const Divider(),
+        const _CloudSyncTile(),
+        const Divider(),
         _BackupSection(teacherId: teacherId, settings: backupSettings),
         const Divider(),
         const ListTile(
@@ -33,6 +35,51 @@ class SettingsScreen extends ConsumerWidget {
           isThreeLine: true,
         ),
       ]),
+    );
+  }
+}
+
+/// زر الرفع اليدوي للسحابة (يرفع كل البيانات المحلية كنسخة واحدة مُحدَّثة في السحابة).
+class _CloudSyncTile extends ConsumerStatefulWidget {
+  const _CloudSyncTile();
+  @override
+  ConsumerState<_CloudSyncTile> createState() => _CloudSyncTileState();
+}
+
+class _CloudSyncTileState extends ConsumerState<_CloudSyncTile> {
+  bool _busy = false;
+
+  Future<void> _upload() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      await ref.read(cloudSyncProvider).uploadNow();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('تم رفع البيانات إلى السحابة بنجاح ✓'),
+        backgroundColor: Colors.green,
+      ));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('تعذر الرفع للسحابة — تأكد من الاتصال بالإنترنت ($e)'),
+        backgroundColor: Colors.red,
+      ));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.cloud_upload, color: Color(0xFF0B5E48)),
+      title: const Text('رفع البيانات للسحابة'),
+      subtitle: const Text('يرفع كل البيانات المحفوظة في الهاتف إلى السحابة (نسخة واحدة تُحدَّث دون تكرار)'),
+      trailing: _busy
+          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+          : const Icon(Icons.chevron_left),
+      onTap: _upload,
     );
   }
 }
