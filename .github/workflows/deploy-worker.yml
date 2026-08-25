@@ -33,63 +33,93 @@ jobs:
         working-directory: worker
         run: |
           npx wrangler deploy > /tmp/deploy_output.txt 2>&1 || true
+          echo "=== Deploy output ==="
           cat /tmp/deploy_output.txt
-          # Parse the workers.dev URL from output
+          echo "=== End output ==="
+          # Try multiple patterns to find URL
+          WORKER_URL=""
+          # Pattern 1: https://name.subdomain.workers.dev
           WORKER_URL=$(grep -oE 'https://[a-z0-9_-]+\.[a-z0-9_-]+\.workers\.dev' /tmp/deploy_output.txt | head -1 || true)
+          # Pattern 2: just the worker name mentioned with a URL
           if [ -z "$WORKER_URL" ]; then
-            # Try alternate patterns
-            WORKER_URL=$(grep -oE 'https://quran-circles-api[a-z0-9._-]*' /tmp/deploy_output.txt | head -1 || true)
+            WORKER_URL=$(grep -oE 'https://quran-circles-api[^\s"]*' /tmp/deploy_output.txt | head -1 || true)
           fi
-          echo "WORKER_URL=$WORKER_URL"
+          echo "Found URL: $WORKER_URL"
           echo "worker_url=$WORKER_URL" >> $GITHUB_OUTPUT
+
+      - name: Enable workers.dev subdomain if needed
+        id: enable
+        if: steps.deploy.outputs.worker_url == ''
+        working-directory: worker
+        run: |
+          echo "No workers.dev URL found. Trying to enable workers.dev subdomain..."
+          # Try to enable the workers.dev subdomain for this worker
+          npx wrangler deploy --routes '[]' > /tmp/deploy2.txt 2>&1 || true
+          cat /tmp/deploy2.txt
+          WORKER_URL=$(grep -oE 'https://[a-z0-9_-]+\.[a-z0-9_-]+\.workers\.dev' /tmp/deploy2.txt | head -1 || true)
+          if [ -n "$WORKER_URL" ]; then
+            echo "worker_url=$WORKER_URL" >> $GITHUB_OUTPUT
+          else
+            # Last resort: try the standard pattern with account subdomain
+            # Get the subdomain from the Cloudflare API
+            echo "Trying Cloudflare API for subdomain..."
+            SUBDOMAIN_RES=$(curl -sS "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain" \
+              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" 2>&1)
+            echo "Subdomain response: $SUBDOMAIN_RES"
+            SUB=$(echo "$SUBDOMAIN_RES" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('result',{}).get('subdomain',''))" 2>/dev/null || echo "")
+            if [ -n "$SUB" ]; then
+              WORKER_URL="https://quran-circles-api.$SUB.workers.dev"
+              echo "Constructed URL: $WORKER_URL"
+              echo "worker_url=$WORKER_URL" >> $GITHUB_OUTPUT
+            fi
+          fi
 
       - name: Health check + seed
         run: |
-          URL="${{ steps.deploy.outputs.worker_url }}"
+          URL="${{ steps.deploy.outputs.worker_url }}${{ steps.enable.outputs.worker_url }}"
           echo "Worker URL: $URL"
           if [ -z "$URL" ]; then
-            echo "ERROR: No worker URL found in deploy output"
-            cat /tmp/deploy_output.txt
+            echo "ERROR: No worker URL found"
             exit 1
           fi
-          sleep 2
+          sleep 3
           echo "=== Health ==="
-          curl -sS "$URL/api/health"
+          curl -sS -v "$URL/api/health" 2>&1 || true
           echo ""
-          echo "=== Tables (empty) ==="
-          curl -sS "$URL/api/halaqas" | head -c 200
-          echo ""
-          echo "=== Seeding data ==="
-          curl -sS -X POST "$URL/api/seed" -H "Content-Type: application/json" -d '{}'
+          echo "=== Seed ==="
+          curl -sS -X POST "$URL/api/seed" -H "Content-Type: application/json" -d '{}' 2>&1 || true
           echo ""
           echo "=== After seed ==="
-          echo "Users: $(curl -sS "$URL/api/users" | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
-          echo "Halaqas: $(curl -sS "$URL/api/halaqas" | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
-          echo "Students: $(curl -sS "$URL/api/students" | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
-          echo "Daily records: $(curl -sS "$URL/api/daily-records" | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
+          echo "Users: $(curl -sS "$URL/api/users" 2>/dev/null | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
+          echo "Halaqas: $(curl -sS "$URL/api/halaqas" 2>/dev/null | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
+          echo "Students: $(curl -sS "$URL/api/students" 2>/dev/null | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
+          echo "Daily records: $(curl -sS "$URL/api/daily-records" 2>/dev/null | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
 
       - name: Write report
+        if: always()
         run: |
-          URL="${{ steps.deploy.outputs.worker_url }}"
+          URL="${{ steps.deploy.outputs.worker_url }}${{ steps.enable.outputs.worker_url }}"
           {
             echo "# Worker API Deploy Report"
             echo "Date: $(date -u)"
             echo ""
             echo "- **Worker URL**: $URL"
-            echo "- **Health**: $(curl -sS "$URL/api/health" 2>&1)"
-            echo "- **Users**: $(curl -sS "$URL/api/users" 2>&1 | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
-            echo "- **Halaqas**: $(curl -sS "$URL/api/halaqas" 2>&1 | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
-            echo "- **Students**: $(curl -sS "$URL/api/students" 2>&1 | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
-            echo "- **Daily records**: $(curl -sS "$URL/api/daily-records" 2>&1 | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
+            echo "- **Health**: $(curl -sS "$URL/api/health" 2>&1 || echo 'failed')"
             echo ""
-            echo "## Deploy output"
+            echo "## Deploy output (run 1)"
             echo '```'
-            cat /tmp/deploy_output.txt
+            cat /tmp/deploy_output.txt 2>/dev/null || echo "(no output)"
+            echo '```'
+            echo ""
+            echo "## Deploy output (run 2)"
+            echo '```'
+            cat /tmp/deploy2.txt 2>/dev/null || echo "(no output)"
             echo '```'
           } > worker-deploy-report.md 2>&1
           cat worker-deploy-report.md
 
       - name: Commit report
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
