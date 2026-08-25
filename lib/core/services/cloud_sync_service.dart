@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'backup_service.dart';
 import 'cloud_auth_service.dart';
 
@@ -23,10 +24,24 @@ class CloudSyncService {
   CloudSyncService({required this.backup, required this.auth});
 
   static const _base = CloudAuthService.baseUrl;
+  static const _kLastSyncAt = 'cloud_last_sync_at'; // ختم آخر نسخة سحابية تزامنا معها
+  static const _kDirty = 'cloud_local_dirty'; // توجد تعديلات محلية لم تُرفع بعد
   Timer? _debounce;
   bool _uploading = false;
   bool _pendingAgain = false;
   DateTime? lastUploadAt;
+
+  /// تعليم وجود تعديلات محلية غير مرفوعة (حتى لا تضيع عند المزامنة الذكية)
+  Future<void> markLocalChanged() async {
+    final p = await SharedPreferences.getInstance();
+    await p.setBool(_kDirty, true);
+  }
+
+  Future<void> _markSynced(String? cloudUpdatedAt) async {
+    final p = await SharedPreferences.getInstance();
+    await p.setBool(_kDirty, false);
+    if (cloudUpdatedAt != null) await p.setString(_kLastSyncAt, cloudUpdatedAt);
+  }
 
   Map<String, String> get _headers => {
         'Content-Type': 'application/json',
@@ -63,6 +78,8 @@ class CloudSyncService {
         return SyncResult(ok: false, error: err ?? 'فشل الرفع (${r.statusCode})');
       }
       lastUploadAt = DateTime.now();
+      final body = jsonDecode(r.body) as Map<String, dynamic>;
+      await _markSynced(body['updatedAt'] as String?);
       if (kDebugMode) debugPrint('cloud sync: uploaded in-place at $lastUploadAt');
       return SyncResult(ok: true, at: lastUploadAt);
     } catch (e) {
@@ -98,19 +115,45 @@ class CloudSyncService {
       }
       final res = await backup.importData((data as Map).cast<String, dynamic>());
       if (!res.ok) return SyncResult(ok: false, error: res.error);
+      await _markSynced(body['updatedAt'] as String?);
       return SyncResult(ok: true, at: DateTime.now());
     } catch (e) {
       return const SyncResult(ok: false, error: 'تعذر الاتصال بالسحابة');
     }
   }
 
-  /// عند بدء الجلسة: إن كانت القاعدة المحلية فارغة نزّل النسخة السحابية،
-  /// وإلا نرفع النسخة المحلية لتكون السحابة مطابقة لآخر حالة.
-  Future<void> initialSync({required bool localIsEmpty}) async {
-    if (localIsEmpty) {
-      await downloadAndReplace();
-    } else {
-      await uploadNow();
+  /// مزامنة ذكية عند بدء الجلسة (تعمل على كل متصفح/جهاز):
+  /// 1) القاعدة المحلية فارغة → تنزيل النسخة السحابية.
+  /// 2) توجد تعديلات محلية لم تُرفع → رفعها (حتى لا تضيع).
+  /// 3) السحابة أحدث من آخر نسخة تزامنّا معها → تنزيلها
+  ///    (هذا يحل مشكلة فتح الرابط من متصفح آخر وعدم ظهور البيانات).
+  Future<SyncResult> smartSync({required bool localIsEmpty}) async {
+    if (auth.token == null) {
+      return const SyncResult(ok: false, error: 'غير مسجل دخول');
+    }
+    if (localIsEmpty) return downloadAndReplace();
+    final p = await SharedPreferences.getInstance();
+    final dirty = p.getBool(_kDirty) ?? false;
+    if (dirty) return uploadNow();
+    // قارن ختم النسخة السحابية بآخر ختم تزامنّا معه
+    try {
+      final r = await http
+          .get(Uri.parse('$_base/api/data'), headers: _headers)
+          .timeout(const Duration(seconds: 20));
+      if (r.statusCode != 200) return const SyncResult(ok: false, error: 'فشل الفحص');
+      final body = jsonDecode(r.body) as Map<String, dynamic>;
+      final cloudAt = body['updatedAt'] as String?;
+      final data = body['data'];
+      if (cloudAt == null || data == null) return const SyncResult(ok: true);
+      final localAt = p.getString(_kLastSyncAt);
+      if (localAt == cloudAt) return const SyncResult(ok: true); // متطابقتان
+      // السحابة مختلفة (أحدث) → استبدال محلي كامل
+      final res = await backup.importData((data as Map).cast<String, dynamic>());
+      if (!res.ok) return SyncResult(ok: false, error: res.error);
+      await _markSynced(cloudAt);
+      return SyncResult(ok: true, at: DateTime.now());
+    } catch (_) {
+      return const SyncResult(ok: false, error: 'تعذر الاتصال بالسحابة');
     }
   }
 

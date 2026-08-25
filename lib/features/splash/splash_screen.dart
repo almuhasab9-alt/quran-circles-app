@@ -36,13 +36,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
         username: user.username,
         halaqaId: user.halaqaId,
       );
-      // مزامنة أولية: إن كانت القاعدة المحلية فارغة نزّل النسخة السحابية (استبدال كامل — لا تكرار)
+      // مزامنة ذكية: فارغة → تنزيل | تعديلات محلية → رفع | السحابة أحدث → تنزيل
+      // (تضمن ظهور البيانات نفسها على أي متصفح/جهاز يسجل منه المستخدم)
       try {
         final halaqas = await ref.read(halaqaRepoProvider).getAll(includeInactive: true);
-        if (halaqas.isEmpty) {
-          await ref.read(cloudSyncProvider).downloadAndReplace();
-          ref.read(dataVersionProvider.notifier).state++;
-        }
+        await ref.read(cloudSyncProvider).smartSync(localIsEmpty: halaqas.isEmpty);
+        ref.read(dataVersionProvider.notifier).state++;
       } catch (_) {/* لا إنترنت — نكمل بالبيانات المحلية */}
       if (!mounted) return;
       context.go('/home');

@@ -125,8 +125,10 @@ class _DailyEntryScreenState extends ConsumerState<DailyEntryScreen> {
       return;
     }
 
-    // تحديث الواجهات فقط — بدون جدولة رفع تلقائي (الرفع بقرار المعلم)
+    // تحديث الواجهات + تعليم وجود تعديل محلي (حتى لا يضيع عند المزامنة الذكية)
+    // — بدون جدولة رفع تلقائي (الرفع بقرار المعلم)
     ref.read(dataVersionProvider.notifier).state++;
+    await ref.read(cloudSyncProvider).markLocalChanged();
 
     String msg;
     Color color = AppColors.success;

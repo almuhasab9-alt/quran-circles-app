@@ -54,7 +54,9 @@ final dataVersionProvider = StateProvider<int>((ref) => 0);
 /// تلقائياً (تحديث في المكان — لا ينشئ نسخاً جديدة في السحابة)
 void bumpDataVersion(WidgetRef ref) {
   ref.read(dataVersionProvider.notifier).state++;
-  ref.read(cloudSyncProvider).scheduleUpload();
+  final sync = ref.read(cloudSyncProvider);
+  sync.markLocalChanged(); // تعليم وجود تعديل محلي حتى لا يضيع
+  sync.scheduleUpload();
 }
 
 /// الوضع الداكن — محفوظ محلياً عبر SharedPreferences

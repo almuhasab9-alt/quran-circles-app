@@ -45,6 +45,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         username: res.user!.username,
         halaqaId: res.user!.halaqaId,
       );
+      // مزامنة فورية بعد الدخول: تنزيل النسخة السحابية إن كان المتصفح فارغاً
+      // أو كانت السحابة أحدث — حتى تظهر البيانات نفسها على أي متصفح/جهاز
+      try {
+        final halaqas = await ref.read(halaqaRepoProvider).getAll(includeInactive: true);
+        await ref.read(cloudSyncProvider).smartSync(localIsEmpty: halaqas.isEmpty);
+        ref.read(dataVersionProvider.notifier).state++;
+      } catch (_) {/* لا إنترنت — نكمل محلياً */}
+      if (!mounted) return;
       context.go('/home');
     } else {
       setState(() { loading = false; error = res.error; });
