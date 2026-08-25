@@ -1,0 +1,53 @@
+name: Build Debug
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze 2>&1 | tee /tmp/analyze.txt || true
+
+      - name: Build web app
+        run: flutter build web --release --base-href "/quran-circles-app/" 2>&1 | tee /tmp/build.txt || true
+
+      - name: Write report
+        run: |
+          {
+            echo "# Build Debug Report"
+            echo "Date: $(date -u)"
+            echo ""
+            echo "## Analyze"
+            echo '```'
+            cat /tmp/analyze.txt
+            echo '```'
+            echo ""
+            echo "## Build"
+            echo '```'
+            cat /tmp/build.txt
+            echo '```'
+          } > build-debug-report.md 2>&1
+          cat build-debug-report.md
+
+      - name: Commit report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add build-debug-report.md
+          git commit -m "chore: add build debug report" || echo "no changes"
+          git push || echo "nothing to push"
