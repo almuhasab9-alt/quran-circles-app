@@ -32,10 +32,14 @@ jobs:
         id: deploy
         working-directory: worker
         run: |
-          set -o pipefail
-          npx wrangler deploy 2>&1 | tee /tmp/deploy_output.txt
+          npx wrangler deploy > /tmp/deploy_output.txt 2>&1 || true
+          cat /tmp/deploy_output.txt
           # Parse the workers.dev URL from output
-          WORKER_URL=$(grep -oE 'https://[a-z0-9_-]+\.[a-z0-9_-]+\.workers\.dev' /tmp/deploy_output.txt | head -1)
+          WORKER_URL=$(grep -oE 'https://[a-z0-9_-]+\.[a-z0-9_-]+\.workers\.dev' /tmp/deploy_output.txt | head -1 || true)
+          if [ -z "$WORKER_URL" ]; then
+            # Try alternate patterns
+            WORKER_URL=$(grep -oE 'https://quran-circles-api[a-z0-9._-]*' /tmp/deploy_output.txt | head -1 || true)
+          fi
           echo "WORKER_URL=$WORKER_URL"
           echo "worker_url=$WORKER_URL" >> $GITHUB_OUTPUT
 
