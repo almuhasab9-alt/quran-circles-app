@@ -31,7 +31,7 @@ class SettingsScreen extends ConsumerWidget {
         const ListTile(
           leading: Icon(Icons.info),
           title: Text(AppConstants.appName),
-          subtitle: Text('${AppConstants.centerName}\n${AppConstants.centerBranch}\nالإصدار 1.0.0 (نسخة تجريبية محلية)'),
+          subtitle: Text('${AppConstants.centerName}\n${AppConstants.centerBranch}\nالإصدار 1.0.0'),
           isThreeLine: true,
         ),
       ]),

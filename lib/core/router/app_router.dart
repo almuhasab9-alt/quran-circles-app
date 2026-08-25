@@ -1,11 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/services/backup_service.dart';
+import '../../core/services/daily_pdf_service.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/accounts/accounts_screen.dart';
 import '../../features/accounts/my_account_screen.dart';
-import '../../features/demo_auth/demo_login_screen.dart';
+import '../../features/auth/login_screen.dart';
 import '../../features/halaqas/halaqa_detail_screen.dart';
 import '../../features/halaqas/halaqas_screen.dart';
 import '../../features/reports/reports_screen.dart';
@@ -164,6 +166,95 @@ class _BackupReminderBannerState extends ConsumerState<_BackupReminderBanner> {
   }
 }
 
+/// تنبيه إلزامي للمشرف: لا يزول حتى يُصدِّر ملف PDF اليومي الشامل
+/// لكافة بيانات الحلقات (حماية من ضياع البيانات). لا يوجد زر إغلاق.
+class DailyPdfReminderBanner extends ConsumerStatefulWidget {
+  const DailyPdfReminderBanner({super.key});
+  @override
+  ConsumerState<DailyPdfReminderBanner> createState() => _DailyPdfReminderBannerState();
+}
+
+class _DailyPdfReminderBannerState extends ConsumerState<DailyPdfReminderBanner> {
+  bool _exporting = false;
+
+  Future<void> _export() async {
+    if (_exporting) return;
+    setState(() => _exporting = true);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final halaqas = await ref.read(halaqaRepoProvider).getAll();
+      final students = await ref.read(studentRepoProvider).getAll();
+      final records = await ref.read(recordRepoProvider).all();
+      final users = await ref.read(userRepoProvider).all();
+      final now = DateTime.now();
+      final bytes = await DailyPdfService.buildDailyFullPdf(
+        date: now,
+        halaqas: halaqas,
+        students: students,
+        allRecords: records,
+        users: users,
+      );
+      final name = DailyPdfService.suggestedFileName(now);
+      final ok = await ref.read(backupUiServiceProvider).deliverPublic(
+          name, Uint8List.fromList(bytes), 'application/pdf');
+      if (ok) {
+        await ref.read(dailyPdfExportProvider.notifier).markExportedToday();
+        messenger.showSnackBar(SnackBar(
+          content: Text('تم تصدير ملف اليوم بنجاح: $name'),
+          backgroundColor: const Color(0xFF0B5E48),
+        ));
+      }
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(
+        content: Text('تعذر التصدير: $e'),
+        backgroundColor: Colors.red,
+      ));
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final session = ref.watch(sessionProvider);
+    // التنبيه للمشرف فقط
+    if (session == null || !session.isSupervisor) return const SizedBox.shrink();
+    ref.watch(dailyPdfExportProvider); // إعادة البناء عند التغيير
+    final exported = ref.read(dailyPdfExportProvider.notifier).exportedToday;
+    if (exported) return const SizedBox.shrink();
+
+    return Material(
+      color: const Color(0xFFFFEBEE),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: Color(0xFFC62828), width: 1.2)),
+        ),
+        child: Row(children: [
+          const Icon(Icons.picture_as_pdf, color: Color(0xFFC62828), size: 22),
+          const SizedBox(width: 8),
+          const Expanded(
+            child: Text(
+              'لم تُحفظ بيانات اليوم بعد — صدِّر ملف PDF اليومي الشامل لكافة بيانات الحلقات حتى لا تضيع البيانات. هذا التنبيه لا يزول حتى التصدير.',
+              style: TextStyle(fontSize: 12, color: Color(0xFF8B0000), fontWeight: FontWeight.w600),
+            ),
+          ),
+          FilledButton.icon(
+            style: FilledButton.styleFrom(backgroundColor: const Color(0xFFC62828)),
+            onPressed: _exporting ? null : _export,
+            icon: _exporting
+                ? const SizedBox(width: 14, height: 14,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Icon(Icons.download, size: 18),
+            label: const Text('تصدير الآن (PDF)', style: TextStyle(fontSize: 12)),
+          ),
+        ]),
+      ),
+    );
+  }
+}
+
 class HomeShell extends ConsumerWidget {
   final Widget child;
   const HomeShell({super.key, required this.child});
@@ -187,6 +278,7 @@ class HomeShell extends ConsumerWidget {
     }
     return Scaffold(
       body: Column(children: [
+        const DailyPdfReminderBanner(),
         const _BackupReminderBanner(),
         Expanded(child: child),
       ]),

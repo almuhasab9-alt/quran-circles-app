@@ -1,23 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/app_constants.dart';
-
-// شارة الوضع التجريبي الثابتة
-class DemoBadge extends StatelessWidget {
-  const DemoBadge({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-      color: Colors.amber.shade700,
-      child: const Text(
-        AppConstants.demoBadge,
-        textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-}
 
 // حالة فارغة
 class EmptyState extends StatelessWidget {

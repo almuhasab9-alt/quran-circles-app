@@ -2,7 +2,6 @@ class AppConstants {
   static const appName = 'متابعة حلقات مركز السنة';
   static const centerName = 'مركز السنة للعلوم الشرعية وتأهيل الدعاة';
   static const centerBranch = 'شبوة - عتق';
-  static const demoBadge = 'وضع تجريبي — لا توجد مزامنة سحابية';
   static const levels = [
     'تمارين النطق',
     'التأسيسية',

@@ -5,7 +5,6 @@ import '../../core/services/backup_service.dart';
 import '../../core/services/backup_ui_service.dart';
 import '../../core/services/cloud_auth_service.dart';
 import '../../core/services/cloud_sync_service.dart';
-import '../../core/services/demo_seed_service.dart';
 import '../../core/services/local_repositories.dart';
 import '../../core/services/report_service.dart';
 import '../../core/services/session_service.dart';
@@ -13,8 +12,6 @@ import '../../core/services/transfer_service.dart';
 import '../models/repositories.dart';
 
 final dbProvider = Provider<AppDatabase>((ref) => AppDatabase());
-
-final seedServiceProvider = Provider<DemoSeedService>((ref) => DemoSeedService(ref.watch(dbProvider)));
 
 final sessionServiceProvider = Provider<SessionService>((ref) => SessionService(ref.watch(dbProvider)));
 final reportServiceProvider = Provider<ReportService>((ref) => ReportService(ref.watch(dbProvider)));
@@ -75,6 +72,34 @@ class DarkModeNotifier extends StateNotifier<bool> {
 }
 
 final darkModeProvider = StateNotifierProvider<DarkModeNotifier, bool>((ref) => DarkModeNotifier());
+
+// ---------- التصدير اليومي الشامل PDF (للمشرف) ----------
+
+/// يحفظ تاريخ آخر تصدير PDF يومي شامل (YYYY-MM-DD).
+/// التنبيه لا يزول حتى يُصدَّر ملف اليوم الحالي.
+class DailyPdfExportNotifier extends StateNotifier<String?> {
+  static const _key = 'last_daily_pdf_export';
+  DailyPdfExportNotifier() : super(null) {
+    SharedPreferences.getInstance().then((p) => state = p.getString(_key));
+  }
+
+  /// هل صُدِّر ملف اليوم الحالي؟
+  bool get exportedToday => state == _todayKey;
+
+  static String get _todayKey {
+    final n = DateTime.now();
+    return '${n.year.toString().padLeft(4, '0')}-${n.month.toString().padLeft(2, '0')}-${n.day.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> markExportedToday() async {
+    state = _todayKey;
+    final p = await SharedPreferences.getInstance();
+    await p.setString(_key, _todayKey);
+  }
+}
+
+final dailyPdfExportProvider =
+    StateNotifierProvider<DailyPdfExportNotifier, String?>((ref) => DailyPdfExportNotifier());
 
 // ---------- إعدادات النسخ الاحتياطي ----------
 

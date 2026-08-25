@@ -99,7 +99,7 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
     if (ok == true && target != null) {
       final res = await ref.read(transferServiceProvider).transferStudent(
         studentId: s.id, toHalaqaId: target!,
-        byUserId: ref.read(sessionProvider)?.userId ?? 'demo',
+        byUserId: ref.read(sessionProvider)?.userId ?? '',
       );
       if (!mounted) return;
       bumpDataVersion(ref);
