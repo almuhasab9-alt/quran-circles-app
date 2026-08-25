@@ -50,7 +50,7 @@ class DashboardScreen extends ConsumerWidget {
     final isTeacher = session?.isTeacher ?? false;
     // فلترة حسب الدور
     final myHalaqas = isTeacher
-        ? halaqas.where((h) => h.teacherIds.contains(session!.userId)).toList()
+        ? halaqas.where((h) => h.id == session!.halaqaId || h.teacherIds.contains(session.userId)).toList()
         : halaqas;
     final myHalaqaIds = myHalaqas.map((h) => h.id).toSet();
     final myStudents = isTeacher ? students.where((s) => myHalaqaIds.contains(s.halaqaId)).toList() : students;

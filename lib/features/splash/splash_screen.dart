@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_theme.dart';
+import '../../shared/providers/providers.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl = AnimationController(
       vsync: this, duration: const Duration(milliseconds: 1400))
     ..forward();
@@ -17,9 +19,27 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 2200), () {
-      if (mounted) context.go('/login');
-    });
+    _boot();
+  }
+
+  /// استعادة الجلسة المحفوظة — إن وجدت ندخل مباشرة، وإلا شاشة الدخول
+  Future<void> _boot() async {
+    final delay = Future.delayed(const Duration(milliseconds: 2000));
+    final user = await ref.read(cloudAuthProvider).restoreSession();
+    await delay;
+    if (!mounted) return;
+    if (user != null && user.active) {
+      ref.read(sessionProvider.notifier).state = AppSession(
+        userId: user.id,
+        name: user.fullName.isEmpty ? user.username : user.fullName,
+        role: user.role,
+        username: user.username,
+        halaqaId: user.halaqaId,
+      );
+      context.go('/home');
+    } else {
+      context.go('/login');
+    }
   }
 
   @override

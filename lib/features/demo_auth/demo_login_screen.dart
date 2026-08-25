@@ -43,6 +43,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         name: res.user!.fullName.isEmpty ? res.user!.username : res.user!.fullName,
         role: res.user!.role,
         username: res.user!.username,
+        halaqaId: res.user!.halaqaId,
       );
       context.go('/home');
     } else {

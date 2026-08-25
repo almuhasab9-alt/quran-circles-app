@@ -32,7 +32,8 @@ class AppSession {
   final String name;
   final String role; // supervisor | teacher
   final String username;
-  const AppSession({required this.userId, required this.name, required this.role, this.username = ''});
+  final String halaqaId; // حلقة المعلم المرتبطة بحسابه السحابي
+  const AppSession({required this.userId, required this.name, required this.role, this.username = '', this.halaqaId = ''});
   bool get isSupervisor => role == 'supervisor';
   bool get isTeacher => role == 'teacher';
 }

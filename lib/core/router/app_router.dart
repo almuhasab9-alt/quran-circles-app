@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/services/backup_service.dart';
 import '../../features/dashboard/dashboard_screen.dart';
+import '../../features/accounts/accounts_screen.dart';
+import '../../features/accounts/my_account_screen.dart';
 import '../../features/demo_auth/demo_login_screen.dart';
 import '../../features/halaqas/halaqa_detail_screen.dart';
 import '../../features/halaqas/halaqas_screen.dart';
@@ -14,7 +16,6 @@ import '../../features/students/students_screen.dart';
 import '../../features/teacher/daily_entry_screen.dart';
 import '../../features/teacher/weekly_sheet_screen.dart';
 import '../../shared/providers/providers.dart';
-import '../../shared/widgets/common_widgets.dart';
 
 final _rootKey = GlobalKey<NavigatorState>();
 final _shellKey = GlobalKey<NavigatorState>();
@@ -25,7 +26,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/',
     routes: [
       GoRoute(path: '/', builder: (_, __) => const SplashScreen()),
-      GoRoute(path: '/login', builder: (_, __) => const DemoLoginScreen()),
+      GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
       ShellRoute(
         navigatorKey: _shellKey,
         builder: (_, __, child) => HomeShell(child: child),
@@ -35,6 +36,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/home/students', builder: (_, __) => const StudentsScreen()),
           GoRoute(path: '/home/reports', builder: (_, __) => const ReportsScreen()),
           GoRoute(path: '/home/settings', builder: (_, __) => const SettingsScreen()),
+          GoRoute(path: '/home/accounts', builder: (_, __) => const AccountsScreen()),
+          GoRoute(path: '/home/my-account', builder: (_, __) => const MyAccountScreen()),
         ],
       ),
       GoRoute(path: '/halaqa/:id', parentNavigatorKey: _rootKey,
@@ -184,7 +187,6 @@ class HomeShell extends ConsumerWidget {
     }
     return Scaffold(
       body: Column(children: [
-        const SafeArea(bottom: false, child: DemoBadge()),
         const _BackupReminderBanner(),
         Expanded(child: child),
       ]),
@@ -222,13 +224,18 @@ class HomeShell extends ConsumerWidget {
           ListTile(leading: const Icon(Icons.groups), title: const Text('الحلقات'), onTap: () { Navigator.pop(context); context.go('/home/halaqas'); }),
           ListTile(leading: const Icon(Icons.assessment), title: const Text('التقارير'), onTap: () { Navigator.pop(context); context.go('/home/reports'); }),
           const Divider(),
+          if (session.isSupervisor) ...[
+            ListTile(leading: const Icon(Icons.manage_accounts), title: const Text('حسابات المعلمين'), onTap: () { Navigator.pop(context); context.go('/home/accounts'); }),
+            ListTile(leading: const Icon(Icons.admin_panel_settings), title: const Text('حسابي (تغيير بيانات الدخول)'), onTap: () { Navigator.pop(context); context.go('/home/my-account'); }),
+          ],
           ListTile(leading: const Icon(Icons.settings), title: const Text('الإعدادات'), onTap: () { Navigator.pop(context); context.go('/home/settings'); }),
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
             title: const Text('تسجيل الخروج', style: TextStyle(color: Colors.red)),
-            onTap: () {
+            onTap: () async {
+              await ref.read(cloudAuthProvider).signOut();
               ref.read(sessionProvider.notifier).state = null;
-              context.go('/login');
+              if (context.mounted) context.go('/login');
             },
           ),
         ]),

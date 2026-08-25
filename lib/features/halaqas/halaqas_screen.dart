@@ -107,7 +107,7 @@ class HalaqasScreen extends ConsumerWidget {
           // المعلم يرى حلقته فقط، المشرف يرى الكل
           var list = halaqas;
           if (session?.isTeacher ?? false) {
-            list = halaqas.where((h) => h.teacherIds.contains(session!.userId)).toList();
+            list = halaqas.where((h) => h.id == session!.halaqaId || h.teacherIds.contains(session.userId)).toList();
           }
           if (list.isEmpty) return const EmptyState(icon: Icons.groups, message: 'لا توجد حلقات');
           final students = studentsAsync.value ?? [];
