@@ -34,84 +34,107 @@ jobs:
               await page.setViewport({ width: 1280, height: 900 });
               
               const BASE = 'https://almuhasab9-alt.github.io/quran-circles-app/';
-              const shots = [];
               
-              // Helper: wait for app to render, then screenshot
-              async function snap(name, path) {
-                try {
-                  await page.goto(BASE + (path || ''), { waitUntil: 'networkidle0', timeout: 30000 });
-                  await new Promise(r => setTimeout(r, 3000)); // let Flutter render
-                  await page.screenshot({ path: `/tmp/${name}.png`, fullPage: false });
-                  console.log(`Captured: ${name}`);
-                  shots.push(name);
-                } catch(e) {
-                  console.error(`Failed ${name}: ${e.message}`);
-                  // try to screenshot anyway
-                  try {
-                    await page.screenshot({ path: `/tmp/${name}.png`, fullPage: false });
-                    shots.push(name);
-                  } catch(e2) {
-                    console.error(`Screenshot also failed: ${e2.message}`);
-                  }
-                }
-              }
-              
-              // 1. Splash / initial load
-              await snap('01-splash', '');
-              
-              // 2. Wait longer for app to fully load and seed
-              await new Promise(r => setTimeout(r, 5000));
-              await page.screenshot({ path: '/tmp/02-after-wait.png', fullPage: false });
-              console.log('Captured: 02-after-wait');
-              shots.push('02-after-wait');
-              
-              // 3. Get page HTML for debugging
-              const html = await page.content();
-              fs.writeFileSync('/tmp/page-content.html', html);
-              console.log('Page content length:', html.length);
-              
-              // 4. Check console logs
+              // Collect console logs
               const logs = [];
-              page.on('console', msg => logs.push(`${msg.type()}: ${msg.text()}`));
-              page.on('pageerror', err => logs.push(`PAGEERROR: ${err.message}`));
-              await page.reload({ waitUntil: 'networkidle0', timeout: 30000 });
+              page.on('console', msg => logs.push(`[${msg.type()}] ${msg.text()}`));
+              page.on('pageerror', err => logs.push(`[PAGEERROR] ${err.message}`));
+              page.on('requestfailed', req => logs.push(`[REQFAIL] ${req.url()} - ${req.failure()?.errorText}`));
+              
+              // Navigate to the app
+              console.log('Loading app...');
+              await page.goto(BASE, { waitUntil: 'networkidle0', timeout: 30000 });
+              
+              // Wait for Flutter to render
+              await new Promise(r => setTimeout(r, 8000));
+              await page.screenshot({ path: 'screenshots/01-initial.png' });
+              console.log('Captured: 01-initial');
+              
+              // Get page HTML
+              const html = await page.content();
+              fs.writeFileSync('page-content.html', html);
+              console.log('Page HTML length:', html.length);
+              
+              // Check if flutter-view element exists
+              const hasFlutter = await page.evaluate(() => {
+                const el = document.querySelector('flutter-view') || document.querySelector('flt-glass-pane');
+                return el ? el.tagName : null;
+              });
+              console.log('Flutter element:', hasFlutter);
+              
+              // Wait more — seed might be running
               await new Promise(r => setTimeout(r, 5000));
-              await page.screenshot({ path: '/tmp/03-reloaded.png', fullPage: false });
-              console.log('Captured: 03-reloaded');
-              shots.push('03-reloaded');
+              await page.screenshot({ path: 'screenshots/02-after-seed.png' });
+              console.log('Captured: 02-after-seed');
               
-              // 5. Save console logs
-              fs.writeFileSync('/tmp/console-logs.txt', logs.join('\n'));
-              console.log('Console logs:', logs.length, 'entries');
-              logs.forEach(l => console.log(l));
+              // Try clicking center (potential login button)
+              await page.mouse.click(640, 450);
+              await new Promise(r => setTimeout(r, 3000));
+              await page.screenshot({ path: 'screenshots/03-after-click-center.png' });
+              console.log('Captured: 03-after-click-center');
               
-              // 6. Try clicking on elements — look for Flutter canvas
-              // Flutter web renders to a canvas, so we can't easily click DOM elements
-              // But we can try to interact via coordinates
-              await page.mouse.click(640, 450); // center of screen
-              await new Promise(r => setTimeout(r, 2000));
-              await page.screenshot({ path: '/tmp/04-after-click.png', fullPage: false });
-              console.log('Captured: 04-after-click');
-              shots.push('04-after-click');
+              // Try clicking different areas
+              const clicks = [
+                [640, 350, 'top'],
+                [640, 550, 'bottom'],
+                [640, 400, 'upper-mid'],
+                [960, 450, 'right'],
+                [320, 450, 'left'],
+              ];
+              for (const [x, y, name] of clicks) {
+                await page.mouse.click(x, y);
+                await new Promise(r => setTimeout(r, 2000));
+                await page.screenshot({ path: `screenshots/04-click-${name}.png` });
+                console.log(`Captured: 04-click-${name}`);
+              }
               
-              // 7. Try navigating to different routes via URL hash
+              // Try hash routes
               const routes = ['#/home', '#/students', '#/halaqas', '#/settings', '#/reports', '#/teacher'];
-              for (let i = 0; i < routes.length; i++) {
+              for (const route of routes) {
                 try {
-                  await page.goto(BASE + routes[i], { waitUntil: 'networkidle0', timeout: 15000 });
-                  await new Promise(r => setTimeout(r, 3000));
-                  await page.screenshot({ path: `/tmp/05-route-${i}-${routes[i].replace('#/','')}.png`, fullPage: false });
-                  console.log(`Captured route: ${routes[i]}`);
-                  shots.push(`05-route-${i}-${routes[i].replace('#/','')}`);
+                  await page.goto(BASE + route, { waitUntil: 'networkidle0', timeout: 15000 });
+                  await new Promise(r => setTimeout(r, 4000));
+                  const name = route.replace('#/', '');
+                  await page.screenshot({ path: `screenshots/05-route-${name}.png` });
+                  console.log(`Captured route: ${name}`);
                 } catch(e) {
-                  console.error(`Route ${routes[i]} failed: ${e.message}`);
+                  console.error(`Route ${route} failed: ${e.message}`);
                 }
               }
               
-              // 8. Write summary
-              fs.writeFileSync('/tmp/screenshots-list.txt', shots.join('\n'));
-              console.log('All screenshots:', shots.join(', '));
+              // Save console logs
+              fs.writeFileSync('console-logs.txt', logs.join('\n'));
+              console.log('Console logs:', logs.length, 'entries');
+              logs.slice(0, 30).forEach(l => console.log(l));
+              
+              // Write summary
+              const files = fs.readdirSync('screenshots');
+              fs.writeFileSync('ui-test-report.md', `# UI Test Report\nDate: ${new Date().toISOString()}\n\n## Screenshots\n${files.map(f => `- ${f}`).join('\n')}\n\n## Console Logs\n\`\`\`\n${logs.join('\n')}\n\`\`\`\n`);
               
               await browser.close();
             })();
-     
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: screenshots/
+
+      - name: Upload console logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: console-logs
+          path: console-logs.txt
+
+      - name: Upload HTML
+        uses: actions/upload-artifact@v4
+        with:
+          name: page-content
+          path: page-content.html
+
+      - name: Commit report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add ui-test-report.md console-logs.txt page-content.html
+          git commit -m "chore: add UI test report" || echo "no changes"
+          git push || echo "nothing to push"
