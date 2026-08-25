@@ -1,0 +1,117 @@
+name: Test App UI
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Install Puppeteer
+        run: npm install puppeteer
+
+      - name: Take screenshots
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const puppeteer = require('puppeteer');
+            const fs = require('fs');
+            
+            (async () => {
+              const browser = await puppeteer.launch({
+                headless: 'new',
+                args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security']
+              });
+              const page = await browser.newPage();
+              await page.setViewport({ width: 1280, height: 900 });
+              
+              const BASE = 'https://almuhasab9-alt.github.io/quran-circles-app/';
+              const shots = [];
+              
+              // Helper: wait for app to render, then screenshot
+              async function snap(name, path) {
+                try {
+                  await page.goto(BASE + (path || ''), { waitUntil: 'networkidle0', timeout: 30000 });
+                  await new Promise(r => setTimeout(r, 3000)); // let Flutter render
+                  await page.screenshot({ path: `/tmp/${name}.png`, fullPage: false });
+                  console.log(`Captured: ${name}`);
+                  shots.push(name);
+                } catch(e) {
+                  console.error(`Failed ${name}: ${e.message}`);
+                  // try to screenshot anyway
+                  try {
+                    await page.screenshot({ path: `/tmp/${name}.png`, fullPage: false });
+                    shots.push(name);
+                  } catch(e2) {
+                    console.error(`Screenshot also failed: ${e2.message}`);
+                  }
+                }
+              }
+              
+              // 1. Splash / initial load
+              await snap('01-splash', '');
+              
+              // 2. Wait longer for app to fully load and seed
+              await new Promise(r => setTimeout(r, 5000));
+              await page.screenshot({ path: '/tmp/02-after-wait.png', fullPage: false });
+              console.log('Captured: 02-after-wait');
+              shots.push('02-after-wait');
+              
+              // 3. Get page HTML for debugging
+              const html = await page.content();
+              fs.writeFileSync('/tmp/page-content.html', html);
+              console.log('Page content length:', html.length);
+              
+              // 4. Check console logs
+              const logs = [];
+              page.on('console', msg => logs.push(`${msg.type()}: ${msg.text()}`));
+              page.on('pageerror', err => logs.push(`PAGEERROR: ${err.message}`));
+              await page.reload({ waitUntil: 'networkidle0', timeout: 30000 });
+              await new Promise(r => setTimeout(r, 5000));
+              await page.screenshot({ path: '/tmp/03-reloaded.png', fullPage: false });
+              console.log('Captured: 03-reloaded');
+              shots.push('03-reloaded');
+              
+              // 5. Save console logs
+              fs.writeFileSync('/tmp/console-logs.txt', logs.join('\n'));
+              console.log('Console logs:', logs.length, 'entries');
+              logs.forEach(l => console.log(l));
+              
+              // 6. Try clicking on elements — look for Flutter canvas
+              // Flutter web renders to a canvas, so we can't easily click DOM elements
+              // But we can try to interact via coordinates
+              await page.mouse.click(640, 450); // center of screen
+              await new Promise(r => setTimeout(r, 2000));
+              await page.screenshot({ path: '/tmp/04-after-click.png', fullPage: false });
+              console.log('Captured: 04-after-click');
+              shots.push('04-after-click');
+              
+              // 7. Try navigating to different routes via URL hash
+              const routes = ['#/home', '#/students', '#/halaqas', '#/settings', '#/reports', '#/teacher'];
+              for (let i = 0; i < routes.length; i++) {
+                try {
+                  await page.goto(BASE + routes[i], { waitUntil: 'networkidle0', timeout: 15000 });
+                  await new Promise(r => setTimeout(r, 3000));
+                  await page.screenshot({ path: `/tmp/05-route-${i}-${routes[i].replace('#/','')}.png`, fullPage: false });
+                  console.log(`Captured route: ${routes[i]}`);
+                  shots.push(`05-route-${i}-${routes[i].replace('#/','')}`);
+                } catch(e) {
+                  console.error(`Route ${routes[i]} failed: ${e.message}`);
+                }
+              }
+              
+              // 8. Write summary
+              fs.writeFileSync('/tmp/screenshots-list.txt', shots.join('\n'));
+              console.log('All screenshots:', shots.join(', '));
+              
+              await browser.close();
+            })();
+     
