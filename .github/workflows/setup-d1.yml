@@ -1,0 +1,107 @@
+name: Setup Cloudflare D1 Database
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  setup-d1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Configure Cloudflare credentials
+        run: |
+          echo "CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_API_TOKEN }}" >> $GITHUB_ENV
+          echo "CLOUDFLARE_ACCOUNT_ID=${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" >> $GITHUB_ENV
+
+      - name: Verify token
+        run: npx wrangler whoami
+
+      - name: Get or create D1 database
+        id: db
+        run: |
+          echo "=== Listing existing D1 databases ==="
+          npx wrangler d1 list --json > /tmp/d1list.json 2>/dev/null || echo "[]" > /tmp/d1list.json
+          cat /tmp/d1list.json
+          DB_ID=$(node -e "
+            let data=[];
+            try { data = require('/tmp/d1list.json'); } catch {}
+            const found = Array.isArray(data) ? data.find(d => d.name === 'quran-circles-db') : null;
+            if (found) { console.log(found.uuid); }
+          ")
+          if [ -z "$DB_ID" ]; then
+            echo "=== Creating D1 database quran-circles-db ==="
+            npx wrangler d1 create quran-circles-db > /tmp/d1create.txt 2>&1
+            cat /tmp/d1create.txt
+            DB_ID=$(grep -oE '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' /tmp/d1create.txt | head -1)
+            if [ -z "$DB_ID" ]; then
+              DB_ID=$(grep -oE 'database_id\s*=\s*"[^"]+"' /tmp/d1create.txt | grep -oE '[0-9a-f-]{36}')
+            fi
+          fi
+          echo "DATABASE_ID=$DB_ID"
+          echo "::notice::database_id=$DB_ID"
+          echo "db_id=$DB_ID" >> $GITHUB_OUTPUT
+          echo "$DB_ID" > d1_database_id.txt
+
+      - name: Apply schema to D1
+        run: |
+          DB_ID="${{ steps.db.outputs.db_id }}"
+          if [ -z "$DB_ID" ]; then
+            echo "ERROR: No database_id obtained"
+            exit 1
+          fi
+          echo "=== Applying schema to quran-circles-db ($DB_ID) ==="
+          npx wrangler d1 execute quran-circles-db --remote --file=migrations/0001_initial_schema.sql 2>&1
+
+      - name: Verify tables
+        run: |
+          echo "=== Verifying tables ==="
+          npx wrangler d1 execute quran-circles-db --remote --command "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name" 2>&1
+
+      - name: Write report
+        run: |
+          DB_ID="${{ steps.db.outputs.db_id }}"
+          {
+            echo "# D1 Database Setup Report"
+            echo "Date: $(date -u)"
+            echo ""
+            echo "## Database"
+            echo "- **Name**: quran-circles-db"
+            echo "- **UUID**: \`$DB_ID\`"
+            echo ""
+            echo "## Tables"
+            npx wrangler d1 execute quran-circles-db --remote --command "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name" 2>&1
+            echo ""
+            echo "## Row counts"
+            for t in users halaqas students daily_records weekly_plans student_transfers; do
+              COUNT=$(npx wrangler d1 execute quran-circles-db --remote --command "SELECT COUNT(*) as c FROM $t" --json 2>/dev/null | node -e "let d=[];try{d=require('/dev/stdin')}catch{};console.log(d[0]?.results?.[0]?.c||0)")
+              echo "- $t: $COUNT rows"
+            done
+          } > d1-setup-report.md 2>&1
+          cat d1-setup-report.md
+
+      - name: Commit report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add d1_database_id.txt d1-setup-report.md
+          git commit -m "chore: add D1 database setup report" || echo "no changes"
+          git push || echo "nothing to push"
+
+      - name: Upload artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: d1-setup
+          path: |
+            d1_database_id.txt
+            d1-setup-report.md
