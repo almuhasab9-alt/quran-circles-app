@@ -17,12 +17,12 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build APK
-        run: flutter build apk --release
+      - name: Build split APKs (per ABI)
+        run: flutter build apk --release --split-per-abi
 
-      - name: Upload APK
+      - name: Upload split APKs
         uses: actions/upload-artifact@v4
         with:
-          name: quran-center-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: quran-center-apk-split
+          path: build/app/outputs/flutter-apk/app-*-release.apk
           retention-days: 30
