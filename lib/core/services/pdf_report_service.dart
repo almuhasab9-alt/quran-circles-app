@@ -507,6 +507,58 @@ class PdfReportService {
     return doc.save();
   }
 
+  /// إنشاء PDF مجمّع لتقارير فترة لعدة طلاب: صفحة عمودية لكل طالب
+  /// (يُستخدم مع خيار «كل الطلاب» في شاشة التقارير).
+  static Future<Uint8List> buildMultiPeriodReportPdf({
+    required String title,
+    required String periodLabel,
+    required List<({Student student, PeriodReport report})> reports,
+    required Map<String, Halaqa> halaqasById,
+  }) async {
+    final font = await loadArabicFont();
+    await loadFallbackFonts();
+    await loadLogoImage();
+    final doc = pw.Document(title: '$title - كل الطلاب', author: 'مركز السنة');
+    for (final e in reports) {
+      final halaqa = halaqasById[e.student.halaqaId];
+      final report = e.report;
+      doc.addPage(
+        pw.Page(
+          pageTheme: themedPage(PdfPageFormat.a4),
+          build: (ctx) => pw.Directionality(
+            textDirection: pw.TextDirection.rtl,
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+              children: [
+                _header(
+                  font,
+                  title,
+                  'الطالب: ${e.student.fullName} (${e.student.studentCode})  -  الحلقة: ${halaqa?.name ?? '—'}',
+                  extra: periodLabel,
+                ),
+                pw.SizedBox(height: 14),
+                _summaryRow(font, report),
+                pw.SizedBox(height: 14),
+                _arabic('تفصيل الفئات', _s(font, 12, bold: true, color: _primary),
+                    align: pw.TextAlign.right),
+                pw.SizedBox(height: 4),
+                _categoryTable(font, report),
+                pw.SizedBox(height: 14),
+                _arabic(
+                    'أيام مسجلة: ${report.daysRecorded}  -  جُمع مسجلة: ${report.fridaysRecorded}',
+                    _s(font, 9, color: _greyText),
+                    align: pw.TextAlign.right),
+                pw.Spacer(),
+                _footer(font),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    return doc.save();
+  }
+
   /// إنشاء PDF لتقرير حلقة كاملة: كشف أسبوعي لكل طالب (صفحة أفقية لكل طالب).
   static Future<Uint8List> buildHalaqaWeeklyPdf({
     required Halaqa halaqa,
