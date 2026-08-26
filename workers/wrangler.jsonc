@@ -1,0 +1,9 @@
+{
+  "name": "quran-center-bridge",
+  "main": "quran-center-bridge.js",
+  "compatibility_date": "2026-08-26",
+  "services": [
+    { "binding": "CIRCLES_API", "service": "quran-circles-api" },
+    { "binding": "AUTH_API", "service": "quran-auth-api" }
+  ]
+}
