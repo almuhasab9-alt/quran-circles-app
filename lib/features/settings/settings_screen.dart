@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/services/api_client.dart';
 import '../../core/services/backup_service.dart';
 import '../../shared/providers/providers.dart';
 
@@ -75,9 +78,15 @@ class SettingsScreen extends ConsumerWidget {
           subtitle: Text('${AppConstants.centerName}\n${AppConstants.centerBranch}\nالإصدار 1.0.0 (نسخة تجريبية محلية)'),
           isThreeLine: true,
         ),
+        const Divider(),
+        const _ServerSection(),
       ]),
     );
   }
+
+  /// قسم عنوان الخادم السحابي — يسمح بتغيير عنوان API عند الحجب دون إعادة بناء
+  static const String serverPrefsKey = 'apiBaseUrl';
+  static const String serverAuthPrefsKey = 'apiAuthBaseUrl';
 }
 
 /// قسم النسخ الاحتياطي: تصدير / استيراد / تذكير يومي-أسبوعي / نسخ آلي.
@@ -195,6 +204,100 @@ class _BackupSectionState extends ConsumerState<_BackupSection> {
         secondary: const Icon(Icons.autorenew),
         value: s.autoBackup,
         onChanged: (v) => ref.read(backupSettingsProvider.notifier).setAutoBackup(v),
+      ),
+    ]);
+  }
+}
+
+/// قسم عنوان الخادم السحابي — عند الحجب يمكن وضع أي عنوان خادم بديل يعمل
+class _ServerSection extends ConsumerStatefulWidget {
+  const _ServerSection();
+
+  @override
+  ConsumerState<_ServerSection> createState() => _ServerSectionState();
+}
+
+class _ServerSectionState extends ConsumerState<_ServerSection> {
+  final _controller = TextEditingController();
+  String _status = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.text = ApiClient.overrideBaseUrl ?? '';
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveAndTest() async {
+    final url = _controller.text.trim();
+    final prefs = await SharedPreferences.getInstance();
+    if (url.isEmpty) {
+      await prefs.remove(SettingsScreen.serverPrefsKey);
+      await prefs.remove(SettingsScreen.serverAuthPrefsKey);
+      ApiClient.overrideBaseUrl = null;
+      ApiClient.overrideAuthBaseUrl = null;
+    } else {
+      final base = url.endsWith('/') ? url.substring(0, url.length - 1) : url;
+      await prefs.setString(SettingsScreen.serverPrefsKey, base);
+      await prefs.setString(SettingsScreen.serverAuthPrefsKey, '$base/auth');
+      ApiClient.overrideBaseUrl = base;
+      ApiClient.overrideAuthBaseUrl = '$base/auth';
+    }
+    setState(() => _status = 'جارٍ اختبار الاتصال...');
+    try {
+      final testUrl = ApiClient.defaultBaseUrl + '/api/health';
+      final res = await http
+          .get(Uri.parse(testUrl))
+          .timeout(const Duration(seconds: 8));
+      if (res.statusCode == 200) {
+        setState(() => _status = '✅ الاتصال ناجح — تم الحفظ');
+      } else {
+        setState(() => _status = '⚠ الخادم رد برمز ${res.statusCode} — تحقق من الرابط');
+      }
+    } catch (e) {
+      setState(() => _status = '❌ تعذر الاتصال: تحقق من الرابط والإنترنت');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const ListTile(
+        leading: Icon(Icons.dns, color: Color(0xFF0B5E48)),
+        title: Text('عنوان الخادم السحابي'),
+        subtitle: Text('يُترك فارغاً لاستخدام العنوان الافتراضي'),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: TextField(
+          controller: _controller,
+          keyboardType: TextInputType.url,
+          decoration: const InputDecoration(
+            hintText: 'https://example.com',
+            border: OutlineInputBorder(),
+            isDense: true,
+          ),
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(children: [
+          FilledButton.icon(
+            onPressed: _saveAndTest,
+            icon: const Icon(Icons.save),
+            label: const Text('حفظ واختبار الاتصال'),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(_status,
+                style: const TextStyle(fontSize: 12), textAlign: TextAlign.start),
+          ),
+        ]),
       ),
     ]);
   }

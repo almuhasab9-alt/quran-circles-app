@@ -5,9 +5,17 @@ import 'package:http/http.dart' as http;
 /// عميل HTTP للـ Cloudflare Worker API فوق D1
 /// يستبدل drift المحلي باتصالات سحابية
 class ApiClient {
+  /// عنوان مخصص للخادم — يُضبط من شاشة الإعدادات ويُحفظ في التخزين المحلي
+  /// (يسمح بتغيير الخادم دون إعادة بناء التطبيق — مفيد عند الحجب)
+  static String? overrideBaseUrl;
+  static String? overrideAuthBaseUrl;
+
   /// عنوان البيانات — على الويب يُحل نسبياً من نفس الأصل (البروكسي/المضيف)
   /// فيخاطب التطبيق أي نطاق يستضيفه (بروكسي، pages.dev، نطاق خاص...) دون حجب
   static String get defaultBaseUrl {
+    if (overrideBaseUrl != null && overrideBaseUrl!.isNotEmpty) {
+      return overrideBaseUrl!;
+    }
     if (kIsWeb) {
       final s = Uri.base.resolve('').toString();
       return s.endsWith('/') ? s.substring(0, s.length - 1) : s;
@@ -17,6 +25,9 @@ class ApiClient {
 
   /// عنوان المصادقة — على الويب عبر مسار auth/ (يمرره البروكسي)
   static String get authBaseUrl {
+    if (overrideAuthBaseUrl != null && overrideAuthBaseUrl!.isNotEmpty) {
+      return overrideAuthBaseUrl!;
+    }
     if (kIsWeb) {
       final s = Uri.base.resolve('auth/').toString();
       return s.endsWith('/') ? s.substring(0, s.length - 1) : s;
