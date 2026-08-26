@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/services/backup_service.dart';
 import '../../shared/providers/providers.dart';
@@ -37,6 +38,7 @@ class SettingsScreen extends ConsumerWidget {
     final backupSettings = ref.watch(backupSettingsProvider);
     final session = ref.watch(sessionProvider);
     final teacherId = session != null && session.isTeacher ? session.userId : null;
+    final isSupervisor = session?.isSupervisor ?? false;
     return Scaffold(
       appBar: AppBar(title: const Text('الإعدادات')),
       body: ListView(padding: const EdgeInsets.all(12), children: [
@@ -47,6 +49,17 @@ class SettingsScreen extends ConsumerWidget {
           onChanged: (v) => ref.read(darkModeProvider.notifier).set(v),
         ),
         const Divider(),
+        // إدارة الحسابات — للمشرف فقط
+        if (isSupervisor) ...[
+          ListTile(
+            leading: const Icon(Icons.manage_accounts, color: Color(0xFF0B5E48)),
+            title: const Text('إدارة الحسابات'),
+            subtitle: const Text('تغيير كلمات المرور وأسماء المستخدمين للمعلمين'),
+            trailing: const Icon(Icons.chevron_left),
+            onTap: () => context.go('/home/accounts'),
+          ),
+          const Divider(),
+        ],
         _BackupSection(teacherId: teacherId, settings: backupSettings),
         const Divider(),
         ListTile(

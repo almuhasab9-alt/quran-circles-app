@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/services/backup_service.dart';
+import '../../features/accounts/accounts_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/demo_auth/demo_login_screen.dart';
 import '../../features/halaqas/halaqa_detail_screen.dart';
@@ -35,6 +36,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/home/students', builder: (_, __) => const StudentsScreen()),
           GoRoute(path: '/home/reports', builder: (_, __) => const ReportsScreen()),
           GoRoute(path: '/home/settings', builder: (_, __) => const SettingsScreen()),
+          GoRoute(path: '/home/accounts', builder: (_, __) => const AccountsScreen()),
         ],
       ),
       GoRoute(path: '/halaqa/:id', parentNavigatorKey: _rootKey,

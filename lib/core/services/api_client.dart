@@ -37,6 +37,55 @@ class ApiClient {
     return jsonDecode(res.body) as Map<String, dynamic>;
   }
 
+  /// قائمة الحسابات (للمشرف فقط)
+  Future<Map<String, dynamic>> getAccounts() async {
+    final res = await _client.get(
+      Uri.parse('$authBaseUrl/api/accounts'),
+      headers: _headers(),
+    );
+    if (res.statusCode != 200) {
+      throw ApiException(_serverError(res.body) ?? 'فشل جلب الحسابات');
+    }
+    return jsonDecode(res.body) as Map<String, dynamic>;
+  }
+
+  /// إنشاء حساب معلم جديد (للمشرف فقط)
+  Future<Map<String, dynamic>> createAccount(String username, String password, String fullName) async {
+    final res = await _client.post(
+      Uri.parse('$authBaseUrl/api/accounts'),
+      headers: _headers(),
+      body: jsonEncode({'username': username, 'password': password, 'fullName': fullName}),
+    );
+    if (res.statusCode != 200 && res.statusCode != 201) {
+      throw ApiException(_serverError(res.body) ?? 'فشل إنشاء الحساب');
+    }
+    return jsonDecode(res.body) as Map<String, dynamic>;
+  }
+
+  /// تعديل حساب (كلمة المرور/اسم المستخدم/الاسم/الحالة) — للمشرف فقط
+  Future<Map<String, dynamic>> updateAccount(String id, Map<String, dynamic> body) async {
+    final res = await _client.put(
+      Uri.parse('$authBaseUrl/api/accounts/$id'),
+      headers: _headers(),
+      body: jsonEncode(body),
+    );
+    if (res.statusCode != 200) {
+      throw ApiException(_serverError(res.body) ?? 'فشل تحديث الحساب');
+    }
+    return jsonDecode(res.body) as Map<String, dynamic>;
+  }
+
+  /// استخراج رسالة الخطأ من جسم استجابة الخادم (إن وجدت)
+  String? _serverError(String body) {
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is Map && decoded['error'] is String) {
+        return decoded['error'] as String;
+      }
+    } catch (_) {/* تجاهل */}
+    return null;
+  }
+
   Future<List<Map<String, dynamic>>> getList(String path, {Map<String, String>? query}) async {
     final uri = Uri.parse('$baseUrl$path').replace(queryParameters: query);
     final res = await _client.get(uri, headers: _headers());

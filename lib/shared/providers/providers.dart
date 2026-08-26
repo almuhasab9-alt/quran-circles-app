@@ -1,3 +1,4 @@
+import '../services/accounts_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/database/app_database.dart';
@@ -15,6 +16,10 @@ final dbProvider = Provider<AppDatabase>((ref) => AppDatabase());
 
 // ─── عميل API السحابي ───
 final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
+
+// ─── مستودع حسابات الدخول (إدارة الحسابات — للمشرف) ───
+final accountsRepositoryProvider =
+    Provider<AccountsRepository>((ref) => AccountsRepository(ref.watch(apiClientProvider)));
 
 // ─── مزودات الخدمات (محلية مؤقتاً) ───
 final sessionServiceProvider = Provider<SessionService>((ref) => SessionService(ref.watch(dbProvider)));
