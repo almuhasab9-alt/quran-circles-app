@@ -1,12 +1,22 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 
 /// عميل HTTP للـ Cloudflare Worker API فوق D1
 /// يستبدل drift المحلي باتصالات سحابية
 class ApiClient {
-  // سيتم تحديثه تلقائياً من إعدادات التطبيق
-  static const String defaultBaseUrl = 'https://quran-circles-api.almuhasab9-alt.workers.dev';
-  static const String authBaseUrl = 'https://quran-auth-api.almuhasab9-alt.workers.dev';
+  /// عنوان البيانات — على الويب يُحل نسبياً من نفس الأصل (البروكسي/المضيف)
+  /// فيخاطب التطبيق أي نطاق يستضيفه (بروكسي، pages.dev، نطاق خاص...) دون حجب
+  static String get defaultBaseUrl {
+    if (kIsWeb) return Uri.base.resolve('').toString();
+    return 'https://quran-circles-api.almuhasab9-alt.workers.dev';
+  }
+
+  /// عنوان المصادقة — على الويب عبر مسار auth/ (يمرره البروكسي)
+  static String get authBaseUrl {
+    if (kIsWeb) return Uri.base.resolve('auth/').toString();
+    return 'https://quran-auth-api.almuhasab9-alt.workers.dev';
+  }
 
   // التوكن المشترك لجميع الطلبات (يُعيّن بعد تسجيل الدخول)
   static String? authToken;
