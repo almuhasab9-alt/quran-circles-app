@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/app_constants.dart';
-import '../../core/constants/enums.dart';
-import '../../core/database/app_database.dart';
-import '../../core/services/demo_auth_repository.dart';
+import '../../core/services/api_client.dart';
 import '../../core/theme/app_theme.dart';
 import '../../shared/providers/providers.dart';
 
@@ -15,34 +13,45 @@ class DemoLoginScreen extends ConsumerStatefulWidget {
 }
 
 class _DemoLoginScreenState extends ConsumerState<DemoLoginScreen> {
-  UserRole role = UserRole.teacher;
-  User? selectedUser;
-  List<User> users = [];
-  final nameCtrl = TextEditingController();
-  bool loading = true;
+  final usernameCtrl = TextEditingController();
+  final passwordCtrl = TextEditingController();
+  bool loading = false;
+  String? errorText;
 
   @override
-  void initState() {
-    super.initState();
-    _loadUsers();
-  }
-
-  Future<void> _loadUsers() async {
-    final repo = DemoAuthRepository(ref.read(dbProvider));
-    users = await repo.demoUsersByRole(role.name);
-    selectedUser = users.isNotEmpty ? users.first : null;
-    nameCtrl.text = selectedUser?.fullName ?? '';
-    setState(() => loading = false);
+  void dispose() {
+    usernameCtrl.dispose();
+    passwordCtrl.dispose();
+    super.dispose();
   }
 
   Future<void> _login() async {
-    if (selectedUser == null) return;
-    ref.read(sessionProvider.notifier).state = DemoSession(
-      userId: selectedUser!.id,
-      name: nameCtrl.text.trim().isEmpty ? selectedUser!.fullName : nameCtrl.text.trim(),
-      role: role.name,
-    );
-    context.go('/home');
+    final username = usernameCtrl.text.trim();
+    final password = passwordCtrl.text;
+    if (username.isEmpty || password.isEmpty) {
+      setState(() => errorText = 'أدخل اسم المستخدم وكلمة المرور');
+      return;
+    }
+    setState(() { loading = true; errorText = null; });
+    try {
+      final api = ref.read(apiClientProvider);
+      final result = await api.login(username, password);
+      ApiClient.authToken = result['token'] as String;
+      final user = result['user'] as Map<String, dynamic>;
+      ref.read(sessionProvider.notifier).state = DemoSession(
+        userId: (user['id'] ?? '') as String,
+        name: (user['fullName'] ?? username) as String,
+        role: (user['role'] ?? 'teacher') as String,
+      );
+      if (!mounted) return;
+      context.go('/home');
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        loading = false;
+        errorText = e.toString().replaceAll('ApiException: ', '');
+      });
+    }
   }
 
   @override
@@ -74,42 +83,32 @@ class _DemoLoginScreenState extends ConsumerState<DemoLoginScreen> {
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
                     const SizedBox(height: 20),
-                    SegmentedButton<UserRole>(
-                      segments: const [
-                        ButtonSegment(value: UserRole.teacher, label: Text('معلم'), icon: Icon(Icons.school)),
-                        ButtonSegment(value: UserRole.supervisor, label: Text('مشرف'), icon: Icon(Icons.supervisor_account)),
-                      ],
-                      selected: {role},
-                      onSelectionChanged: (s) {
-                        setState(() { role = s.first; loading = true; });
-                        _loadUsers();
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    if (loading)
-                      const Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator())
-                    else ...[
-                      DropdownButtonFormField<User>(
-                        initialValue: selectedUser,
-                        decoration: InputDecoration(
-                          labelText: 'اختر المستخدم التجريبي',
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                          prefixIcon: const Icon(Icons.person_search),
-                        ),
-                        items: users.map((u) => DropdownMenuItem(value: u, child: Text(u.fullName))).toList(),
-                        onChanged: (v) => setState(() {
-                          selectedUser = v;
-                          nameCtrl.text = v?.fullName ?? '';
-                        }),
+                    TextField(
+                      controller: usernameCtrl,
+                      textInputAction: TextInputAction.next,
+                      decoration: InputDecoration(
+                        labelText: 'اسم المستخدم',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        prefixIcon: const Icon(Icons.person),
                       ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: nameCtrl,
-                        decoration: InputDecoration(
-                          labelText: 'اسم العرض (اختياري)',
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                          prefixIcon: const Icon(Icons.badge),
-                        ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: passwordCtrl,
+                      obscureText: true,
+                      onSubmitted: (_) => _login(),
+                      decoration: InputDecoration(
+                        labelText: 'كلمة المرور',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        prefixIcon: const Icon(Icons.lock),
+                      ),
+                    ),
+                    if (errorText != null) ...[
+                      const SizedBox(height: 10),
+                      Text(
+                        errorText!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.red, fontSize: 13),
                       ),
                     ],
                     const SizedBox(height: 20),
@@ -117,8 +116,10 @@ class _DemoLoginScreenState extends ConsumerState<DemoLoginScreen> {
                       width: double.infinity, height: 48,
                       child: FilledButton.icon(
                         onPressed: loading ? null : _login,
-                        icon: const Icon(Icons.login),
-                        label: const Text('دخول تجريبي', style: TextStyle(fontSize: 16)),
+                        icon: loading
+                            ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                            : const Icon(Icons.login),
+                        label: const Text('تسجيل الدخول', style: TextStyle(fontSize: 16)),
                         style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
                       ),
                     ),
@@ -131,7 +132,7 @@ class _DemoLoginScreenState extends ConsumerState<DemoLoginScreen> {
                         border: Border.all(color: Colors.amber.shade300),
                       ),
                       child: const Text(
-                        'هذه نسخة اختبارية، وتسجيل الدخول الآمن لم يتم تفعيله بعد.',
+                        'يتم تسجيل الدخول عبر الخادم السحابي (quran-auth-api).',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 12, color: Colors.black87),
                       ),
