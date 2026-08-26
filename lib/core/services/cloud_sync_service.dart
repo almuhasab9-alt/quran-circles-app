@@ -23,7 +23,8 @@ class CloudSyncService {
   final CloudAuthService auth;
   CloudSyncService({required this.backup, required this.auth});
 
-  static const _base = CloudAuthService.baseUrl;
+  // العنوان الأساسي مُعرَّف في CloudAuthService.baseUrl، وتُستخدم قنوات
+  // الاتصال المتعددة تلقائياً عبر auth.apiRequest (تبديل تلقائي عند الحجب)
   static const _kLastSyncAt = 'cloud_last_sync_at'; // ختم آخر نسخة سحابية تزامنا معها
   static const _kDirty = 'cloud_local_dirty'; // توجد تعديلات محلية لم تُرفع بعد
   Timer? _debounce;
@@ -48,6 +49,11 @@ class CloudSyncService {
         if (auth.token != null) 'Authorization': 'Bearer ${auth.token}',
       };
 
+  /// طلب عبر قنوات الاتصال المتعددة (تبديل تلقائي عند الحجب/الانقطاع)
+  Future<http.Response> _api(String method, String path,
+          {Object? body, Duration timeout = const Duration(seconds: 30)}) =>
+      auth.apiRequest(method, path, headers: _headers, body: body, timeout: timeout);
+
   /// جدولة رفع تلقائي بعد التعديل (تأجيل 3 ثوانٍ لدمج التعديلات المتتابعة
   /// في رفعة واحدة — يمنع تعدد الطلبات ويوفر المساحة والباقة)
   void scheduleUpload() {
@@ -69,10 +75,7 @@ class CloudSyncService {
     _uploading = true;
     try {
       final data = await backup.buildBackupData();
-      final r = await http
-          .put(Uri.parse('$_base/api/data'),
-              headers: _headers, body: jsonEncode({'data': data}))
-          .timeout(const Duration(seconds: 30));
+      final r = await _api('PUT', '/api/data', body: jsonEncode({'data': data}));
       if (r.statusCode != 200) {
         final err = (jsonDecode(r.body) as Map<String, dynamic>)['error'] as String?;
         return SyncResult(ok: false, error: err ?? 'فشل الرفع (${r.statusCode})');
@@ -100,9 +103,7 @@ class CloudSyncService {
       return const SyncResult(ok: false, error: 'غير مسجل دخول');
     }
     try {
-      final r = await http
-          .get(Uri.parse('$_base/api/data'), headers: _headers)
-          .timeout(const Duration(seconds: 30));
+      final r = await _api('GET', '/api/data');
       if (r.statusCode != 200) {
         final err = (jsonDecode(r.body) as Map<String, dynamic>)['error'] as String?;
         return SyncResult(ok: false, error: err ?? 'فشل التنزيل (${r.statusCode})');
@@ -137,9 +138,7 @@ class CloudSyncService {
     if (dirty) return uploadNow();
     // قارن ختم النسخة السحابية بآخر ختم تزامنّا معه
     try {
-      final r = await http
-          .get(Uri.parse('$_base/api/data'), headers: _headers)
-          .timeout(const Duration(seconds: 20));
+      final r = await _api('GET', '/api/data', timeout: const Duration(seconds: 20));
       if (r.statusCode != 200) return const SyncResult(ok: false, error: 'فشل الفحص');
       final body = jsonDecode(r.body) as Map<String, dynamic>;
       final cloudAt = body['updatedAt'] as String?;

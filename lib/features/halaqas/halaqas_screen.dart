@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:uuid/uuid.dart';
-import '../../core/constants/app_constants.dart';
 import '../../core/database/app_database.dart';
 import '../../core/theme/app_theme.dart';
 import '../../shared/providers/providers.dart';
@@ -15,19 +14,17 @@ class HalaqasScreen extends ConsumerWidget {
   Future<void> _halaqaDialog(BuildContext context, WidgetRef ref, {Halaqa? existing}) async {
     final users = await ref.read(userRepoProvider).all();
     final teachers = users.where((u) => u.role == 'teacher' && u.active).toList();
-    final supervisors = users.where((u) => u.role == 'supervisor' && u.active).toList();
     final nameCtrl = TextEditingController(text: existing?.name ?? '');
     final schedCtrl = TextEditingController(text: existing?.scheduleDescription ?? 'يومياً من السبت إلى الجمعة - بعد العصر');
     final capCtrl = TextEditingController(text: existing?.capacity.toString() ?? '25');
-    String level = existing?.level ?? AppConstants.levels.first;
+    final levelCtrl = TextEditingController(text: existing?.level ?? '');
     String? teacherId = existing != null && existing.teacherIds.isNotEmpty
         ? existing.teacherIds.split(',').first
         : (teachers.isNotEmpty ? teachers.first.id : null);
-    String? supervisorId = existing != null && existing.supervisorId.isNotEmpty
-        ? existing.supervisorId
-        : (supervisors.isNotEmpty ? supervisors.first.id : null);
+    // خيار المشرف أُزيل من النموذج — نحتفظ بالقيمة السابقة كما هي فقط
+    final supervisorId = existing?.supervisorId ?? '';
     if (!context.mounted) {
-      nameCtrl.dispose(); schedCtrl.dispose(); capCtrl.dispose();
+      nameCtrl.dispose(); schedCtrl.dispose(); capCtrl.dispose(); levelCtrl.dispose();
       return;
     }
 
@@ -39,20 +36,12 @@ class HalaqasScreen extends ConsumerWidget {
           content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, children: [
             TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'اسم الحلقة')),
             const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              initialValue: level, decoration: const InputDecoration(labelText: 'المستوى'),
-              items: AppConstants.levels.map((l) => DropdownMenuItem(value: l, child: Text(l))).toList(),
-              onChanged: (v) => setD(() => level = v!),
-            ),
+            TextField(controller: levelCtrl, decoration: const InputDecoration(labelText: 'المستوى', hintText: 'اكتب مستوى الحلقة')),
+            const SizedBox(height: 8),
             DropdownButtonFormField<String>(
               initialValue: teacherId, decoration: const InputDecoration(labelText: 'المعلم'),
               items: teachers.map((t) => DropdownMenuItem(value: t.id, child: Text(t.fullName))).toList(),
               onChanged: (v) => setD(() => teacherId = v),
-            ),
-            DropdownButtonFormField<String>(
-              initialValue: supervisorId, decoration: const InputDecoration(labelText: 'المشرف'),
-              items: supervisors.map((s) => DropdownMenuItem(value: s.id, child: Text(s.fullName))).toList(),
-              onChanged: (v) => setD(() => supervisorId = v),
             ),
             TextField(controller: schedCtrl, decoration: const InputDecoration(labelText: 'المواعيد')),
             TextField(controller: capCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'السعة')),
@@ -66,9 +55,9 @@ class HalaqasScreen extends ConsumerWidget {
                 final c = HalaqasCompanion(
                   id: Value(existing?.id ?? const Uuid().v4()),
                   name: Value(nameCtrl.text.trim()),
-                  level: Value(level),
+                  level: Value(levelCtrl.text.trim()),
                   teacherIds: Value(teacherId ?? ''),
-                  supervisorId: Value(supervisorId ?? ''),
+                  supervisorId: Value(supervisorId),
                   capacity: Value(int.tryParse(capCtrl.text) ?? 25),
                   scheduleDescription: Value(schedCtrl.text.trim()),
                 );
@@ -82,7 +71,7 @@ class HalaqasScreen extends ConsumerWidget {
         );
       }),
     );
-    nameCtrl.dispose(); schedCtrl.dispose(); capCtrl.dispose();
+    nameCtrl.dispose(); schedCtrl.dispose(); capCtrl.dispose(); levelCtrl.dispose();
   }
 
   @override

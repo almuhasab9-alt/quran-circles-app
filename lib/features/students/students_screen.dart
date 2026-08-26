@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import 'package:drift/drift.dart' as drift;
-import '../../core/constants/app_constants.dart';
 import '../../core/database/app_database.dart';
 import '../../shared/providers/providers.dart';
 import '../../core/theme/app_theme.dart';
@@ -24,7 +23,7 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
     if (!mounted) return;
     final nameCtrl = TextEditingController(text: s?.fullName ?? '');
     String? halaqaId = s?.halaqaId ?? halaqas.where((h) => h.active).firstOrNull?.id;
-    String level = s?.level ?? AppConstants.levels.first;
+    final levelCtrl = TextEditingController(text: s?.level ?? '');
     final saved = await showDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(builder: (ctx, setD) => AlertDialog(
@@ -38,11 +37,7 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
             onChanged: (v) => setD(() => halaqaId = v),
           ),
           const SizedBox(height: 12),
-          DropdownButtonFormField<String>(
-            decoration: const InputDecoration(labelText: 'المستوى'), initialValue: level, isExpanded: true,
-            items: AppConstants.levels.map((l) => DropdownMenuItem(value: l, child: Text(l))).toList(),
-            onChanged: (v) => setD(() => level = v!),
-          ),
+          TextField(controller: levelCtrl, decoration: const InputDecoration(labelText: 'المستوى', hintText: 'اكتب مستوى الطالب')),
         ])),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('إلغاء')),
@@ -51,7 +46,9 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
       )),
     );
     final newName = nameCtrl.text.trim();
+    final level = levelCtrl.text.trim();
     nameCtrl.dispose();
+    levelCtrl.dispose();
     if (saved != true || newName.isEmpty || halaqaId == null) return;
     final repo = ref.read(studentRepoProvider);
     final now = DateTime.now();

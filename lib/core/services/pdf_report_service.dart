@@ -24,6 +24,77 @@ class PdfReportService {
   static pw.Font? _cachedFont;
   static List<pw.Font>? _cachedFallbacks;
 
+  // ---------- خلفية الصفحة + العلامة المائية (شعار المركز) ----------
+
+  static const String logoAssetPath = 'assets/images/center_logo.jpg';
+
+  static pw.MemoryImage? _cachedLogo;
+  static bool _logoTried = false;
+
+  /// لون خلفية هادئ وغير مزعج (أخضر مائي فاتح جداً) — يمنع ظهور
+  /// الخلفية السوداء في بعض برامج قراءة PDF على الجوال.
+  static const PdfColor pageBackground = PdfColor.fromInt(0xFFF8FBF5);
+
+  /// تحميل شعار المركز من الأصول مع تخزين مؤقت.
+  /// آمن تماماً: إن تعذر التحميل (في الاختبارات مثلاً) يُرجع null
+  /// ويُنشأ الملف بدون علامة مائية بدل أن يفشل.
+  static Future<pw.MemoryImage?> loadLogoImage() async {
+    if (_cachedLogo != null) return _cachedLogo;
+    if (_logoTried) return null;
+    _logoTried = true;
+    try {
+      final data = await rootBundle.load(logoAssetPath);
+      _cachedLogo = pw.MemoryImage(data.buffer.asUint8List());
+      return _cachedLogo;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// حقن صورة الشعار مباشرة (للاختبارات والفحص خارج إطار الأصول).
+  static void debugSetLogo(Uint8List bytes) {
+    _logoTried = true;
+    _cachedLogo = pw.MemoryImage(bytes);
+  }
+
+  /// خلفية كل صفحة: لون هادئ يملأ الصفحة كاملة + شعار المركز
+  /// شبه شفاف في المنتصف (علامة مائية احترافية خلف المحتوى).
+  static pw.Widget pageBackgroundLayer(pw.Context ctx, {required bool landscape}) {
+    final w = ctx.page.pageFormat.width;
+    final h = ctx.page.pageFormat.height;
+    final logo = _cachedLogo;
+    // مقاس الشعار: نحو 55% من أقصر بُعد للصفحة حتى يبقى خافتاً
+    final logoSize = (w < h ? w : h) * 0.55;
+    return pw.FullPage(
+      ignoreMargins: true,
+      child: pw.Stack(children: [
+        pw.Positioned.fill(
+          child: pw.Container(color: pageBackground),
+        ),
+        if (logo != null)
+          pw.Positioned.fill(
+            child: pw.Center(
+              child: pw.Opacity(
+                opacity: 0.07,
+                child: pw.Image(logo, width: logoSize, fit: pw.BoxFit.contain),
+              ),
+            ),
+          ),
+      ]),
+    );
+  }
+
+  /// نمط الصفحة الموحد لكل صفحات التقارير (خلفية + علامة مائية).
+  static pw.PageTheme themedPage(PdfPageFormat format,
+      {pw.EdgeInsets margin = const pw.EdgeInsets.all(24)}) {
+    final landscape = format.width > format.height;
+    return pw.PageTheme(
+      pageFormat: format,
+      margin: margin,
+      buildBackground: (ctx) => pageBackgroundLayer(ctx, landscape: landscape),
+    );
+  }
+
   /// تحميل خط Noto Naskh Arabic من الأصول (مع تخزين مؤقت).
   static Future<pw.Font> loadArabicFont() async {
     final cached = _cachedFont;
@@ -310,6 +381,7 @@ class PdfReportService {
   }) async {
     final font = await loadArabicFont();
     await loadFallbackFonts();
+    await loadLogoImage();
     final weekDays = SessionService.weekDaysOf(weekRef);
     final byKey = {for (final r in records) r.dateKey: r};
     final rows = buildWeeklySheetRows(weekDays, byKey);
@@ -330,8 +402,8 @@ class PdfReportService {
 
     doc.addPage(
       pw.Page(
-        pageFormat: PdfPageFormat.a4.landscape,
-        margin: const pw.EdgeInsets.all(20),
+        pageTheme: themedPage(PdfPageFormat.a4.landscape,
+            margin: const pw.EdgeInsets.all(20)),
         build: (ctx) => pw.Directionality(
           textDirection: pw.TextDirection.rtl,
           child: pw.Column(
@@ -398,11 +470,11 @@ class PdfReportService {
   }) async {
     final font = await loadArabicFont();
     await loadFallbackFonts();
+    await loadLogoImage();
     final doc = pw.Document(title: title, author: 'مركز السنة');
     doc.addPage(
       pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(24),
+        pageTheme: themedPage(PdfPageFormat.a4),
         build: (ctx) => pw.Directionality(
           textDirection: pw.TextDirection.rtl,
           child: pw.Column(
@@ -446,6 +518,7 @@ class PdfReportService {
   }) async {
     final font = await loadArabicFont();
     await loadFallbackFonts();
+    await loadLogoImage();
     final doc = pw.Document(title: 'كشف متابعة الحفظ والمراجعة - ${halaqa.name}');
     for (final st in students) {
       final recs = recordsByStudent[st.id] ?? const <DailyRecord>[];
@@ -489,8 +562,8 @@ class PdfReportService {
       'الملاحظات',
     ];
     return pw.Page(
-      pageFormat: PdfPageFormat.a4.landscape,
-      margin: const pw.EdgeInsets.all(20),
+      pageTheme: themedPage(PdfPageFormat.a4.landscape,
+          margin: const pw.EdgeInsets.all(20)),
       build: (ctx) => pw.Directionality(
         textDirection: pw.TextDirection.rtl,
         child: pw.Column(

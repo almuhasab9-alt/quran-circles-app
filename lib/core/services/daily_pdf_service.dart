@@ -64,6 +64,7 @@ class DailyPdfService {
   }) async {
     final font = await PdfReportService.loadArabicFont();
     final fallbacks = await PdfReportService.loadFallbackFonts();
+    await PdfReportService.loadLogoImage();
     final theme = pw.ThemeData.withFont(base: font, bold: font, fontFallback: fallbacks);
     final doc = pw.Document(title: 'التصدير اليومي الشامل', author: AppConstants.centerName, theme: theme);
 
@@ -174,8 +175,8 @@ class DailyPdfService {
     }
 
     doc.addPage(pw.MultiPage(
-      pageFormat: PdfPageFormat.a4.landscape,
-      margin: const pw.EdgeInsets.all(20),
+      pageTheme: PdfReportService.themedPage(PdfPageFormat.a4.landscape,
+          margin: const pw.EdgeInsets.all(20)),
       textDirection: pw.TextDirection.rtl,
       footer: (_) => footer(),
       build: (_) => [
