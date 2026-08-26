@@ -33,6 +33,8 @@ final halaqaRepoProvider = Provider<IHalaqaRepository>((ref) => RemoteHalaqaRepo
 final studentRepoProvider = Provider<IStudentRepository>((ref) => RemoteStudentRepository(ref.watch(apiClientProvider)));
 final recordRepoProvider = Provider<IDailyRecordRepository>((ref) => RemoteDailyRecordRepository(ref.watch(apiClientProvider)));
 final userRepoProvider = Provider<IUserRepository>((ref) => RemoteUserRepository(ref.watch(apiClientProvider)));
+final weeklyPlanRepoProvider = Provider<RemoteWeeklyPlanRepository>((ref) => RemoteWeeklyPlanRepository(ref.watch(apiClientProvider)));
+final studentTransferRepoProvider = Provider<RemoteStudentTransferRepository>((ref) => RemoteStudentTransferRepository(ref.watch(apiClientProvider)));
 
 // ─── خدمة الزرع البعيدة ───
 final seedServiceProvider = Provider<RemoteSeedService>((ref) => RemoteSeedService(ref.watch(apiClientProvider)));

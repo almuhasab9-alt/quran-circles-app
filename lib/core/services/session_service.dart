@@ -17,6 +17,15 @@ class SessionSaveResult {
   factory SessionSaveResult.success(DailyRecord r) => SessionSaveResult(ok: true, record: r);
 }
 
+/// نتيجة التحقق وبناء الحمولة — بدون حفظ (للرفع السحابي عبر الـ API)
+class EntryPayloadResult {
+  final String? error;
+  final Map<String, dynamic>? payload;
+  const EntryPayloadResult.fail(String message) : error = message, payload = null;
+  const EntryPayloadResult.ok(Map<String, dynamic> p) : error = null, payload = p;
+  bool get isOk => error == null;
+}
+
 /// خدمة التسميع اليومي — قلب نظام المعلم.
 /// تفرض القواعد:
 /// 1. لا يمكن التسجيل ليوم ما قبل تسجيل يوم العمل السابق (منع الإغفال).
@@ -52,6 +61,109 @@ class SessionService {
     final prevWeekday = _weekOrder[idx - 1];
     final diff = (date.weekday - prevWeekday) % 7;
     return DateTime(date.year, date.month, date.day).subtract(Duration(days: diff));
+  }
+
+  /// اسم مفتاح التاريخ بصيغة YYYY-MM-DD بدون الاعتماد على intl (لحمولة الـ API)
+  static String _keyOf(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  /// التحقق من صحة الإدخال وبناء حمولة JSON جاهزة للرفع السحابي — دون أي حفظ.
+  ///
+  /// يطبّق نفس قواعد [saveDailyRecord] ما عدا «منع الإغفال» الذي يعتمد على
+  /// قاعدة البيانات ويُفحص منفصلاً (محلياً أو سحابياً) قبل استدعاء هذه الدالة.
+  static EntryPayloadResult buildPayload({
+    required String studentId,
+    required String halaqaId,
+    required String teacherId,
+    required DateTime date,
+    int newFromSurah = 0,
+    int newFromAyah = 0,
+    int newToSurah = 0,
+    int newToAyah = 0,
+    EvaluationGrade? grade,
+    int repetition = 0,
+    int recentFromPage = 0,
+    int recentToPage = 0,
+    int minorFromPage = 0,
+    int minorToPage = 0,
+    int majorFromPage = 0,
+    int majorToPage = 0,
+    String notes = '',
+  }) {
+    final day = DateTime(date.year, date.month, date.day);
+    final isFriday = day.weekday == DateTime.friday;
+
+    double newPages = 0;
+    if (isFriday) {
+      if (newFromSurah != 0 || grade != null) {
+        return const EntryPayloadResult.fail(
+            'يوم الجمعة مخصص لربط المراجعة فقط، بدون جديد أو تقدير.');
+      }
+      if (recentToPage <= 0 && minorToPage <= 0 && majorToPage <= 0) {
+        return const EntryPayloadResult.fail('سجّل مقدار ربط الجمعة (صفحات المراجعة).');
+      }
+    } else {
+      if (!QuranMeta.isValidAyah(newFromSurah, newFromAyah) ||
+          !QuranMeta.isValidAyah(newToSurah, newToAyah)) {
+        return const EntryPayloadResult.fail(
+            'نطاق الجديد غير صحيح. تأكد من السورة والآية (من/إلى).');
+      }
+      final absFrom = newFromSurah * 10000 + newFromAyah;
+      final absTo = newToSurah * 10000 + newToAyah;
+      if (absTo < absFrom) {
+        return const EntryPayloadResult.fail('آية النهاية يجب أن تكون بعد آية البداية.');
+      }
+      if (grade == null) {
+        return const EntryPayloadResult.fail('اختر التقدير: ممتاز، جيد جداً، جيد، أو إعادة.');
+      }
+      newPages = QuranMeta.rangeInPages((newFromSurah, newFromAyah), (newToSurah, newToAyah));
+    }
+
+    for (final (f, t, label) in [
+      (recentFromPage, recentToPage, 'حديث العهد'),
+      (minorFromPage, minorToPage, 'المراجعة الصغرى'),
+      (majorFromPage, majorToPage, 'المراجعة الكبرى'),
+    ]) {
+      if ((f == 0) != (t == 0)) {
+        return EntryPayloadResult.fail('أكمل نطاق $label (من صفحة / إلى صفحة).');
+      }
+      if (f != 0) {
+        if (!QuranMeta.isValidPage(f) || !QuranMeta.isValidPage(t)) {
+          return EntryPayloadResult.fail('صفحات $label خارج نطاق المصحف (1-604).');
+        }
+        if (t < f) {
+          return EntryPayloadResult.fail('صفحة نهاية $label يجب أن تكون بعد صفحة البداية.');
+        }
+      }
+    }
+
+    final now = DateTime.now();
+    return EntryPayloadResult.ok({
+      'id': _uuid.v4(),
+      'studentId': studentId,
+      'halaqaId': halaqaId,
+      'teacherId': teacherId,
+      'date': day.millisecondsSinceEpoch,
+      'dateKey': _keyOf(day),
+      'weekday': day.weekday,
+      'isFriday': isFriday,
+      'newFromSurah': newFromSurah,
+      'newFromAyah': newFromAyah,
+      'newToSurah': newToSurah,
+      'newToAyah': newToAyah,
+      'newPages': newPages,
+      'grade': grade?.name ?? '',
+      'repetition': repetition,
+      'recentFromPage': recentFromPage,
+      'recentToPage': recentToPage,
+      'minorFromPage': minorFromPage,
+      'minorToPage': minorToPage,
+      'majorFromPage': majorFromPage,
+      'majorToPage': majorToPage,
+      'notes': notes,
+      'createdAt': now.millisecondsSinceEpoch,
+      'updatedAt': now.millisecondsSinceEpoch,
+    });
   }
 
   /// التحقق من أن المعلم لم يغفل تسجيل اليوم السابق لأي طالب في حلقته.

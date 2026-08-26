@@ -38,10 +38,19 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     }
     setState(() { _loading = true; _report = null; });
     try {
-      final svc = ref.read(reportServiceProvider);
-      final r = _period == 'week'
-          ? await svc.weeklyReport(st.id, _weekRef)
-          : await svc.monthlyReport(st.id, _year, _month);
+      // جلب السجلات والخطط من السحابة وحساب التقرير منهما
+      final rpt = ref.read(reportServiceProvider);
+      final DateTime from, to;
+      if (_period == 'week') {
+        from = SessionService.weekStartOf(_weekRef);
+        to = from.add(const Duration(days: 6));
+      } else {
+        from = DateTime(_year, _month, 1);
+        to = DateTime(_year, _month + 1, 0);
+      }
+      final recs = await ref.read(recordRepoProvider).inRange(st.id, from, to);
+      final plans = await ref.read(weeklyPlanRepoProvider).byStudent(st.id);
+      final r = rpt.buildFromData(recs: recs, plans: plans, from: from, to: to);
       if (mounted) setState(() => _report = r);
     } catch (e) {
       if (mounted) {

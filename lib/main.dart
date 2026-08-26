@@ -1,11 +1,8 @@
-import 'dart:async' show unawaited;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app.dart';
 import 'core/services/api_client.dart';
-import 'shared/providers/providers.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,11 +15,7 @@ Future<void> main() async {
     ApiClient.overrideAuthBaseUrl = auth.isEmpty ? null : auth;
   } catch (_) {/* التخزين غير متاح — نستخدم الافتراضي */}
   final container = ProviderContainer();
-  // زرع البيانات التجريبية في D1 السحابية — لا نعطّل بدء التطبيق إن فشل
-  unawaited(container.read(seedServiceProvider).seed().then((_) {
-    container.read(dataVersionProvider.notifier).state++;
-  }).catchError((Object e) {
-    if (kDebugMode) debugPrint('remote seed failed: $e');
-  }));
+  // ملاحظة: زرع البيانات التجريبية أصبح عملية مشرف صريحة (الإعدادات ← إعادة الضبط)
+  // لأن /api/seed يتطلب توكن مشرف ولا يمكن تنفيذه قبل تسجيل الدخول.
   runApp(UncontrolledProviderScope(container: container, child: const QuranCenterApp()));
 }

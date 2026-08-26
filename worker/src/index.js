@@ -39,7 +39,8 @@ async function body(req) {
 
 // ─── Auth: shared HMAC token verification with quran-auth-api ───
 // نفس آلية التوكن في quran-auth-api (HMAC-SHA256 + payload {sub, role, exp})
-const HMAC_SECRET = 'qc-auth-2a9f7e1c-secret-hmac-key-v1';
+// ⚠️ المفتاح يُقرأ حصراً من أسرار النشر (wrangler secret put HMAC_SECRET)
+//    ولا يوجد أي مفتاح احتياطي في الكود — إن غاب السر تُرفض كل الطلبات.
 
 function b64encode(buf) {
   const bytes = new Uint8Array(buf);
@@ -59,7 +60,10 @@ function b64decode(s) {
 }
 
 function getSecret(env) {
-  return (env && env.HMAC_SECRET) || HMAC_SECRET;
+  if (!env || !env.HMAC_SECRET) {
+    throw new Error('HMAC_SECRET is not configured (set via: wrangler secret put HMAC_SECRET)');
+  }
+  return env.HMAC_SECRET;
 }
 
 async function verifyToken(token, secret) {
@@ -306,13 +310,19 @@ export default {
           const studentId = url.searchParams.get('studentId');
           const halaqaId = url.searchParams.get('halaqaId');
           const dateKey = url.searchParams.get('dateKey');
+          const fromKey = url.searchParams.get('from');
+          const toKey = url.searchParams.get('to');
           let stmt;
           if (studentId && dateKey) {
             stmt = db.prepare('SELECT * FROM daily_records WHERE student_id = ? AND date_key = ?').bind(studentId, dateKey);
             const row = await stmt.first();
             return row ? json(toCamel(row)) : json(null);
           }
-          if (halaqaId && dateKey) {
+          if (studentId && fromKey && toKey) {
+            stmt = db.prepare('SELECT * FROM daily_records WHERE student_id = ? AND date_key BETWEEN ? AND ? ORDER BY date_key ASC').bind(studentId, fromKey, toKey);
+          } else if (halaqaId && fromKey && toKey) {
+            stmt = db.prepare('SELECT * FROM daily_records WHERE halaqa_id = ? AND date_key BETWEEN ? AND ? ORDER BY date_key ASC').bind(halaqaId, fromKey, toKey);
+          } else if (halaqaId && dateKey) {
             stmt = db.prepare('SELECT * FROM daily_records WHERE halaqa_id = ? AND date_key = ? ORDER BY created_at').bind(halaqaId, dateKey);
           } else if (halaqaId) {
             stmt = db.prepare('SELECT * FROM daily_records WHERE halaqa_id = ? ORDER BY date_key DESC').bind(halaqaId);
@@ -326,7 +336,9 @@ export default {
         }
         if (method === 'POST') {
           const b = await body(request);
+          if (!b.studentId || !b.dateKey) return error('studentId and dateKey are required');
           const id = b.id || crypto.randomUUID();
+          // إدراج أو تحديث (طالب + يوم = سجل واحد) — يمكن للمعلم تعديل سجل اليوم بأمان
           await db.prepare(
             `INSERT INTO daily_records (
               id, student_id, halaqa_id, teacher_id, date, date_key, weekday, is_friday,
@@ -336,7 +348,29 @@ export default {
               minor_from_page, minor_to_page,
               major_from_page, major_to_page,
               notes, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(student_id, date_key) DO UPDATE SET
+              id = excluded.id,
+              halaqa_id = excluded.halaqa_id,
+              teacher_id = excluded.teacher_id,
+              date = excluded.date,
+              weekday = excluded.weekday,
+              is_friday = excluded.is_friday,
+              new_from_surah = excluded.new_from_surah,
+              new_from_ayah = excluded.new_from_ayah,
+              new_to_surah = excluded.new_to_surah,
+              new_to_ayah = excluded.new_to_ayah,
+              new_pages = excluded.new_pages,
+              grade = excluded.grade,
+              repetition = excluded.repetition,
+              recent_from_page = excluded.recent_from_page,
+              recent_to_page = excluded.recent_to_page,
+              minor_from_page = excluded.minor_from_page,
+              minor_to_page = excluded.minor_to_page,
+              major_from_page = excluded.major_from_page,
+              major_to_page = excluded.major_to_page,
+              notes = excluded.notes,
+              updated_at = excluded.updated_at`
           ).bind(
             id, b.studentId, b.halaqaId, b.teacherId || '', b.date || Date.now(),
             b.dateKey, b.weekday || 1, b.isFriday ? 1 : 0,
@@ -345,7 +379,7 @@ export default {
             b.recentFromPage || 0, b.recentToPage || 0,
             b.minorFromPage || 0, b.minorToPage || 0,
             b.majorFromPage || 0, b.majorToPage || 0,
-            b.notes || '', b.createdAt || Date.now(), b.updatedAt || Date.now()
+            b.notes || '', b.createdAt || Date.now(), Date.now()
           ).run();
           return json({ id, ...b }, 201);
         }
@@ -369,18 +403,28 @@ export default {
         }
         if (method === 'POST') {
           const b = await body(request);
+          if (!b.studentId || !b.weekStartKey) return error('studentId and weekStartKey are required');
           const id = b.id || crypto.randomUUID();
+          // إدراج أو تحديث (طالب + أسبوع = خطة واحدة)
           await db.prepare(
             `INSERT INTO weekly_plans (
               id, student_id, halaqa_id, week_start_key,
               required_new_pages, required_recent_pages, required_minor_pages, required_major_pages, required_friday_pages,
               created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(student_id, week_start_key) DO UPDATE SET
+              halaqa_id = excluded.halaqa_id,
+              required_new_pages = excluded.required_new_pages,
+              required_recent_pages = excluded.required_recent_pages,
+              required_minor_pages = excluded.required_minor_pages,
+              required_major_pages = excluded.required_major_pages,
+              required_friday_pages = excluded.required_friday_pages,
+              updated_at = excluded.updated_at`
           ).bind(
             id, b.studentId, b.halaqaId, b.weekStartKey,
             b.requiredNewPages || 0, b.requiredRecentPages || 0, b.requiredMinorPages || 0,
             b.requiredMajorPages || 0, b.requiredFridayPages || 0,
-            b.createdAt || Date.now(), b.updatedAt || Date.now()
+            b.createdAt || Date.now(), Date.now()
           ).run();
           return json({ id, ...b }, 201);
         }

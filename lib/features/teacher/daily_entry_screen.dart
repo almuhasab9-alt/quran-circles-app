@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/enums.dart';
 import '../../core/database/app_database.dart';
 import '../../core/services/quran_meta.dart';
+import '../../core/services/session_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/date_utils.dart' as du;
 import '../../shared/providers/providers.dart';
@@ -71,36 +72,64 @@ class _DailyEntryScreenState extends ConsumerState<DailyEntryScreen> {
     if (_student == null || session == null) return;
     setState(() { _saving = true; _error = null; });
 
-    final svc = ref.read(sessionServiceProvider);
-    final result = await svc.saveDailyRecord(
-      studentId: _student!.id,
-      halaqaId: widget.halaqaId,
-      teacherId: session.userId,
-      date: _date,
-      newFromSurah: _newFromSurah, newFromAyah: _newFromAyah,
-      newToSurah: _newToSurah, newToAyah: _newToAyah,
-      grade: _isFriday ? null : _grade,
-      repetition: int.tryParse(_repCtrl.text) ?? 0,
-      recentFromPage: int.tryParse(_recentFrom.text) ?? 0,
-      recentToPage: int.tryParse(_recentTo.text) ?? 0,
-      minorFromPage: int.tryParse(_minorFrom.text) ?? 0,
-      minorToPage: int.tryParse(_minorTo.text) ?? 0,
-      majorFromPage: int.tryParse(_majorFrom.text) ?? 0,
-      majorToPage: int.tryParse(_majorTo.text) ?? 0,
-      notes: _notesCtrl.text.trim(),
-    );
+    final records = ref.read(recordRepoProvider);
+    final day = DateTime(_date.year, _date.month, _date.day);
 
-    if (!mounted) return;
-    setState(() => _saving = false);
-    if (result.ok) {
+    try {
+      // 1) منع الإغفال: تحقق سحابياً من وجود تسجيل لليوم السابق
+      final prev = SessionService.previousWorkDay(day);
+      if (prev != null) {
+        final prevRecs = await records.byHalaqaAndDate(widget.halaqaId, du.dateKeyOf(prev));
+        if (prevRecs.isEmpty) {
+          if (!mounted) return;
+          setState(() {
+            _saving = false;
+            _error = 'لا يمكن التسجيل. لقد أغفلتَ تسجيل يوم ${prev.weekdayAr} (${du.dateKeyOf(prev)}). سجّل ذلك اليوم أولاً.';
+          });
+          return;
+        }
+      }
+
+      // 2) التحقق وبناء الحمولة (نفس قواعد التحقق المحلية)
+      final built = SessionService.buildPayload(
+        studentId: _student!.id,
+        halaqaId: widget.halaqaId,
+        teacherId: session.userId,
+        date: _date,
+        newFromSurah: _newFromSurah, newFromAyah: _newFromAyah,
+        newToSurah: _newToSurah, newToAyah: _newToAyah,
+        grade: _isFriday ? null : _grade,
+        repetition: int.tryParse(_repCtrl.text) ?? 0,
+        recentFromPage: int.tryParse(_recentFrom.text) ?? 0,
+        recentToPage: int.tryParse(_recentTo.text) ?? 0,
+        minorFromPage: int.tryParse(_minorFrom.text) ?? 0,
+        minorToPage: int.tryParse(_minorTo.text) ?? 0,
+        majorFromPage: int.tryParse(_majorFrom.text) ?? 0,
+        majorToPage: int.tryParse(_majorTo.text) ?? 0,
+        notes: _notesCtrl.text.trim(),
+      );
+      if (!built.isOk) {
+        if (!mounted) return;
+        setState(() { _saving = false; _error = built.error; });
+        return;
+      }
+
+      // 3) الحفظ في السحابة (إدراج أو تحديث)
+      await records.upsertPayload(built.payload!);
+
+      if (!mounted) return;
       bumpDataVersion(ref);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('تم حفظ سجل ${_student!.fullName} ليوم ${_date.weekdayAr} ${du.dateKeyOf(_date)}'),
+        content: Text('تم حفظ سجل ${_student!.fullName} ليوم ${_date.weekdayAr} ${du.dateKeyOf(_date)} في السحابة'),
         backgroundColor: AppColors.success,
       ));
       Navigator.pop(context);
-    } else {
-      setState(() => _error = result.error);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _saving = false;
+        _error = 'تعذر حفظ السجل في الخادم: ${e.toString().replaceAll('ApiException: ', '')}';
+      });
     }
   }
 

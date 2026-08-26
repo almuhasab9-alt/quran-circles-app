@@ -8,11 +8,16 @@
       "binding": "DB",
       "database_name": "quran-auth-db",
       "database_id": "6f64e92e-3e1e-40e5-b8f2-93617489417c"
+    },
+    {
+      // قاعدة البيانات الرئيسية (المستخدمون/الحلقات) — لمزامنة حسابات الدخول
+      "binding": "CIRCLES_DB",
+      "database_name": "quran-circles-db",
+      "database_id": "63369c25-6332-4c78-aeeb-476b5a53e156"
     }
   ],
-  "vars": {
-    "HMAC_SECRET": "qc-auth-2a9f7e1c-secret-hmac-key-v1"
-  },
+  // ⚠️ المفتاح السري HMAC_SECRET يُضبط عبر: wrangler secret put HMAC_SECRET
+  // ولا يُكتب هنا أبداً (كان منشوراً هنا سابقاً — تم تدويره وإزالته)
   "observability": {
     "enabled": true
   }

@@ -88,9 +88,42 @@ async function verifyToken(token, secret) {
   }
 }
 __name(verifyToken, "verifyToken");
-var SECRET = "qc-auth-2a9f7e1c-secret-hmac-key-v1";
+// ⚠️ المفتاح السري يُقرأ حصراً من أسرار النشر (wrangler secret put HMAC_SECRET)
+// لا يوجد أي مفتاح احتياطي في الكود — إن غاب السر تُرفض كل الطلبات.
 function getSecret(env) {
-  return (env && env.HMAC_SECRET) || SECRET;
+  if (!env || !env.HMAC_SECRET) {
+    throw new Error("HMAC_SECRET is not configured (set via: wrangler secret put HMAC_SECRET)");
+  }
+  return env.HMAC_SECRET;
+}
+
+// ─── مزامنة حساب الدخول مع قاعدة البيانات الرئيسية (جدول users) ───
+// يضمن أن معرّف حساب الدخول == معرّف المستخدم المستخدم في الحلقات والسجلات
+async function syncUserToCircles(env, account) {
+  if (!env || !env.CIRCLES_DB) return;
+  const now = Date.now();
+  await env.CIRCLES_DB.prepare(
+    "INSERT INTO users (id, full_name, username, role, active, assigned_halaqa_ids, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET full_name = excluded.full_name, username = excluded.username, active = excluded.active, updated_at = excluded.updated_at"
+  ).bind(account.id, account.full_name || "", account.username, account.role, account.active ? 1 : 0, account.halaqa_id || "", now, now).run();
+  if (account.halaqa_id) {
+    const halaqa = await env.CIRCLES_DB.prepare("SELECT id, teacher_ids FROM halaqas WHERE id = ?").bind(account.halaqa_id).first();
+    if (halaqa) {
+      const ids = (halaqa.teacher_ids || "").split(",").map((s) => s.trim()).filter(Boolean);
+      if (!ids.includes(account.id)) {
+        ids.push(account.id);
+        await env.CIRCLES_DB.prepare("UPDATE halaqas SET teacher_ids = ? WHERE id = ?").bind(ids.join(","), account.halaqa_id).run();
+      }
+    }
+  }
+}
+async function removeUserFromCircles(env, userId) {
+  if (!env || !env.CIRCLES_DB) return;
+  await env.CIRCLES_DB.prepare("DELETE FROM users WHERE id = ?").bind(userId).run();
+  const { results } = await env.CIRCLES_DB.prepare("SELECT id, teacher_ids FROM halaqas WHERE teacher_ids LIKE ?").bind("%" + userId + "%").all();
+  for (const h of results) {
+    const ids = (h.teacher_ids || "").split(",").map((s) => s.trim()).filter((s) => s && s !== userId);
+    await env.CIRCLES_DB.prepare("UPDATE halaqas SET teacher_ids = ? WHERE id = ?").bind(ids.join(","), h.id).run();
+  }
 }
 var pub = /* @__PURE__ */ __name((a) => ({ id: a.id, username: a.username, fullName: a.full_name, role: a.role, halaqaId: a.halaqa_id, active: !!a.active }), "pub");
 async function requireAuth(request, env, role) {
@@ -146,6 +179,10 @@ var index_default = {
         await env.DB.prepare(
           "INSERT INTO accounts (id, username, password_hash, salt, full_name, role, halaqa_id, active, created_at, updated_at) VALUES (?,?,?,?,?,?,?,1,?,?)"
         ).bind(id, uname, hash, salt, fullName || "", "teacher", halaqaId || "", now, now).run();
+        // مزامنة الحساب مع جدول users في قاعدة البيانات الرئيسية (بنفس المعرّف)
+        try {
+          await syncUserToCircles(env, { id, username: uname, full_name: fullName || "", role: "teacher", halaqa_id: halaqaId || "", active: true });
+        } catch (e) { /* فشل المزامنة لا يفشل إنشاء الحساب */ }
         return json({ ok: true, user: { id, username: uname, fullName: fullName || "", role: "teacher", halaqaId: halaqaId || "", active: true } });
       }
       const mUpd = path.match(/^\/api\/accounts\/([\w-]+)$/);
@@ -196,6 +233,10 @@ var index_default = {
         vals.push(targetId);
         await env.DB.prepare(`UPDATE accounts SET ${updates.join(", ")} WHERE id = ?`).bind(...vals).run();
         const updated = await env.DB.prepare("SELECT * FROM accounts WHERE id = ?").bind(targetId).first();
+        // مزامنة التغييرات مع قاعدة البيانات الرئيسية
+        try {
+          await syncUserToCircles(env, updated);
+        } catch (e) { /* فشل المزامنة لا يفشل التحديث */ }
         return json({ ok: true, user: pub(updated) });
       }
       if (mUpd && request.method === "DELETE") {
@@ -203,6 +244,10 @@ var index_default = {
         if (!p) return json({ error: "\u063A\u064A\u0631 \u0645\u0635\u0631\u062D \u2014 \u0647\u0630\u0647 \u0627\u0644\u0639\u0645\u0644\u064A\u0629 \u0644\u0644\u0645\u0634\u0631\u0641 \u0641\u0642\u0637" }, 403);
         if (p.sub === mUpd[1]) return json({ error: "\u0644\u0627 \u064A\u0645\u0643\u0646\u0643 \u062D\u0630\u0641 \u062D\u0633\u0627\u0628\u0643" }, 400);
         await env.DB.prepare("DELETE FROM accounts WHERE id = ? AND role = ?").bind(mUpd[1], "teacher").run();
+        // حذف المستخدم المقابل من قاعدة البيانات الرئيسية وإزالته من الحلقات
+        try {
+          await removeUserFromCircles(env, mUpd[1]);
+        } catch (e) { /* فشل المزامنة لا يفشل الحذف */ }
         return json({ ok: true });
       }
       if (path === "/api/data" && request.method === "GET") {

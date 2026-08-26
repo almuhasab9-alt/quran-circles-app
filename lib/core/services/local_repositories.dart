@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import '../database/app_database.dart';
 import '../../shared/models/repositories.dart';
+import '../utils/date_utils.dart' as du;
 
 class LocalHalaqaRepository implements IHalaqaRepository {
   final AppDatabase db;
@@ -71,6 +72,46 @@ class LocalDailyRecordRepository implements IDailyRecordRepository {
   @override
   Future<DailyRecord?> byStudentAndDate(String studentId, String dateKey) =>
       (db.select(db.dailyRecords)..where((r) => r.studentId.equals(studentId) & r.dateKey.equals(dateKey))).getSingleOrNull();
+
+  @override
+  Future<List<DailyRecord>> inRange(String studentId, DateTime from, DateTime to) =>
+      (db.select(db.dailyRecords)
+            ..where((r) =>
+                r.studentId.equals(studentId) &
+                r.dateKey.isBetweenValues(du.dateKeyOf(from), du.dateKeyOf(to)))
+            ..orderBy([(r) => OrderingTerm.asc(r.dateKey)]))
+          .get();
+
+  @override
+  Future<void> upsertPayload(Map<String, dynamic> p) async {
+    final companion = DailyRecordsCompanion(
+      id: Value(p['id'] as String),
+      studentId: Value(p['studentId'] as String),
+      halaqaId: Value(p['halaqaId'] as String),
+      teacherId: Value((p['teacherId'] ?? '') as String),
+      date: Value(DateTime.fromMillisecondsSinceEpoch(p['date'] as int)),
+      dateKey: Value(p['dateKey'] as String),
+      weekday: Value(p['weekday'] as int),
+      isFriday: Value(p['isFriday'] as bool),
+      newFromSurah: Value(p['newFromSurah'] as int),
+      newFromAyah: Value(p['newFromAyah'] as int),
+      newToSurah: Value(p['newToSurah'] as int),
+      newToAyah: Value(p['newToAyah'] as int),
+      newPages: Value((p['newPages'] as num).toDouble()),
+      grade: Value(p['grade'] as String),
+      repetition: Value(p['repetition'] as int),
+      recentFromPage: Value(p['recentFromPage'] as int),
+      recentToPage: Value(p['recentToPage'] as int),
+      minorFromPage: Value(p['minorFromPage'] as int),
+      minorToPage: Value(p['minorToPage'] as int),
+      majorFromPage: Value(p['majorFromPage'] as int),
+      majorToPage: Value(p['majorToPage'] as int),
+      notes: Value(p['notes'] as String),
+      createdAt: Value(DateTime.fromMillisecondsSinceEpoch(p['createdAt'] as int)),
+      updatedAt: Value(DateTime.fromMillisecondsSinceEpoch(p['updatedAt'] as int)),
+    );
+    await db.into(db.dailyRecords).insertOnConflictUpdate(companion);
+  }
 }
 
 class LocalUserRepository implements IUserRepository {

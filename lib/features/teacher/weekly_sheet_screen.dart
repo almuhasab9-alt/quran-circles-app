@@ -46,11 +46,15 @@ class _WeeklySheetScreenState extends ConsumerState<WeeklySheetScreen> {
         ? students.where((s) => s.id == widget.studentId).firstOrNull ?? students.firstOrNull
         : students.firstOrNull;
     if (st == null) { setState(() { _student = null; _loading = false; }); return; }
-    final svc = ref.read(sessionServiceProvider);
-    final rpt = ref.read(reportServiceProvider);
-    final recs = await svc.weekRecords(st.id, _weekRef);
-    final plan = await rpt.weeklyPlanOf(st.id, _weekRef);
-    final report = await rpt.weeklyReport(st.id, _weekRef);
+    // القراءة من السحابة: سجلات الأسبوع + خطط الطالب + التقرير المحسوب منهما
+    final weekStart = SessionService.weekStartOf(_weekRef);
+    final weekEnd = weekStart.add(const Duration(days: 6));
+    final recs = await ref.read(recordRepoProvider).inRange(st.id, weekStart, weekEnd);
+    final allPlans = await ref.read(weeklyPlanRepoProvider).byStudent(st.id);
+    final weekKey = du.dateKeyOf(weekStart);
+    final plan = allPlans.where((p) => p.weekStartKey == weekKey).firstOrNull;
+    final report = ref.read(reportServiceProvider)
+        .buildFromData(recs: recs, plans: allPlans, from: weekStart, to: weekEnd);
     if (!mounted) return;
     setState(() {
       _student = st;

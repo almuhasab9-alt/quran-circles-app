@@ -34,6 +34,12 @@ abstract class IDailyRecordRepository {
   Future<List<DailyRecord>> byHalaqa(String halaqaId);
   Future<List<DailyRecord>> byHalaqaAndDate(String halaqaId, String dateKey);
   Future<DailyRecord?> byStudentAndDate(String studentId, String dateKey);
+
+  /// سجلات طالب في نطاق تاريخي [from, to] شامل الطرفين
+  Future<List<DailyRecord>> inRange(String studentId, DateTime from, DateTime to);
+
+  /// إدراج أو تحديث سجل يومي (الخادم يفرض طالب+يوم = سجل واحد)
+  Future<void> upsertPayload(Map<String, dynamic> payload);
 }
 
 abstract class IUserRepository {

@@ -248,6 +248,20 @@ class RemoteDailyRecordRepository implements IDailyRecordRepository {
         query: {'studentId': studentId, 'dateKey': dateKey});
     return j != null ? _recordFromJson(j) : null;
   }
+
+  @override
+  Future<List<DailyRecord>> inRange(String studentId, DateTime from, DateTime to) async {
+    String fmt(DateTime d) =>
+        '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    final list = await api.getList('/api/daily-records',
+        query: {'studentId': studentId, 'from': fmt(from), 'to': fmt(to)});
+    return list.map(_recordFromJson).toList();
+  }
+
+  @override
+  Future<void> upsertPayload(Map<String, dynamic> payload) async {
+    await api.post('/api/daily-records', payload);
+  }
 }
 
 class RemoteUserRepository implements IUserRepository {

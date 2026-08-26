@@ -113,44 +113,52 @@ class ReportService {
     int? month,
     int? year,
   }) async {
-    // 1) اجمع المطلوب
-    double reqNew = 0, reqRecent = 0, reqMinor = 0, reqMajor = 0, reqFriday = 0;
+    // جلب المطلوب والمنجز من القاعدة المحلية ثم التفويض إلى الحساب النقي
+    List<WeeklyPlan> plans;
     if (singleWeek) {
       final p = await weeklyPlanOf(studentId, anyDayInWeek!);
-      if (p != null) {
-        reqNew = p.requiredNewPages;
-        reqRecent = p.requiredRecentPages;
-        reqMinor = p.requiredMinorPages;
-        reqMajor = p.requiredMajorPages;
-        reqFriday = p.requiredFridayPages;
-      }
+      plans = p != null ? [p] : const [];
     } else {
-      // للشهر: اجمع كل الخطط الأسبوعية الواقعة في الشهر
-      final plans = await (db.select(db.weeklyPlans)
+      plans = await (db.select(db.weeklyPlans)
             ..where((p) => p.studentId.equals(studentId)))
           .get();
-      for (final p in plans) {
-        final ws = DateTime.parse(p.weekStartKey);
-        // احتسب الأسبوع إن تقاطع مع الشهر
-        final we = ws.add(const Duration(days: 6));
-        if (ws.isBefore(to.add(const Duration(days: 1))) && we.isAfter(from.subtract(const Duration(days: 1)))) {
-          reqNew += p.requiredNewPages;
-          reqRecent += p.requiredRecentPages;
-          reqMinor += p.requiredMinorPages;
-          reqMajor += p.requiredMajorPages;
-          reqFriday += p.requiredFridayPages;
-        }
-      }
     }
-
-    // 2) اجمع المنجز
     final recs = await (db.select(db.dailyRecords)
           ..where((r) =>
               r.studentId.equals(studentId) &
               r.dateKey.isBetweenValues(du.dateKeyOf(from), du.dateKeyOf(to)))
           ..orderBy([(r) => OrderingTerm.asc(r.dateKey)]))
         .get();
+    return buildFromData(recs: recs, plans: plans, from: from, to: to);
+  }
 
+  /// بناء تقرير فترة من بيانات جاهزة (سجلات وخطط) — دون الوصول لأي قاعدة.
+  ///
+  /// تُستخدم لمسار السحابة: تُجلب السجلات والخطط من الـ API ثم تُحسب هنا.
+  /// [recs] يجب أن تكون ضمن الفترة [from, to]، و[plans] كل خطط الطالب
+  /// (يُحتسب منها ما يتقاطع مع الفترة فقط).
+  PeriodReport buildFromData({
+    required List<DailyRecord> recs,
+    required List<WeeklyPlan> plans,
+    required DateTime from,
+    required DateTime to,
+  }) {
+    // 1) اجمع المطلوب من الخطط المتقاطعة مع الفترة
+    double reqNew = 0, reqRecent = 0, reqMinor = 0, reqMajor = 0, reqFriday = 0;
+    for (final p in plans) {
+      final ws = DateTime.parse(p.weekStartKey);
+      final we = ws.add(const Duration(days: 6));
+      if (ws.isBefore(to.add(const Duration(days: 1))) &&
+          we.isAfter(from.subtract(const Duration(days: 1)))) {
+        reqNew += p.requiredNewPages;
+        reqRecent += p.requiredRecentPages;
+        reqMinor += p.requiredMinorPages;
+        reqMajor += p.requiredMajorPages;
+        reqFriday += p.requiredFridayPages;
+      }
+    }
+
+    // 2) اجمع المنجز من السجلات
     double doneNew = 0, doneRecent = 0, doneMinor = 0, doneMajor = 0, doneFriday = 0;
     int days = 0, fridays = 0;
     int minGradeRank = 5; // لحساب «المتماثل» (أدنى تقدير)

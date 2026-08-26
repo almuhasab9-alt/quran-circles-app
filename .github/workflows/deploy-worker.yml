@@ -60,7 +60,7 @@ jobs:
           echo "Expected URL: $WORKER_URL"
           echo "worker_url=$WORKER_URL" >> $GITHUB_OUTPUT
 
-      - name: Health check + seed
+      - name: Health check
         run: |
           URL="${{ steps.deploy.outputs.worker_url }}"
           echo "Worker URL: $URL"
@@ -68,14 +68,8 @@ jobs:
           echo "=== Health ==="
           curl -sS "$URL/api/health" 2>&1 || true
           echo ""
-          echo "=== Seed ==="
-          curl -sS -X POST "$URL/api/seed" -H "Content-Type: application/json" -d '{}' 2>&1 || true
-          echo ""
-          echo "=== After seed ==="
-          echo "Users: $(curl -sS "$URL/api/users" 2>/dev/null | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
-          echo "Halaqas: $(curl -sS "$URL/api/halaqas" 2>/dev/null | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
-          echo "Students: $(curl -sS "$URL/api/students" 2>/dev/null | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
-          echo "Daily records: $(curl -sS "$URL/api/daily-records" 2>/dev/null | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
+          echo "ملاحظة: بقية المسارات محمية بالتوكن ولا تُفحص هنا."
+          echo "الزرع التجريبي يتم من داخل التطبيق (حساب المشرف) وليس من CI."
 
       - name: Write report
         if: always()
@@ -87,10 +81,7 @@ jobs:
             echo ""
             echo "- **Worker URL**: $URL"
             echo "- **Health**: $(curl -sS "$URL/api/health" 2>&1 || echo 'failed')"
-            echo "- **Users**: $(curl -sS "$URL/api/users" 2>/dev/null | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
-            echo "- **Halaqas**: $(curl -sS "$URL/api/halaqas" 2>/dev/null | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
-            echo "- **Students**: $(curl -sS "$URL/api/students" 2>/dev/null | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
-            echo "- **Daily records**: $(curl -sS "$URL/api/daily-records" 2>/dev/null | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo '?')"
+            echo "- **بيانات العدّ**: تتطلب توكن مشرف — تُفحص من داخل التطبيق"
             echo ""
             echo "## Deploy output"
             echo '```'
