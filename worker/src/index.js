@@ -37,6 +37,62 @@ async function body(req) {
   catch { return {}; }
 }
 
+// ─── Auth: shared HMAC token verification with quran-auth-api ───
+// نفس آلية التوكن في quran-auth-api (HMAC-SHA256 + payload {sub, role, exp})
+const HMAC_SECRET = 'qc-auth-2a9f7e1c-secret-hmac-key-v1';
+
+function b64encode(buf) {
+  const bytes = new Uint8Array(buf);
+  let bin = '';
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  }
+  return btoa(bin);
+}
+
+function b64decode(s) {
+  const bin = atob(s);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+function getSecret(env) {
+  return (env && env.HMAC_SECRET) || HMAC_SECRET;
+}
+
+async function verifyToken(token, secret) {
+  try {
+    const [bodyPart, sig] = token.split('.');
+    if (!bodyPart || !sig) return null;
+    const key = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+    const expected = b64encode(
+      await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(bodyPart))
+    ).replace(/=+$/, '');
+    if (expected !== sig) return null;
+    const pad = bodyPart + '='.repeat((4 - (bodyPart.length % 4)) % 4);
+    const payload = JSON.parse(new TextDecoder().decode(b64decode(pad)));
+    if (payload.exp && payload.exp < Date.now() / 1000) return null;
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
+async function requireAuth(request, env) {
+  const h = request.headers.get('Authorization') || '';
+  const token = h.startsWith('Bearer ') ? h.slice(7) : null;
+  if (!token) return null;
+  return await verifyToken(token, getSecret(env));
+}
+
 // ─── Router ───
 export default {
   async fetch(request, env) {
@@ -48,6 +104,15 @@ export default {
 
     const db = env.DB;
     if (!db) return error('D1 binding not configured', 500);
+
+    // ─── مصادقة: كل المسارات تتطلب توكن صالح (عدا GET /api/health) ───
+    const auth = await requireAuth(request, env);
+    if (path !== '/api/health' && !auth) {
+      return error('غير مصرح', 401);
+    }
+    if ((path === '/api/wipe' || path === '/api/seed') && (!auth || auth.role !== 'supervisor')) {
+      return error('غير مصرح — هذه العملية للمشرف فقط', 403);
+    }
 
     try {
       // ─── Health ───
@@ -130,6 +195,18 @@ export default {
         }
       }
 
+      // ─── Halaqas by teacher/supervisor (يجب أن تأتي قبل الراوت العام /api/halaqas/:id) ───
+      if (path.startsWith('/api/halaqas/by-teacher/')) {
+        const teacherId = path.split('/')[4];
+        const { results } = await db.prepare('SELECT * FROM halaqas WHERE teacher_ids LIKE ? AND active = 1').bind(`%${teacherId}%`).all();
+        return json(results.map(toCamel));
+      }
+      if (path.startsWith('/api/halaqas/by-supervisor/')) {
+        const supId = path.split('/')[4];
+        const { results } = await db.prepare('SELECT * FROM halaqas WHERE supervisor_id = ? AND active = 1').bind(supId).all();
+        return json(results.map(toCamel));
+      }
+
       if (path.startsWith('/api/halaqas/')) {
         const id = path.split('/')[3];
         if (method === 'GET') {
@@ -157,18 +234,6 @@ export default {
           await db.prepare('UPDATE halaqas SET active = 0 WHERE id = ?').bind(id).run();
           return json({ ok: true });
         }
-      }
-
-      // ─── Halaqas by teacher/supervisor ───
-      if (path.startsWith('/api/halaqas/by-teacher/')) {
-        const teacherId = path.split('/')[4];
-        const { results } = await db.prepare('SELECT * FROM halaqas WHERE teacher_ids LIKE ? AND active = 1').bind(`%${teacherId}%`).all();
-        return json(results.map(toCamel));
-      }
-      if (path.startsWith('/api/halaqas/by-supervisor/')) {
-        const supId = path.split('/')[4];
-        const { results } = await db.prepare('SELECT * FROM halaqas WHERE supervisor_id = ? AND active = 1').bind(supId).all();
-        return json(results.map(toCamel));
       }
 
       // ─── Students ───
@@ -204,8 +269,11 @@ export default {
         }
       }
 
-      if (path.startsWith('/api/students/') && !path.includes('/')) {
+      // ─── Student by id (GET/PUT/DELETE) — الشرط القديم `&& !path.includes('/')`
+      // كان مستحيلاً دائماً (المسار يحتوي '/' دائماً) فكانت كل العمليات الفردية ترمي 404 ───
+      if (path.startsWith('/api/students/')) {
         const id = path.split('/')[3];
+        if (!id) return error('Not found', 404);
         if (method === 'GET') {
           const row = await db.prepare('SELECT * FROM students WHERE id = ?').bind(id).first();
           return row ? json(toCamel(row)) : error('Student not found', 404);
