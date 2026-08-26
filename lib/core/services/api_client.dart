@@ -8,13 +8,19 @@ class ApiClient {
   /// عنوان البيانات — على الويب يُحل نسبياً من نفس الأصل (البروكسي/المضيف)
   /// فيخاطب التطبيق أي نطاق يستضيفه (بروكسي، pages.dev، نطاق خاص...) دون حجب
   static String get defaultBaseUrl {
-    if (kIsWeb) return Uri.base.resolve('').toString();
+    if (kIsWeb) {
+      final s = Uri.base.resolve('').toString();
+      return s.endsWith('/') ? s.substring(0, s.length - 1) : s;
+    }
     return 'https://quran-circles-api.almuhasab9-alt.workers.dev';
   }
 
   /// عنوان المصادقة — على الويب عبر مسار auth/ (يمرره البروكسي)
   static String get authBaseUrl {
-    if (kIsWeb) return Uri.base.resolve('auth/').toString();
+    if (kIsWeb) {
+      final s = Uri.base.resolve('auth/').toString();
+      return s.endsWith('/') ? s.substring(0, s.length - 1) : s;
+    }
     return 'https://quran-auth-api.almuhasab9-alt.workers.dev';
   }
 
