@@ -261,7 +261,7 @@ export default {
           await db.prepare(
             `INSERT INTO students (id, student_code, full_name, halaqa_id, level, active, join_date, internal_notes, created_at, updated_at)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-          ).bind(id, b.studentCode, b.fullName, b.halaqaId, b.level || '',
+          ).bind(id, b.studentCode, b.fullName, b.halaqaId || '', b.level || '',
             b.active === false ? 0 : 1, b.joinDate || Date.now(), b.internalNotes || '',
             b.createdAt || Date.now(), b.updatedAt || Date.now()
           ).run();
