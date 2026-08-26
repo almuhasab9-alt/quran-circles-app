@@ -1,5 +1,5 @@
 # Worker API Deploy Report
-Date: Wed Aug 26 03:09:46 UTC 2026
+Date: Wed Aug 26 03:21:27 UTC 2026
 
 - **Worker URL**: https://quran-circles-api.almuhasab9-alt.workers.dev
 - **Health**: {"status":"ok","tables":{"users":18}}
@@ -20,8 +20,8 @@ Your Worker has access to the following bindings:
 Binding                        Resource         
 env.DB (quran-circles-db)      D1 Database      
 
-Uploaded quran-circles-api (3.74 sec)
-Deployed quran-circles-api triggers (0.49 sec)
+Uploaded quran-circles-api (1.70 sec)
+Deployed quran-circles-api triggers (0.85 sec)
   https://quran-circles-api.almuhasab9-alt.workers.dev
-Current Version ID: 1350f2a7-ba12-4eab-8b28-90d1fc4a83d7
+Current Version ID: 73782f63-079c-443b-b247-f09c588585fe
 ```
