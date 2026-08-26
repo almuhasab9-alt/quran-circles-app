@@ -58,7 +58,7 @@ class DashboardScreen extends ConsumerWidget {
 
     final todayKey = du.dateKeyOf(DateTime.now());
     final todayRecords = myRecords.where((r) => r.dateKey == todayKey).toList();
-    final totalNewPages = myRecords.fold<double>(0, (a, r) => a + r.newPages);
+    final totalNewPages = myRecords.fold<double>(0.0, (a, r) => a + r.newPages);
     final repeatCount = myRecords.where((r) => r.grade == 'repeat').map((r) => r.studentId).toSet().length;
     final halaqasWithToday = todayRecords.map((r) => r.halaqaId).toSet();
     final halaqasNoData = myHalaqas.where((h) => h.active && !halaqasWithToday.contains(h.id)).length;
@@ -83,7 +83,7 @@ class DashboardScreen extends ConsumerWidget {
     // مقارنة الحلقات (للمشرف): إجمالي صفحات الجديد
     final halaqaStats = myHalaqas.map((h) {
       final hRecs = myRecords.where((r) => r.halaqaId == h.id);
-      return MapEntry(h, hRecs.fold<double>(0, (a, r) => a + r.newPages));
+      return MapEntry(h, hRecs.fold<double>(0.0, (a, r) => a + r.newPages));
     }).toList()..sort((a, b) => b.value.compareTo(a.value));
     final maxPages = halaqaStats.isEmpty ? 1.0 : (halaqaStats.first.value <= 0 ? 1.0 : halaqaStats.first.value);
 

@@ -108,7 +108,7 @@ class HalaqasScreen extends ConsumerWidget {
               final h = list[i];
               final count = students.where((s) => s.halaqaId == h.id).length;
               final hRecs = records.where((r) => r.halaqaId == h.id).toList();
-              final totalNew = hRecs.fold<double>(0, (a, r) => a + r.newPages);
+              final totalNew = hRecs.fold<double>(0.0, (a, r) => a + r.newPages);
               final excellent = hRecs.where((r) => r.grade == 'excellent').length;
               return Card(child: ListTile(
                 leading: CircleAvatar(backgroundColor: AppColors.primary, child: Text('${i + 1}', style: const TextStyle(color: Colors.white))),

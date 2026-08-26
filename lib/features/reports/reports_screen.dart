@@ -333,8 +333,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
 
   /// بطاقة ملخص مجمّع لكل الطلاب المحددين
   Widget _multiSummaryCard(List<({Student student, PeriodReport report})> reports, List<Halaqa> halaqas) {
-    final totalReq = reports.fold<double>(0, (a, e) => a + e.report.requiredTotal);
-    final totalDone = reports.fold<double>(0, (a, e) => a + e.report.doneTotal);
+    final totalReq = reports.fold<double>(0.0, (a, e) => a + e.report.requiredTotal);
+    final totalDone = reports.fold<double>(0.0, (a, e) => a + e.report.doneTotal);
     final avgPct = totalReq <= 0 ? (totalDone > 0 ? 100.0 : 0.0) : (totalDone / totalReq * 100).clamp(0, 100).toDouble();
     final halaqaIds = reports.map((e) => e.student.halaqaId).toSet();
     final hName = halaqaIds.length == 1
@@ -364,8 +364,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
 
   /// مخطط دائري للنسبة الكلية المجمّعة لكل الطلاب
   Widget _multiChartCard(List<({Student student, PeriodReport report})> reports) {
-    final done = reports.fold<double>(0, (a, e) => a + e.report.doneTotal);
-    final req = reports.fold<double>(0, (a, e) => a + e.report.requiredTotal);
+    final done = reports.fold<double>(0.0, (a, e) => a + e.report.doneTotal);
+    final req = reports.fold<double>(0.0, (a, e) => a + e.report.requiredTotal);
     final remain = (req - done).clamp(0.0, double.infinity);
     final pct = req <= 0 ? (done > 0 ? 100.0 : 0.0) : (done / req * 100).clamp(0, 100).toDouble();
     return Card(

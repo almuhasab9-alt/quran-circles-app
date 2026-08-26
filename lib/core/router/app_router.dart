@@ -1,5 +1,6 @@
-import 'package:flutter/foundation.dart';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/services/backup_service.dart';
@@ -259,6 +260,41 @@ class HomeShell extends ConsumerWidget {
   final Widget child;
   const HomeShell({super.key, required this.child});
 
+  /// آخر وقت ضُغط فيه زر الرجوع (لتأكيد الخروج بضغطتين)
+  static DateTime? _lastBackPress;
+
+  /// التعامل مع زر الرجوع داخل الشاشات الرئيسية:
+  /// - في تبويب غير الرئيسية → العودة للرئيسية
+  /// - في الرئيسية → أول ضغطة تعرض تنبيهاً، وضغطة ثانية خلال ثانيتين تخرج
+  static bool _handleBackPress(BuildContext context, String location) {
+    // أغلق الدرج أولاً إن كان مفتوحاً
+    final scaffold = Scaffold.maybeOf(context);
+    if (scaffold != null && scaffold.isDrawerOpen) {
+      Navigator.of(context).pop();
+      return true; // استهلك الضغطة
+    }
+    final isHome = location == '/home' || location == '/home/';
+    if (!isHome) {
+      context.go('/home');
+      return true; // استهلكنا الضغطة — لا تخرج
+    }
+    final now = DateTime.now();
+    final last = _lastBackPress;
+    if (last != null && now.difference(last) < const Duration(seconds: 2)) {
+      _lastBackPress = null;
+      return false; // اسمح بالخروج
+    }
+    _lastBackPress = now;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(const SnackBar(
+        content: Text('اضغط رجوع مرة أخرى للخروج', textAlign: TextAlign.center),
+        duration: Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ));
+    return true; // استهلكنا الضغطة الأولى
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(sessionProvider);
@@ -276,7 +312,16 @@ class HomeShell extends ConsumerWidget {
     } else if (location.contains('reports')) {
       index = 3;
     }
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        final shouldExit = _handleBackPress(context, location);
+        if (shouldExit) {
+          SystemNavigator.pop();
+        }
+      },
+      child: Scaffold(
       body: Column(children: [
         const DailyPdfReminderBanner(),
         const _BackupReminderBanner(),
@@ -331,6 +376,7 @@ class HomeShell extends ConsumerWidget {
             },
           ),
         ]),
+      ),
       ),
     );
   }

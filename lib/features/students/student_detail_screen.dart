@@ -78,7 +78,7 @@ class _StudentBody extends ConsumerWidget {
         final week = weeklyAsync.valueOrNull;
         final month = monthlyAsync.valueOrNull;
         final lastGrade = records.isEmpty ? '' : records.first.grade;
-        final totalNew = records.fold<double>(0, (a, r) => a + r.newPages);
+        final totalNew = records.fold<double>(0.0, (a, r) => a + r.newPages);
 
         // منحنى صفحات الحفظ الجديد — آخر 8 أسابيع
         final weeklyNew = <double>[];
@@ -87,7 +87,7 @@ class _StudentBody extends ConsumerWidget {
           final wEnd = now.subtract(Duration(days: w * 7));
           final wStart = wEnd.subtract(const Duration(days: 6));
           final slice = records.where((r) => !r.date.isBefore(wStart) && !r.date.isAfter(wEnd));
-          weeklyNew.add(slice.fold<double>(0, (a, r) => a + r.newPages));
+          weeklyNew.add(slice.fold<double>(0.0, (a, r) => a + r.newPages));
         }
 
         return ListView(padding: const EdgeInsets.all(12), children: [

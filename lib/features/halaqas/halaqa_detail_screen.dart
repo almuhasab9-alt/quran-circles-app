@@ -28,7 +28,7 @@ class HalaqaDetailScreen extends ConsumerWidget {
           final records = (recordsAsync.value ?? []).where((r) => r.halaqaId == halaqaId).toList();
           final users = usersAsync.value ?? [];
           final teacherName = users.where((u) => h.teacherIds.contains(u.id)).map((u) => u.fullName).firstOrNull ?? '—';
-          final totalNew = records.fold<double>(0, (a, r) => a + r.newPages);
+          final totalNew = records.fold<double>(0.0, (a, r) => a + r.newPages);
           final excellent = records.where((r) => r.grade == 'excellent').length;
 
           return Column(children: [
@@ -70,7 +70,7 @@ class HalaqaDetailScreen extends ConsumerWidget {
                         final s = students[i];
                         final sRecs = records.where((r) => r.studentId == s.id).toList();
                         final lastGrade = sRecs.isEmpty ? '' : sRecs.last.grade;
-                        final sNew = sRecs.fold<double>(0, (a, r) => a + r.newPages);
+                        final sNew = sRecs.fold<double>(0.0, (a, r) => a + r.newPages);
                         return ListTile(
                           leading: CircleAvatar(
                             backgroundColor: gradeColor(lastGrade).withValues(alpha: 0.15),
