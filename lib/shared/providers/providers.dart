@@ -1,4 +1,4 @@
-import '../services/accounts_repository.dart';
+import '../../core/services/accounts_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/database/app_database.dart';

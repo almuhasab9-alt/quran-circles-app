@@ -105,11 +105,11 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
       _toast('كلمة المرور يجب أن تكون 6 أحرف على الأقل', error: true);
       return;
     }
-    final ok = await _run(() => ref
+    final success = await _run(() => ref
         .read(accountsRepositoryProvider)
         .changePassword(acc.id, newPw,
             currentPassword: self ? curCtrl.text : null));
-    if (ok && mounted) _toast('تم تغيير كلمة المرور');
+    if (success && mounted) _toast('تم تغيير كلمة المرور');
   }
 
   // ─── تغيير اسم المستخدم ───
@@ -149,11 +149,11 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
       _toast('اسم المستخدم لا يمكن أن يكون فارغاً', error: true);
       return;
     }
-    final ok = await _run(() => ref
+    final success = await _run(() => ref
         .read(accountsRepositoryProvider)
         .changeUsername(acc.id, newU,
             currentPassword: self ? curCtrl.text : null));
-    if (ok && mounted) _toast('تم تغيير اسم المستخدم');
+    if (success && mounted) _toast('تم تغيير اسم المستخدم');
   }
 
   // ─── تغيير الاسم الكامل ───
@@ -180,9 +180,9 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
       _toast('الاسم لا يمكن أن يكون فارغاً', error: true);
       return;
     }
-    final ok = await _run(
+    final success = await _run(
         () => ref.read(accountsRepositoryProvider).changeFullName(acc.id, newName));
-    if (ok && mounted) _toast('تم تحديث الاسم الكامل');
+    if (success && mounted) _toast('تم تحديث الاسم الكامل');
   }
 
   // ─── تفعيل / تعطيل حساب ───
@@ -207,9 +207,9 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
       ),
     );
     if (ok != true) return;
-    final ok = await _run(
+    final success = await _run(
         () => ref.read(accountsRepositoryProvider).setActive(acc.id, target));
-    if (ok && mounted) _toast(target ? 'تم تفعيل الحساب' : 'تم تعطيل الحساب');
+    if (success && mounted) _toast(target ? 'تم تفعيل الحساب' : 'تم تعطيل الحساب');
   }
 
   // ─── إضافة معلم جديد ───
@@ -260,10 +260,10 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
       _toast('كلمة المرور يجب أن تكون 6 أحرف على الأقل', error: true);
       return;
     }
-    final ok = await _run(() => ref
+    final success = await _run(() => ref
         .read(accountsRepositoryProvider)
         .createTeacher(uname, pw, fullName));
-    if (ok && mounted) _toast('تم إنشاء حساب المعلم: $fullName');
+    if (success && mounted) _toast('تم إنشاء حساب المعلم: $fullName');
   }
 
   // ─── لوحة التعديل لكل حساب ───
