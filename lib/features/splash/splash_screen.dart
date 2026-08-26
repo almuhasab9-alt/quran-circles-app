@@ -81,7 +81,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                     boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 20, spreadRadius: 2)],
                   ),
                   padding: const EdgeInsets.all(12),
-                  child: ClipOval(child: Image.asset('assets/images/center_logo.png', fit: BoxFit.cover)),
+                  child: ClipOval(child: Image.asset('assets/images/center_logo.jpg', fit: BoxFit.cover)),
                 ),
                 const SizedBox(height: 24),
                 const Text(AppConstants.centerName,

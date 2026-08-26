@@ -305,7 +305,7 @@ class HomeShell extends ConsumerWidget {
             decoration: const BoxDecoration(color: Color(0xFF0B5E48)),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const CircleAvatar(radius: 28, backgroundColor: Colors.white,
-                  child: Image(image: AssetImage('assets/images/center_logo.png'), width: 48)),
+                  child: Image(image: AssetImage('assets/images/center_logo.jpg'), width: 48)),
               const SizedBox(height: 8),
               Text(session.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
               Text(session.isSupervisor ? 'مشرف' : 'معلم',

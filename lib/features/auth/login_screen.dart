@@ -81,7 +81,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(16),
-                      child: Image.asset('assets/images/center_logo.png', height: 90),
+                      child: Image.asset('assets/images/center_logo.jpg', height: 90),
                     ),
                     const SizedBox(height: 12),
                     const Text(AppConstants.appName,
