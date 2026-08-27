@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/database/app_database.dart';
 import '../../core/services/session_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../shared/providers/providers.dart';
@@ -170,7 +171,8 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildBody(BuildContext context, WidgetRef ref, session, halaqas, students, DashboardStats stats) {
+  Widget _buildBody(BuildContext context, WidgetRef ref, DemoSession? session,
+      List<Halaqa> halaqas, List<Student> students, DashboardStats stats) {
     final isTeacher = session?.isTeacher ?? false;
     // فلترة القوائم حسب الدور (السجلات تُفلتر في الخادم عبر /api/stats)
     final myHalaqas = isTeacher
@@ -193,7 +195,8 @@ class DashboardScreen extends ConsumerWidget {
     final halaqaStats = myHalaqas
         .map((h) => MapEntry(h, stats.halaqaNewPages[h.id] ?? 0.0))
         .toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
+      ..sort((MapEntry<Halaqa, double> a, MapEntry<Halaqa, double> b) =>
+          b.value.compareTo(a.value));
     final maxPages = halaqaStats.isEmpty
         ? 1.0
         : (halaqaStats.first.value <= 0 ? 1.0 : halaqaStats.first.value);
