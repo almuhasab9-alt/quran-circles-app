@@ -4,9 +4,133 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/services/session_service.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/utils/date_utils.dart' as du;
 import '../../shared/providers/providers.dart';
 import '../../shared/widgets/common_widgets.dart';
+
+// ─── نموذج الإحصاءات المجمعة من الخادم (بدل سحب كل السجلات) ───
+
+class StrugglingStudent {
+  final String id;
+  final String fullName;
+  final String halaqaId;
+  final int recordCount;
+  final double repeatRatio;
+  const StrugglingStudent({
+    required this.id,
+    required this.fullName,
+    required this.halaqaId,
+    required this.recordCount,
+    required this.repeatRatio,
+  });
+}
+
+class DashboardStats {
+  final int todayRecordCount;
+  final Set<String> halaqaIdsWithRecordsToday;
+  final double totalNewPages;
+  final int repeatStudentCount;
+  final Map<String, int> gradeCounts;
+
+  /// 12 قيمة: صفحات الجديد لكل أسبوع (الأقدم أولاً)
+  final List<double> weeklyNewPages;
+
+  /// إجمالي صفحات الجديد لكل حلقة (معرّف الحلقة ← الصفحات)
+  final Map<String, double> halaqaNewPages;
+
+  final List<StrugglingStudent> strugglingStudents;
+
+  const DashboardStats({
+    required this.todayRecordCount,
+    required this.halaqaIdsWithRecordsToday,
+    required this.totalNewPages,
+    required this.repeatStudentCount,
+    required this.gradeCounts,
+    required this.weeklyNewPages,
+    required this.halaqaNewPages,
+    required this.strugglingStudents,
+  });
+
+  static const empty = DashboardStats(
+    todayRecordCount: 0,
+    halaqaIdsWithRecordsToday: {},
+    totalNewPages: 0,
+    repeatStudentCount: 0,
+    gradeCounts: {},
+    weeklyNewPages: [],
+    halaqaNewPages: {},
+    strugglingStudents: [],
+  );
+
+  /// [from] = بداية نافذة الأسابيع الـ 12 (سبت)، تُستخدم لملء الأسابيع الفارغة بصفر
+  factory DashboardStats.fromJson(Map<String, dynamic> j, DateTime from) {
+    String fmt(DateTime d) =>
+        '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+    final rawWeekly = <String, double>{};
+    for (final w in (j['weeklyNewPages'] as List? ?? [])) {
+      final m = w as Map<String, dynamic>;
+      rawWeekly[(m['weekStart'] ?? '') as String] = ((m['pages'] ?? 0) as num).toDouble();
+    }
+    final weekly = List<double>.generate(
+        12, (i) => rawWeekly[fmt(from.add(Duration(days: 7 * i)))] ?? 0.0);
+
+    return DashboardStats(
+      todayRecordCount: (j['todayRecordCount'] ?? 0) as int,
+      halaqaIdsWithRecordsToday:
+          ((j['halaqaIdsWithRecordsToday'] as List? ?? []).cast<String>()).toSet(),
+      totalNewPages: ((j['totalNewPages'] ?? 0) as num).toDouble(),
+      repeatStudentCount: (j['repeatStudentCount'] ?? 0) as int,
+      gradeCounts: ((j['gradeCounts'] as Map? ?? {})
+          .map((k, v) => MapEntry(k as String, (v as num).toInt()))),
+      weeklyNewPages: weekly,
+      halaqaNewPages: ((j['halaqaNewPages'] as Map? ?? {})
+          .map((k, v) => MapEntry(k as String, (v as num).toDouble()))),
+      strugglingStudents: [
+        for (final s in (j['strugglingStudents'] as List? ?? []))
+          StrugglingStudent(
+            id: (s['id'] ?? '') as String,
+            fullName: (s['fullName'] ?? '') as String,
+            halaqaId: (s['halaqaId'] ?? '') as String,
+            recordCount: (s['recordCount'] ?? 0) as int,
+            repeatRatio: ((s['repeatRatio'] ?? 0) as num).toDouble(),
+          ),
+      ],
+    );
+  }
+}
+
+/// إحصاءات اللوحة — تُجمع في الخادم وتُحسب حسب دور المستخدم:
+/// المعلم: حلقاته فقط، المشرف: كل الحلقات.
+final dashboardStatsProvider = FutureProvider<DashboardStats>((ref) async {
+  final session = ref.watch(sessionProvider);
+  if (session == null) return DashboardStats.empty;
+
+  String fmt(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  final halaqas = await ref.watch(halaqasProvider.future);
+  final myIds = session.isTeacher
+      ? halaqas
+          .where((h) =>
+              h.teacherIds.split(',').map((e) => e.trim()).contains(session.userId))
+          .map((h) => h.id)
+          .toList()
+      : const <String>[];
+  // معلم بلا حلقات مسندة: لا بيانات لعرضها
+  if (session.isTeacher && myIds.isEmpty) return DashboardStats.empty;
+
+  final now = DateTime.now();
+  final weekStart = SessionService.weekStartOf(now);
+  final from = weekStart.subtract(const Duration(days: 7 * 11));
+
+  final j = await ref.read(apiClientProvider).getOne('/api/stats', query: {
+    'todayKey': fmt(now),
+    'from': fmt(from),
+    if (myIds.isNotEmpty) 'halaqaIds': myIds.join(','),
+  });
+  if (j == null) return DashboardStats.empty;
+  return DashboardStats.fromJson(j, from);
+});
 
 // لوحة المشرف (كل الحلقات) أو المعلم (حلقته فقط)
 class DashboardScreen extends ConsumerWidget {
@@ -17,7 +141,7 @@ class DashboardScreen extends ConsumerWidget {
     final session = ref.watch(sessionProvider);
     final halaqasAsync = ref.watch(halaqasProvider);
     final studentsAsync = ref.watch(studentsProvider);
-    final recordsAsync = ref.watch(allRecordsProvider);
+    final statsAsync = ref.watch(dashboardStatsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -36,64 +160,43 @@ class DashboardScreen extends ConsumerWidget {
         data: (halaqas) => studentsAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => ErrorState(message: '$e'),
-          data: (students) => recordsAsync.when(
+          data: (students) => statsAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => ErrorState(message: '$e'),
-            data: (records) => _buildBody(context, ref, session, halaqas, students, records),
+            error: (e, _) => ErrorState(message: 'خطأ في تحميل الإحصاءات: $e'),
+            data: (stats) => _buildBody(context, ref, session, halaqas, students, stats),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildBody(BuildContext context, WidgetRef ref, session, halaqas, students, records) {
+  Widget _buildBody(BuildContext context, WidgetRef ref, session, halaqas, students, DashboardStats stats) {
     final isTeacher = session?.isTeacher ?? false;
-    // فلترة حسب الدور
+    // فلترة القوائم حسب الدور (السجلات تُفلتر في الخادم عبر /api/stats)
     final myHalaqas = isTeacher
-        ? halaqas.where((h) => h.teacherIds.contains(session!.userId)).toList()
+        ? halaqas
+            .where((h) => h.teacherIds.split(',').map((e) => e.trim()).contains(session!.userId))
+            .toList()
         : halaqas;
     final myHalaqaIds = myHalaqas.map((h) => h.id).toSet();
-    final myStudents = isTeacher ? students.where((s) => myHalaqaIds.contains(s.halaqaId)).toList() : students;
-    final myRecords = isTeacher ? records.where((r) => myHalaqaIds.contains(r.halaqaId)).toList() : records;
+    final myStudents = isTeacher
+        ? students.where((s) => myHalaqaIds.contains(s.halaqaId)).toList()
+        : students;
 
-    final todayKey = du.dateKeyOf(DateTime.now());
-    final todayRecords = myRecords.where((r) => r.dateKey == todayKey).toList();
-    final totalNewPages = myRecords.fold<double>(0, (a, r) => a + r.newPages);
-    final repeatCount = myRecords.where((r) => r.grade == 'repeat').map((r) => r.studentId).toSet().length;
-    final halaqasWithToday = todayRecords.map((r) => r.halaqaId).toSet();
-    final halaqasNoData = myHalaqas.where((h) => h.active && !halaqasWithToday.contains(h.id)).length;
-
-    // توزيع التقديرات
-    final gradeCounts = <String, int>{};
-    for (final r in myRecords) {
-      if (r.grade.isNotEmpty) gradeCounts[r.grade] = (gradeCounts[r.grade] ?? 0) + 1;
-    }
-    final gradedTotal = gradeCounts.values.fold(0, (a, b) => a + b);
-
-    // صفحات الحفظ الجديد أسبوعياً (12 أسبوعاً)
-    final now = DateTime.now();
-    final weeklyNew = <double>[];
-    for (int w = 11; w >= 0; w--) {
-      final wStart = SessionService.weekStartOf(now).subtract(Duration(days: w * 7));
-      final wEnd = wStart.add(const Duration(days: 6));
-      final wRecs = myRecords.where((r) => !r.date.isBefore(wStart) && !r.date.isAfter(wEnd));
-      weeklyNew.add(wRecs.fold(0.0, (a, r) => a + r.newPages));
-    }
+    final halaqasNoData = myHalaqas
+        .where((h) => h.active && !stats.halaqaIdsWithRecordsToday.contains(h.id))
+        .length;
+    final gradedTotal = stats.gradeCounts.values.fold(0, (a, b) => a + b);
+    final weeklyNew = stats.weeklyNewPages;
 
     // مقارنة الحلقات (للمشرف): إجمالي صفحات الجديد
-    final halaqaStats = myHalaqas.map((h) {
-      final hRecs = myRecords.where((r) => r.halaqaId == h.id);
-      return MapEntry(h, hRecs.fold<double>(0, (a, r) => a + r.newPages));
-    }).toList()..sort((a, b) => b.value.compareTo(a.value));
-    final maxPages = halaqaStats.isEmpty ? 1.0 : (halaqaStats.first.value <= 0 ? 1.0 : halaqaStats.first.value);
-
-    // طلاب «إعادة» متكررة
-    final struggling = myStudents.where((s) {
-      final sRecs = myRecords.where((r) => r.studentId == s.id).toList();
-      if (sRecs.length < 4) return false;
-      final repeats = sRecs.where((r) => r.grade == 'repeat').length;
-      return repeats / sRecs.length >= 0.4;
-    }).take(6).toList();
+    final halaqaStats = myHalaqas
+        .map((h) => MapEntry(h, stats.halaqaNewPages[h.id] ?? 0.0))
+        .toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final maxPages = halaqaStats.isEmpty
+        ? 1.0
+        : (halaqaStats.first.value <= 0 ? 1.0 : halaqaStats.first.value);
 
     return ListView(padding: const EdgeInsets.all(12), children: [
       Row(children: [
@@ -101,11 +204,11 @@ class DashboardScreen extends ConsumerWidget {
             onTap: () => context.go('/home/students'))),
         Expanded(child: StatCard(title: isTeacher ? 'حلقتي' : 'الحلقات', value: '${myHalaqas.length}', icon: Icons.groups, color: AppColors.secondary,
             onTap: () => context.go('/home/halaqas'))),
-        Expanded(child: StatCard(title: 'سجلات اليوم', value: '${todayRecords.length}', icon: Icons.edit_note, color: AppColors.success)),
+        Expanded(child: StatCard(title: 'سجلات اليوم', value: '${stats.todayRecordCount}', icon: Icons.edit_note, color: AppColors.success)),
       ]),
       Row(children: [
-        Expanded(child: StatCard(title: 'حفظ جديد (صفحات)', value: totalNewPages.toStringAsFixed(1), icon: Icons.auto_stories, color: AppColors.gold)),
-        Expanded(child: StatCard(title: 'طلاب «إعادة»', value: '$repeatCount', icon: Icons.flag, color: AppColors.danger)),
+        Expanded(child: StatCard(title: 'حفظ جديد (صفحات)', value: stats.totalNewPages.toStringAsFixed(1), icon: Icons.auto_stories, color: AppColors.gold)),
+        Expanded(child: StatCard(title: 'طلاب «إعادة»', value: '${stats.repeatStudentCount}', icon: Icons.flag, color: AppColors.danger)),
         Expanded(child: StatCard(title: 'حلقات بلا تسجيل اليوم', value: '$halaqasNoData', icon: Icons.warning_amber, color: Colors.blueGrey)),
       ]),
 
@@ -138,7 +241,7 @@ class DashboardScreen extends ConsumerWidget {
             : SizedBox(height: 180, child: PieChart(PieChartData(
                 sectionsSpace: 2, centerSpaceRadius: 36,
                 sections: [
-                  for (final e in gradeCounts.entries)
+                  for (final e in stats.gradeCounts.entries)
                     PieChartSectionData(
                       value: e.value.toDouble(),
                       title: '${gradeAr(e.key)}\n${(e.value / gradedTotal * 100).toStringAsFixed(0)}%',
@@ -187,10 +290,10 @@ class DashboardScreen extends ConsumerWidget {
         ])),
       ],
 
-      if (struggling.isNotEmpty) ...[
+      if (stats.strugglingStudents.isNotEmpty) ...[
         _title('طلاب يحتاجون متابعة', 'تقدير «إعادة» في 40% أو أكثر من سجلاتهم'),
         Card(child: Column(children: [
-          for (final s in struggling)
+          for (final s in stats.strugglingStudents)
             ListTile(
               dense: true,
               leading: const Icon(Icons.flag, color: AppColors.danger, size: 20),

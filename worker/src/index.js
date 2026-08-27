@@ -141,6 +141,67 @@ export default {
         return json({ status: 'ok', tables: { users: r?.c || 0 } });
       }
 
+      // ─── Stats (GET /api/stats) ───
+      // إحصاءات مجمعة في الخادم — تغني لوحة التحكم عن سحب آلاف السجلات
+      // معاملات اختيارية:
+      //   halaqaIds=a,b,c  حصر النطاق بحلقات معينة (للمعلم)
+      //   todayKey=YYYY-MM-DD  مفتاح «اليوم» (يُحسب في العميل حسب منطقته)
+      //   from=YYYY-MM-DD  بداية نافذة الأسابيع (12 أسبوعاً)
+      if (path === '/api/stats' && method === 'GET') {
+        const ids = (url.searchParams.get('halaqaIds') || '')
+          .split(',').map((s) => s.trim()).filter(Boolean);
+        const todayKey = url.searchParams.get('todayKey') || new Date().toISOString().slice(0, 10);
+        const fromKey = url.searchParams.get('from') || '';
+        const scope = ids.length ? `halaqa_id IN (${ids.map(() => '?').join(',')})` : '1=1';
+        const scopeR = scope.replace(/halaqa_id/g, 'r.halaqa_id');
+
+        const [todayAgg, todayHalaqas, totals, grades, weekly, perHalaqa, struggling] =
+          await Promise.all([
+            db.prepare(`SELECT COUNT(*) c FROM daily_records WHERE ${scope} AND date_key = ?`).bind(...ids, todayKey).first(),
+            db.prepare(`SELECT DISTINCT halaqa_id FROM daily_records WHERE ${scope} AND date_key = ?`).bind(...ids, todayKey).all(),
+            db.prepare(`SELECT COALESCE(SUM(new_pages),0) p,
+                COUNT(DISTINCT CASE WHEN grade='repeat' THEN student_id END) rc
+                FROM daily_records WHERE ${scope}`).bind(...ids).first(),
+            db.prepare(`SELECT grade, COUNT(*) c FROM daily_records
+                WHERE ${scope} AND grade != '' GROUP BY grade`).bind(...ids).all(),
+            fromKey
+              ? db.prepare(`SELECT date(date_key, '-' || ((CAST(strftime('%w', date_key) AS INTEGER) + 1) % 7) || ' days') ws,
+                    COALESCE(SUM(new_pages),0) p
+                    FROM daily_records WHERE ${scope} AND date_key >= ?
+                    GROUP BY ws ORDER BY ws`).bind(...ids, fromKey).all()
+              : Promise.resolve({ results: [] }),
+            db.prepare(`SELECT halaqa_id, COALESCE(SUM(new_pages),0) p FROM daily_records
+                WHERE ${scope} GROUP BY halaqa_id`).bind(...ids).all(),
+            db.prepare(`SELECT s.id, s.full_name, s.halaqa_id, COUNT(*) total,
+                    SUM(CASE WHEN r.grade='repeat' THEN 1 ELSE 0 END) reps
+                FROM daily_records r JOIN students s ON s.id = r.student_id
+                WHERE ${scopeR}
+                GROUP BY r.student_id
+                HAVING COUNT(*) >= 4 AND (SUM(CASE WHEN r.grade='repeat' THEN 1 ELSE 0 END) * 1.0 / COUNT(*)) >= 0.4
+                ORDER BY reps * 1.0 / total DESC LIMIT 6`).bind(...ids).all(),
+          ]);
+
+        const gradeCounts = {};
+        for (const g of grades.results) gradeCounts[g.grade] = g.c;
+        const halaqaNewPages = {};
+        for (const r of perHalaqa.results) halaqaNewPages[r.halaqa_id] = r.p || 0;
+
+        return json({
+          todayKey,
+          todayRecordCount: todayAgg?.c || 0,
+          halaqaIdsWithRecordsToday: todayHalaqas.results.map((r) => r.halaqa_id),
+          totalNewPages: totals?.p || 0,
+          repeatStudentCount: totals?.rc || 0,
+          gradeCounts,
+          weeklyNewPages: weekly.results.map((w) => ({ weekStart: w.ws, pages: w.p || 0 })),
+          halaqaNewPages,
+          strugglingStudents: struggling.results.map((r) => ({
+            id: r.id, fullName: r.full_name, halaqaId: r.halaqa_id,
+            recordCount: r.total, repeatRatio: r.total ? r.reps / r.total : 0,
+          })),
+        });
+      }
+
       // ─── Seed (POST /api/seed) ───
       if (path === '/api/seed' && method === 'POST') {
         return await seed(db, request);
