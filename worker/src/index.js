@@ -118,6 +118,22 @@ export default {
       return error('غير مصرح — هذه العملية للمشرف فقط', 403);
     }
 
+    // ─── تفويض الكتابة: إدارة الكيانات للمشرف فقط ───
+    // المعلمون يكتبون سجلاتهم اليومية فقط (مسارات /api/daily-records)
+    const isWrite = method === 'POST' || method === 'PUT' || method === 'DELETE';
+    const supervisorOnlyWrite =
+      isWrite && (
+        path.startsWith('/api/users') ||
+        path.startsWith('/api/halaqas') ||
+        path.startsWith('/api/students') ||
+        path.startsWith('/api/weekly-plans') ||
+        path.startsWith('/api/student-transfers') ||
+        path === '/api/transfer-student'
+      );
+    if (supervisorOnlyWrite && auth.role !== 'supervisor') {
+      return error('غير مصرح — إدارة البيانات للمشرف فقط', 403);
+    }
+
     try {
       // ─── Health ───
       if (path === '/api/health' && method === 'GET') {

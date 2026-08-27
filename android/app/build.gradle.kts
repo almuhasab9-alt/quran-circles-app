@@ -30,11 +30,25 @@ android {
         versionName = flutter.versionName
     }
 
+    // توقيع الإصدار: يُقرأ من متغيرات البيئة (أسرار CI) — لا تُكتب المفاتيح في المستودع.
+    // بدون المتغيرات (بناء محلي) يُستخدم مفتاح التصحيح تلقائياً.
+    val keystorePath = System.getenv("QC_KEYSTORE_PATH")
+    if (!keystorePath.isNullOrEmpty()) {
+        signingConfigs {
+            create("release") {
+                storeFile = file(keystorePath)
+                storePassword = System.getenv("QC_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("QC_KEY_ALIAS")
+                // في PKCS12 يجب أن تتطابق كلمة مرور المفتاح مع كلمة مرور المخزن
+                keyPassword = System.getenv("QC_KEYSTORE_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release")
+                ?: signingConfigs.getByName("debug")
         }
     }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/services/api_client.dart';
 import '../../core/services/backup_service.dart';
 import '../../features/accounts/accounts_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
@@ -228,9 +230,18 @@ class HomeShell extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
             title: const Text('تسجيل الخروج', style: TextStyle(color: Colors.red)),
-            onTap: () {
+            onTap: () async {
               ref.read(sessionProvider.notifier).state = null;
-              context.go('/login');
+              ApiClient.authToken = null;
+              // مسح الجلسة المحفوظة حتى لا تُستعاد عند التشغيل التالي
+              try {
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.remove('authToken');
+                await prefs.remove('sessionUserId');
+                await prefs.remove('sessionName');
+                await prefs.remove('sessionRole');
+              } catch (_) {/* تجاهل */}
+              if (context.mounted) context.go('/login');
             },
           ),
         ]),

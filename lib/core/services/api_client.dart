@@ -64,6 +64,19 @@ class ApiClient {
     return jsonDecode(res.body) as Map<String, dynamic>;
   }
 
+  /// التحقق من صلاحية الجلسة الحالية عبر /api/me
+  /// تُستخدم عند الإقلاع لاستعادة الجلسة المحفوظة والتأكد من أنها ما زالت صالحة
+  Future<Map<String, dynamic>> me() async {
+    final res = await _client.get(
+      Uri.parse('$authBaseUrl/api/me'),
+      headers: _headers(),
+    );
+    if (res.statusCode != 200) {
+      throw ApiException('الجلسة غير صالحة');
+    }
+    return jsonDecode(res.body) as Map<String, dynamic>;
+  }
+
   /// قائمة الحسابات (للمشرف فقط)
   Future<Map<String, dynamic>> getAccounts() async {
     final res = await _client.get(

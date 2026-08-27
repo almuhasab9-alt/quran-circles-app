@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/services/api_client.dart';
 import '../../core/theme/app_theme.dart';
@@ -38,11 +39,20 @@ class _DemoLoginScreenState extends ConsumerState<DemoLoginScreen> {
       final result = await api.login(username, password);
       ApiClient.authToken = result['token'] as String;
       final user = result['user'] as Map<String, dynamic>;
-      ref.read(sessionProvider.notifier).state = DemoSession(
+      final session = DemoSession(
         userId: (user['id'] ?? '') as String,
         name: (user['fullName'] ?? username) as String,
         role: (user['role'] ?? 'teacher') as String,
       );
+      ref.read(sessionProvider.notifier).state = session;
+      // حفظ الجلسة محلياً — لا يُطلب تسجيل الدخول عند كل تشغيل
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('authToken', ApiClient.authToken!);
+        await prefs.setString('sessionUserId', session.userId);
+        await prefs.setString('sessionName', session.name);
+        await prefs.setString('sessionRole', session.role);
+      } catch (_) {/* التخزين غير متاح */}
       if (!mounted) return;
       context.go('/home');
     } catch (e) {

@@ -17,6 +17,16 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Prepare release signing key
+        if: ${{ env.QC_HAS_KEY == 'true' }}
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > /tmp/quran-release.p12
+          echo "QC_KEYSTORE_PATH=/tmp/quran-release.p12" >> $GITHUB_ENV
+          echo "QC_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
+          echo "QC_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> $GITHUB_ENV
+        env:
+          QC_HAS_KEY: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+
       - name: Build split APKs (per ABI)
         run: flutter build apk --release --split-per-abi
 
