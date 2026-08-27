@@ -9,3 +9,6 @@
 # تجنب تحذيرات المكتبات
 -dontwarn java.lang.invoke.*
 -dontwarn javax.annotation.**
+
+# فئات Play Core الاختيارية (المكونات المؤجلة) — غير مستخدمة في هذا التطبيق
+-dontwarn com.google.android.play.core.**
