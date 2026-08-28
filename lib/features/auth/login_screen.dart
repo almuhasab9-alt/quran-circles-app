@@ -59,6 +59,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  /// إنشاء حساب المشرف الافتراضي عند أول تشغيل (تنجح فقط إن كانت القاعدة فارغة)
+  Future<void> _initSupervisor() async {
+    setState(() { loading = true; error = null; });
+    final res = await ref.read(cloudAuthProvider).ensureSupervisorExists();
+    if (!mounted) return;
+    setState(() => loading = false);
+    if (res.ok) {
+      setState(() => error = null);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('تم تجهيز حساب المشرف ✓ — سجّل دخولك بـ: admin / admin123 ثم غيّر كلمة المرور من «حسابي»'),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 5),
+      ));
+      userCtrl.text = 'admin';
+      passCtrl.text = 'admin123';
+    } else {
+      setState(() => error = res.error ?? 'تعذرت التهيئة');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -139,6 +159,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         label: Text(loading ? 'جاري الدخول...' : 'تسجيل الدخول', style: const TextStyle(fontSize: 16)),
                         style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
                       ),
+                    ),
+                    const SizedBox(height: 10),
+                    // تهيئة أول حساب مشرف — تظهر فقط عندما تكون القاعدة فارغة
+                    TextButton.icon(
+                      onPressed: loading ? null : _initSupervisor,
+                      icon: const Icon(Icons.admin_panel_settings, size: 18),
+                      label: const Text('أول تشغيل؟ إنشاء حساب المشرف (admin / admin123)',
+                          style: TextStyle(fontSize: 12)),
                     ),
                   ]),
                 ),
