@@ -67,8 +67,13 @@ class ReportService {
     final weekStart = SessionService.weekStartOf(anyDayInWeek);
     final key = du.dateKeyOf(weekStart);
     final now = DateTime.now();
+    // إن وُجدت خطة سابقة لنفس الطالب ونفس الأسبوع نُعيد استخدام معرّفها،
+    // لأن القيد الفريد (studentId, weekStartKey) يمنع إدراج صف جديد بمعرّف مختلف.
+    final existing = await (db.select(db.weeklyPlans)
+          ..where((p) => p.studentId.equals(studentId) & p.weekStartKey.equals(key)))
+        .getSingleOrNull();
     await db.into(db.weeklyPlans).insertOnConflictUpdate(WeeklyPlansCompanion(
-      id: Value(_uuid.v4()),
+      id: Value(existing?.id ?? _uuid.v4()),
       studentId: Value(studentId),
       halaqaId: Value(halaqaId),
       weekStartKey: Value(key),
@@ -77,7 +82,7 @@ class ReportService {
       requiredMinorPages: Value(requiredMinorPages),
       requiredMajorPages: Value(requiredMajorPages),
       requiredFridayPages: Value(requiredFridayPages),
-      createdAt: Value(now),
+      createdAt: Value(existing?.createdAt ?? now),
       updatedAt: Value(now),
     ));
   }

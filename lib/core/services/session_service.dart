@@ -151,8 +151,15 @@ class SessionService {
 
     final now = DateTime.now();
     final dateKey = du.dateKeyOf(day);
+
+    // إن وُجد سجل سابق لنفس الطالب في نفس اليوم نُعيد استخدام معرّفه وتاريخ إنشائه،
+    // لأن القيد الفريد (studentId, dateKey) يمنع إدراج صف جديد بمعرّف مختلف.
+    final existing = await (db.select(db.dailyRecords)
+          ..where((r) => r.studentId.equals(studentId) & r.dateKey.equals(dateKey)))
+        .getSingleOrNull();
+
     final companion = DailyRecordsCompanion(
-      id: Value(_uuid.v4()),
+      id: Value(existing?.id ?? _uuid.v4()),
       studentId: Value(studentId),
       halaqaId: Value(halaqaId),
       teacherId: Value(teacherId),
@@ -174,7 +181,7 @@ class SessionService {
       majorFromPage: Value(majorFromPage),
       majorToPage: Value(majorToPage),
       notes: Value(notes),
-      createdAt: Value(now),
+      createdAt: Value(existing?.createdAt ?? now),
       updatedAt: Value(now),
     );
 
