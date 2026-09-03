@@ -9,7 +9,11 @@ import '../../shared/widgets/common_widgets.dart';
 /// مزود قائمة الحسابات السحابية
 final cloudAccountsProvider = FutureProvider<List<CloudAccount>>((ref) async {
   ref.watch(dataVersionProvider);
-  return ref.watch(cloudAuthProvider).listAccounts();
+  final accounts = await ref.watch(cloudAuthProvider).listAccounts();
+  // مرآة الحسابات في جدول المستخدمين المحلي حتى تظهر أسماء المعلمين
+  // في نموذج الحلقة وتفاصيلها وتقارير PDF
+  await mirrorAccountsLocally(ref.read(userRepoProvider), accounts);
+  return accounts;
 });
 
 /// شاشة إدارة الحسابات — للمشرف فقط:
@@ -146,6 +150,16 @@ class AccountsScreen extends ConsumerWidget {
     final res = await ref.read(cloudAuthProvider).deleteTeacher(acc.id);
     if (!context.mounted) return;
     if (res.ok) {
+      // تعطيل المرآة المحلية حتى يختفي من قائمة المعلمين (السجلات القديمة تبقى)
+      await ref.read(userRepoProvider).upsert(
+            id: acc.id,
+            fullName: acc.fullName,
+            username: acc.username,
+            role: acc.role,
+            active: false,
+            assignedHalaqaIds: acc.halaqaId,
+          );
+      if (!context.mounted) return;
       bumpDataVersion(ref);
       _toast(context, 'تم حذف الحساب');
     } else {

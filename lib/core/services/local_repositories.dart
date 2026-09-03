@@ -84,4 +84,30 @@ class LocalUserRepository implements IUserRepository {
   @override
   Future<User?> getById(String id) =>
       (db.select(db.users)..where((u) => u.id.equals(id))).getSingleOrNull();
+
+  /// إدراج/تحديث مستخدم في الجدول المحلي (مرآة للحساب السحابي).
+  /// يحافظ على تاريخ الإنشاء الأصلي إن وُجد الصف من قبل.
+  @override
+  Future<void> upsert({
+    required String id,
+    required String fullName,
+    required String username,
+    required String role,
+    bool active = true,
+    String assignedHalaqaIds = '',
+  }) async {
+    if (id.isEmpty) return;
+    final existing = await getById(id);
+    final now = DateTime.now();
+    await db.into(db.users).insertOnConflictUpdate(UsersCompanion(
+          id: Value(id),
+          fullName: Value(fullName.isEmpty ? username : fullName),
+          username: Value(username),
+          role: Value(role),
+          active: Value(active),
+          assignedHalaqaIds: Value(assignedHalaqaIds),
+          createdAt: Value(existing?.createdAt ?? now),
+          updatedAt: Value(now),
+        ));
+  }
 }

@@ -12,8 +12,21 @@ class HalaqasScreen extends ConsumerWidget {
   const HalaqasScreen({super.key});
 
   Future<void> _halaqaDialog(BuildContext context, WidgetRef ref, {Halaqa? existing}) async {
+    // تحديث مرآة المعلمين من السحابة أولاً (إن توفر اتصال) حتى لا تكون القائمة فارغة
+    try {
+      final accounts = await ref.read(cloudAuthProvider).listAccounts();
+      await mirrorAccountsLocally(ref.read(userRepoProvider), accounts);
+    } catch (_) {/* لا إنترنت — نستخدم المرآة المحلية */}
     final users = await ref.read(userRepoProvider).all();
     final teachers = users.where((u) => u.role == 'teacher' && u.active).toList();
+    // إن كان المعلم المرتبط حالياً غير موجود في القائمة (معطّل مثلاً) نُبقيه كخيار
+    final currentTeacherId = existing != null && existing.teacherIds.isNotEmpty
+        ? existing.teacherIds.split(',').first
+        : null;
+    if (currentTeacherId != null && !teachers.any((t) => t.id == currentTeacherId)) {
+      final cur = users.where((u) => u.id == currentTeacherId).firstOrNull;
+      if (cur != null) teachers.insert(0, cur);
+    }
     final nameCtrl = TextEditingController(text: existing?.name ?? '');
     final schedCtrl = TextEditingController(text: existing?.scheduleDescription ?? 'يومياً من السبت إلى الجمعة - بعد العصر');
     final capCtrl = TextEditingController(text: existing?.capacity.toString() ?? '25');
@@ -39,7 +52,13 @@ class HalaqasScreen extends ConsumerWidget {
             TextField(controller: levelCtrl, decoration: const InputDecoration(labelText: 'المستوى', hintText: 'اكتب مستوى الحلقة')),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              initialValue: teacherId, decoration: const InputDecoration(labelText: 'المعلم'),
+              initialValue: teacherId,
+              decoration: InputDecoration(
+                labelText: 'المعلم',
+                helperText: teachers.isEmpty
+                    ? 'لا يوجد معلمون بعد — أنشئ حساب معلم من شاشة الحسابات'
+                    : null,
+              ),
               items: teachers.map((t) => DropdownMenuItem(value: t.id, child: Text(t.fullName))).toList(),
               onChanged: (v) => setD(() => teacherId = v),
             ),

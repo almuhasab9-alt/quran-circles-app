@@ -52,6 +52,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         await ref.read(cloudSyncProvider).smartSync(localIsEmpty: halaqas.isEmpty);
         ref.read(dataVersionProvider.notifier).state++;
       } catch (_) {/* لا إنترنت — نكمل محلياً */}
+      // بعد المزامنة: نعكس الحساب السحابي في جدول المستخدمين المحلي
+      // (حتى تعمل قوائم المعلمين وتقارير PDF بدون الحاجة لنسخة احتياطية)
+      await mirrorAccountLocally(ref.read(userRepoProvider), res.user!);
+      if (res.user!.isSupervisor) {
+        try {
+          await mirrorAccountsLocally(ref.read(userRepoProvider), await auth.listAccounts());
+        } catch (_) {/* لا إنترنت */}
+      }
       if (!mounted) return;
       context.go('/home');
     } else {

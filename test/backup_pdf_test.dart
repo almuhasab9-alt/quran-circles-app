@@ -82,6 +82,8 @@ Future<void> _insertFixture(AppDatabase db) async {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  // كل اختبار يفتح قاعدة ذاكرة مستقلة — التحذير غير ذي صلة هنا
+  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
 
   group('BackupService - التصدير والاستيراد', () {
     late AppDatabase db;

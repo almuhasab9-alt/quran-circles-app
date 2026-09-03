@@ -77,13 +77,34 @@ class _WeeklySheetScreenState extends ConsumerState<WeeklySheetScreen> {
     try {
       final halaqa = await ref.read(halaqaRepoProvider).getById(widget.halaqaId);
       final session = ref.read(sessionProvider);
-      User? teacher;
-      if (session != null) {
-        teacher = await ref.read(userRepoProvider).getById(session.userId);
+      if (halaqa == null) {
+        throw StateError('تعذر العثور على بيانات الحلقة');
       }
-      teacher ??= (await ref.read(userRepoProvider).all()).firstOrNull;
-      if (halaqa == null || teacher == null) {
-        throw StateError('تعذر العثور على بيانات الحلقة أو المعلم');
+      final userRepo = ref.read(userRepoProvider);
+      User? teacher;
+      // 1) معلم الحلقة نفسها  2) المستخدم الحالي  3) أي معلم محلي
+      final halaqaTeacherId =
+          halaqa.teacherIds.split(',').where((e) => e.isNotEmpty).firstOrNull;
+      if (halaqaTeacherId != null) {
+        teacher = await userRepo.getById(halaqaTeacherId);
+      }
+      if (teacher == null && session != null) {
+        teacher = await userRepo.getById(session.userId);
+      }
+      teacher ??= (await userRepo.byRole('teacher')).firstOrNull;
+      // 4) لا يوجد في الجدول المحلي: نبني كائناً من الجلسة الحالية بدل الفشل
+      if (teacher == null) {
+        final now = DateTime.now();
+        teacher = User(
+          id: session?.userId ?? '',
+          fullName: session?.name ?? '—',
+          username: session?.username ?? '',
+          role: session?.role ?? 'teacher',
+          active: true,
+          assignedHalaqaIds: widget.halaqaId,
+          createdAt: now,
+          updatedAt: now,
+        );
       }
       final bytes = await PdfReportService.buildWeeklySheetPdf(
         student: st,

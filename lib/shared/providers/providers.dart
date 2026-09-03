@@ -38,8 +38,31 @@ class AppSession {
 
 final sessionProvider = StateProvider<AppSession?>((ref) => null);
 
-// خدمة المصادقة السحابية (Cloudflare D1 — كلمات المرور مشفرة)
+// خدمة المصادقة السحابية (Firebase Firestore — كلمات المرور مشفرة)
 final cloudAuthProvider = Provider<CloudAuthService>((ref) => CloudAuthService());
+
+/// مرآة الحساب السحابي في جدول المستخدمين المحلي.
+/// تُستدعى بعد تسجيل الدخول/استعادة الجلسة حتى تظهر أسماء المعلمين في
+/// قوائم الحلقات وتقارير PDF حتى لو لم تُستورد نسخة احتياطية بعد.
+Future<void> mirrorAccountLocally(IUserRepository users, CloudAccount acc) async {
+  try {
+    await users.upsert(
+          id: acc.id,
+          fullName: acc.fullName,
+          username: acc.username,
+          role: acc.role,
+          active: acc.active,
+          assignedHalaqaIds: acc.halaqaId,
+        );
+  } catch (_) {/* لا نُفشل الدخول بسبب خطأ في المرآة المحلية */}
+}
+
+/// مرآة كل الحسابات السحابية (تُستدعى عند جلب قائمة الحسابات للمشرف)
+Future<void> mirrorAccountsLocally(IUserRepository users, List<CloudAccount> accounts) async {
+  for (final a in accounts) {
+    await mirrorAccountLocally(users, a);
+  }
+}
 
 // خدمة المزامنة السحابية — نسخة واحدة فقط تُحدَّث في مكانها (لا تكرار)
 final cloudSyncProvider = Provider<CloudSyncService>((ref) => CloudSyncService(

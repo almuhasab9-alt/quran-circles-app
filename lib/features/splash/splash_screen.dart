@@ -43,6 +43,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
         await ref.read(cloudSyncProvider).smartSync(localIsEmpty: halaqas.isEmpty);
         ref.read(dataVersionProvider.notifier).state++;
       } catch (_) {/* لا إنترنت — نكمل بالبيانات المحلية */}
+      // مرآة الحساب في جدول المستخدمين المحلي (أسماء المعلمين في القوائم والتقارير)
+      await mirrorAccountLocally(ref.read(userRepoProvider), user);
+      if (user.isSupervisor) {
+        try {
+          await mirrorAccountsLocally(
+              ref.read(userRepoProvider), await ref.read(cloudAuthProvider).listAccounts());
+        } catch (_) {/* لا إنترنت */}
+      }
       if (!mounted) return;
       context.go('/home');
     } else {

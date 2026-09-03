@@ -40,4 +40,12 @@ abstract class IUserRepository {
   Future<List<User>> byRole(String role);
   Future<List<User>> all();
   Future<User?> getById(String id);
+  Future<void> upsert({
+    required String id,
+    required String fullName,
+    required String username,
+    required String role,
+    bool active,
+    String assignedHalaqaIds,
+  });
 }

@@ -3,6 +3,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_center/core/constants/enums.dart';
 import 'package:quran_center/core/database/app_database.dart';
+import 'package:quran_center/core/services/local_repositories.dart';
 import 'package:quran_center/core/services/report_service.dart';
 import 'package:quran_center/core/services/session_service.dart';
 
@@ -44,6 +45,8 @@ void main() {
   setUpAll(() {
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   });
+
+  _mirrorTests();
 
   test('إعادة حفظ تسميع نفس الطالب في نفس اليوم تُحدّث السجل بدل أن تفشل',
       () async {
@@ -119,5 +122,50 @@ void main() {
     expect(all.single.id, p1!.id);
     expect(all.single.requiredNewPages, 5);
     expect(all.single.requiredMinorPages, 10);
+  });
+}
+
+void _mirrorTests() {
+  test('مرآة الحساب السحابي في جدول المستخدمين المحلي (إدراج ثم تحديث)', () async {
+    final db = _memDb();
+    addTearDown(db.close);
+    final repo = LocalUserRepository(db);
+
+    await repo.upsert(
+      id: 'acc-1',
+      fullName: 'الشيخ خالد',
+      username: 'khaled',
+      role: 'teacher',
+      assignedHalaqaIds: 'h1',
+    );
+    final first = await repo.getById('acc-1');
+    expect(first, isNotNull);
+    expect(first!.fullName, 'الشيخ خالد');
+    expect((await repo.byRole('teacher')).length, 1);
+
+    // تحديث الاسم وتعطيل الحساب — يجب أن يبقى صف واحد ويحتفظ بتاريخ الإنشاء
+    await repo.upsert(
+      id: 'acc-1',
+      fullName: 'الشيخ خالد العمري',
+      username: 'khaled',
+      role: 'teacher',
+      active: false,
+      assignedHalaqaIds: 'h2',
+    );
+    final all = await repo.all();
+    expect(all.length, 1);
+    expect(all.single.fullName, 'الشيخ خالد العمري');
+    expect(all.single.active, isFalse);
+    expect(all.single.assignedHalaqaIds, 'h2');
+    expect(all.single.createdAt, first.createdAt);
+    expect((await repo.byRole('teacher')), isEmpty, reason: 'المعطّل لا يظهر في قائمة المعلمين');
+
+    // اسم فارغ → يُستخدم اسم المستخدم بدلاً منه
+    await repo.upsert(id: 'acc-2', fullName: '', username: 'omar', role: 'teacher');
+    expect((await repo.getById('acc-2'))!.fullName, 'omar');
+
+    // معرّف فارغ → يُتجاهل بأمان
+    await repo.upsert(id: '', fullName: 'x', username: 'x', role: 'teacher');
+    expect((await repo.all()).length, 2);
   });
 }

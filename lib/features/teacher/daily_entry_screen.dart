@@ -178,7 +178,12 @@ class _DailyEntryScreenState extends ConsumerState<DailyEntryScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('تسجيل التسميع اليومي')),
       body: halaqaStudents.isEmpty
-          ? const Center(child: CircularProgressIndicator())
+          // أثناء التحميل: مؤشر — بعد التحميل بلا طلاب: رسالة واضحة بدل دوران لا نهائي
+          ? (studentsAsync.isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : const EmptyState(
+                  icon: Icons.person_off,
+                  message: 'لا يوجد طلاب في هذه الحلقة بعد.\nأضف طلاباً من شاشة الطلاب أولاً.'))
           : ListView(padding: const EdgeInsets.all(16), children: [
               // الطالب والتاريخ
               DropdownButtonFormField<Student>(
